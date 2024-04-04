@@ -2,7 +2,7 @@
 
 #![allow(unknown_lints, non_local_definitions)]
 
-use crate::{other::OtherFields, Transaction, Withdrawal};
+use crate::{Transaction, TransactionList, Withdrawal};
 use alloy_eips::{calc_blob_gasprice, calc_excess_blob_gas};
 use alloy_primitives::{
     ruint::ParseError, Address, BlockHash, BlockNumber, Bloom, Bytes, B256, B64, U256, U64,
@@ -18,35 +18,29 @@ use std::{collections::BTreeMap, fmt, num::ParseIntError, ops::Deref, str::FromS
 /// Block representation
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Block {
+pub struct Block<H = Header, T = Transaction> {
     /// Header of the block.
     #[serde(flatten)]
-    pub header: Header,
+    pub header: H,
     /// Uncles' hashes.
     #[serde(default)]
     pub uncles: Vec<B256>,
     /// Block Transactions. In the case of an uncle block, this field is not included in RPC
-    /// responses, and when deserialized, it will be set to [BlockTransactions::Uncle].
-    #[serde(
-        default = "BlockTransactions::uncle",
-        skip_serializing_if = "BlockTransactions::is_uncle"
-    )]
-    pub transactions: BlockTransactions,
+    /// responses, and when deserialized, it will be set to [TransactionList::Uncle].
+    #[serde(default = "TransactionList::uncle", skip_serializing_if = "TransactionList::is_uncle")]
+    pub transactions: TransactionList<T>,
     /// Integer the size of this block in bytes.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub size: Option<U256>,
     /// Withdrawals in the block.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub withdrawals: Option<Vec<Withdrawal>>,
-    /// Support for arbitrary additional fields.
-    #[serde(flatten)]
-    pub other: OtherFields,
 }
 
 impl Block {
     /// Converts a block with Tx hashes into a full block.
     pub fn into_full_block(self, txs: Vec<Transaction>) -> Self {
-        Self { transactions: BlockTransactions::Full(txs), ..self }
+        Self { transactions: TransactionList::Full(txs), ..self }
     }
 }
 
@@ -145,20 +139,7 @@ impl Header {
     }
 }
 
-/// Block Transactions depending on the boolean attribute of `eth_getBlockBy*`,
-/// or if used by `eth_getUncle*`
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum BlockTransactions {
-    /// Only hashes
-    Hashes(Vec<B256>),
-    /// Full transactions
-    Full(Vec<Transaction>),
-    /// Special case for uncle response.
-    Uncle,
-}
-
-impl BlockTransactions {
+impl TransactionList<Transaction> {
     /// Converts `self` into `Hashes`.
     #[inline]
     pub fn convert_to_hashes(&mut self) {
@@ -172,24 +153,6 @@ impl BlockTransactions {
     pub fn into_hashes(mut self) -> Self {
         self.convert_to_hashes();
         self
-    }
-
-    /// Check if the enum variant is used for hashes.
-    #[inline]
-    pub const fn is_hashes(&self) -> bool {
-        matches!(self, Self::Hashes(_))
-    }
-
-    /// Returns true if the enum variant is used for full transactions.
-    #[inline]
-    pub const fn is_full(&self) -> bool {
-        matches!(self, Self::Full(_))
-    }
-
-    /// Returns true if the enum variant is used for an uncle response.
-    #[inline]
-    pub const fn is_uncle(&self) -> bool {
-        matches!(self, Self::Uncle)
     }
 
     /// Returns an iterator over the transaction hashes.
@@ -211,12 +174,6 @@ impl BlockTransactions {
         BlockTransactionHashesMut::new(self)
     }
 
-    /// Returns an instance of BlockTransactions with the Uncle special case.
-    #[inline]
-    pub const fn uncle() -> Self {
-        Self::Uncle
-    }
-
     /// Returns the number of transactions.
     #[inline]
     pub fn len(&self) -> usize {
@@ -232,7 +189,7 @@ impl BlockTransactions {
 
 /// An iterator over the transaction hashes of a block.
 ///
-/// See [`BlockTransactions::hashes`].
+/// See [`TransactionList::hashes`].
 #[derive(Clone, Debug)]
 pub struct BlockTransactionHashes<'a>(BlockTransactionHashesInner<'a>);
 
@@ -245,11 +202,11 @@ enum BlockTransactionHashesInner<'a> {
 
 impl<'a> BlockTransactionHashes<'a> {
     #[inline]
-    fn new(txs: &'a BlockTransactions) -> Self {
+    fn new(txs: &'a TransactionList<Transaction>) -> Self {
         Self(match txs {
-            BlockTransactions::Hashes(txs) => BlockTransactionHashesInner::Hashes(txs.iter()),
-            BlockTransactions::Full(txs) => BlockTransactionHashesInner::Full(txs.iter()),
-            BlockTransactions::Uncle => BlockTransactionHashesInner::Uncle,
+            TransactionList::Hashes(txs) => BlockTransactionHashesInner::Hashes(txs.iter()),
+            TransactionList::Full(txs) => BlockTransactionHashesInner::Full(txs.iter()),
+            TransactionList::Uncle => BlockTransactionHashesInner::Uncle,
         })
     }
 }
@@ -302,7 +259,7 @@ impl<'a> std::iter::FusedIterator for BlockTransactionHashes<'a> {}
 
 /// An Iterator over the transaction hashes of a block.
 ///
-/// See [`BlockTransactions::hashes_mut`].
+/// See [`TransactionList::hashes_mut`].
 #[derive(Debug)]
 pub struct BlockTransactionHashesMut<'a>(BlockTransactionHashesInnerMut<'a>);
 
@@ -315,13 +272,11 @@ enum BlockTransactionHashesInnerMut<'a> {
 
 impl<'a> BlockTransactionHashesMut<'a> {
     #[inline]
-    fn new(txs: &'a mut BlockTransactions) -> Self {
+    fn new(txs: &'a mut TransactionList<Transaction>) -> Self {
         Self(match txs {
-            BlockTransactions::Hashes(txs) => {
-                BlockTransactionHashesInnerMut::Hashes(txs.iter_mut())
-            }
-            BlockTransactions::Full(txs) => BlockTransactionHashesInnerMut::Full(txs.iter_mut()),
-            BlockTransactions::Uncle => BlockTransactionHashesInnerMut::Uncle,
+            TransactionList::Hashes(txs) => BlockTransactionHashesInnerMut::Hashes(txs.iter_mut()),
+            TransactionList::Full(txs) => BlockTransactionHashesInnerMut::Full(txs.iter_mut()),
+            TransactionList::Uncle => BlockTransactionHashesInnerMut::Uncle,
         })
     }
 }
@@ -378,9 +333,9 @@ impl<'a> std::iter::FusedIterator for BlockTransactionHashesMut<'a> {}
 /// response should include full transaction objects or just the hashes.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BlockTransactionsKind {
-    /// Only include hashes: [BlockTransactions::Hashes]
+    /// Only include hashes: [TransactionList::Hashes]
     Hashes,
-    /// Include full transaction objects: [BlockTransactions::Full]
+    /// Include full transaction objects: [TransactionList::Full]
     Full,
 }
 
@@ -1182,10 +1137,9 @@ mod tests {
                 parent_beacon_block_root: None,
             },
             uncles: vec![B256::with_last_byte(17)],
-            transactions: BlockTransactions::Hashes(vec![B256::with_last_byte(18)]),
+            transactions: TransactionList::Hashes(vec![B256::with_last_byte(18)]),
             size: Some(U256::from(19)),
             withdrawals: Some(vec![]),
-            other: Default::default(),
         };
         let serialized = serde_json::to_string(&block).unwrap();
         assert_eq!(
@@ -1224,10 +1178,9 @@ mod tests {
                 parent_beacon_block_root: None,
             },
             uncles: vec![],
-            transactions: BlockTransactions::Uncle,
+            transactions: TransactionList::Uncle,
             size: Some(U256::from(19)),
             withdrawals: None,
-            other: Default::default(),
         };
         let serialized = serde_json::to_string(&block).unwrap();
         assert_eq!(
@@ -1266,10 +1219,9 @@ mod tests {
                 parent_beacon_block_root: None,
             },
             uncles: vec![B256::with_last_byte(17)],
-            transactions: BlockTransactions::Hashes(vec![B256::with_last_byte(18)]),
+            transactions: TransactionList::Hashes(vec![B256::with_last_byte(18)]),
             size: Some(U256::from(19)),
             withdrawals: None,
-            other: Default::default(),
         };
         let serialized = serde_json::to_string(&block).unwrap();
         assert_eq!(

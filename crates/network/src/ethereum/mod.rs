@@ -1,6 +1,7 @@
-use crate::{Network, ReceiptResponse};
+use crate::{Block, Header, Network, ReceiptResponse, Transaction};
 
 mod builder;
+use alloy_primitives::U256;
 pub(crate) use builder::build_unsigned;
 
 mod signer;
@@ -28,6 +29,8 @@ impl Network for Ethereum {
     type ReceiptResponse = alloy_rpc_types::TransactionReceipt;
 
     type HeaderResponse = alloy_rpc_types::Header;
+
+    type BlockResponse = alloy_rpc_types::Block;
 }
 
 impl ReceiptResponse for alloy_rpc_types::TransactionReceipt {
@@ -35,3 +38,25 @@ impl ReceiptResponse for alloy_rpc_types::TransactionReceipt {
         self.contract_address
     }
 }
+
+impl Block<Ethereum> for alloy_rpc_types::Block {
+    fn header(&self) -> &alloy_rpc_types::Header {
+        &self.header
+    }
+
+    fn transactions(&self) -> &crate::TransactionList<alloy_rpc_types::Transaction> {
+        &self.transactions
+    }
+}
+
+impl Header for alloy_rpc_types::Header {
+    fn base_fee_per_gas(&self) -> Option<U256> {
+        self.base_fee_per_gas
+    }
+
+    fn next_block_blob_fee(&self) -> Option<u128> {
+        self.next_block_blob_fee()
+    }
+}
+
+impl Transaction for alloy_rpc_types::Transaction {}

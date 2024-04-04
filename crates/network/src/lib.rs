@@ -17,9 +17,10 @@
 
 use alloy_eips::eip2718::Eip2718Envelope;
 use alloy_json_rpc::RpcObject;
-use alloy_primitives::{Address, B256};
+use alloy_primitives::{Address, U256};
 
 mod transaction;
+use alloy_rpc_types::TransactionList;
 pub use transaction::{
     BuilderResult, NetworkSigner, TransactionBuilder, TransactionBuilderError, TxSigner,
     TxSignerSync,
@@ -33,24 +34,25 @@ pub use any::AnyNetwork;
 
 pub use alloy_eips::eip2718;
 
-/// A list of transactions, either hydrated or hashes.
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-#[serde(untagged)]
-pub enum TransactionList<T> {
-    /// Hashes only.
-    Hashes(Vec<B256>),
-    /// Hydrated tx objects.
-    Hydrated(Vec<T>),
-    /// Special case for uncle response
-    Uncled,
+/// A transaction.
+pub trait Transaction {}
+
+/// A header.
+pub trait Header {
+    /// Base fee per unit of gas (if past London)
+    fn base_fee_per_gas(&self) -> Option<U256>;
+    /// Returns the blob fee for the next block according to the EIP-4844 spec.
+    ///
+    /// Returns `None` if `excess_blob_gas` is None.
+    fn next_block_blob_fee(&self) -> Option<u128>;
 }
 
-/// A block response
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-pub struct BlockResponse<N: Network> {
-    #[serde(flatten)]
-    header: N::HeaderResponse,
-    transactions: TransactionList<N::TransactionResponse>,
+/// A block.
+pub trait Block<N: Network> {
+    /// Header of the block.
+    fn header(&self) -> &N::HeaderResponse;
+    /// Block transactions.
+    fn transactions(&self) -> &TransactionList<N::TransactionResponse>;
 }
 
 /// A receipt response.
@@ -87,10 +89,12 @@ pub trait Network: Clone + Copy + Sized + Send + Sync + 'static {
     /// The JSON body of a transaction request.
     type TransactionRequest: RpcObject + TransactionBuilder<Self> + std::fmt::Debug;
     /// The JSON body of a transaction response.
-    type TransactionResponse: RpcObject;
+    type TransactionResponse: RpcObject + Transaction;
     /// The JSON body of a transaction receipt.
     type ReceiptResponse: RpcObject + ReceiptResponse;
     /// The JSON body of a header response, as flattened into
     /// [`BlockResponse`].
-    type HeaderResponse: RpcObject;
+    type HeaderResponse: RpcObject + Header;
+    /// The JSON body of a block response
+    type BlockResponse: RpcObject + Block<Self>;
 }
