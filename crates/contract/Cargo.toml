@@ -28,6 +28,8 @@ thiserror.workspace = true
 
 alloy-pubsub = { workspace = true, optional = true }
 
+alloy-chains.workspace = true
+
 [dev-dependencies]
 alloy-rpc-client = { workspace = true, features = ["pubsub", "ws"] }
 alloy-transport-http.workspace = true
@@ -38,3 +40,4 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [features]
 pubsub = ["alloy-provider/pubsub", "dep:alloy-pubsub"]
+multicall = ["alloy-sol-types/json"]

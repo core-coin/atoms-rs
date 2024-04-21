@@ -33,3 +33,9 @@ pub fn http_provider(url: &str) -> ReqwestProvider<Ethereum> {
     let http = Http::<Client>::new(url);
     ReqwestProvider::new(RpcClient::new(http, true))
 }
+
+#[allow(unused, unreachable_pub)]
+pub fn spawn_anvil_fork(rpc_url: &str) -> (ReqwestProvider<Ethereum>, AnvilInstance) {
+    let anvil = Anvil::new().fork(rpc_url).try_spawn().expect("could not spawn forked anvil");
+    (anvil_http_provider(&anvil), anvil)
+}

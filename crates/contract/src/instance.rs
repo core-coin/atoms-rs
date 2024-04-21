@@ -75,6 +75,22 @@ impl<T, P: Clone, N> ContractInstance<T, &P, N> {
     }
 }
 
+impl<T: Transport + Clone, P: Provider<T, N> + Clone, N: Network> ContractInstance<T, P, N> {
+    /// Returns a transaction builder for the provided function name, using a cloned provider.
+    ///
+    /// If there are multiple functions with the same name due to overloading, consider using
+    /// the [`ContractInstance::function_from_selector`] method instead, since this will use the
+    /// first match.
+    pub fn function_with_cloned_provider(
+        &self,
+        name: &str,
+        args: &[DynSolValue],
+    ) -> Result<CallBuilder<T, P, Function, N>> {
+        let function = self.interface.get_from_name(name)?;
+        CallBuilder::new_dyn(self.provider.clone(), function, args, &self.address)
+    }
+}
+
 impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P, N> {
     /// Returns a transaction builder for the provided function name.
     ///
@@ -87,7 +103,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P,
         args: &[DynSolValue],
     ) -> Result<CallBuilder<T, &P, Function, N>> {
         let function = self.interface.get_from_name(name)?;
-        CallBuilder::new_dyn(&self.provider, function, args)
+        CallBuilder::new_dyn(&self.provider, function, args, &self.address)
     }
 
     /// Returns a transaction builder for the provided function selector.
@@ -97,7 +113,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P,
         args: &[DynSolValue],
     ) -> Result<CallBuilder<T, &P, Function, N>> {
         let function = self.interface.get_from_selector(selector)?;
-        CallBuilder::new_dyn(&self.provider, function, args)
+        CallBuilder::new_dyn(&self.provider, function, args, &self.address)
     }
 
     /// Returns an [`Event`] builder with the provided filter.
