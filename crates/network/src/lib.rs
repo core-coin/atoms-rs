@@ -70,13 +70,13 @@ pub trait Network: Debug + Clone + Copy + Sized + Send + Sync + 'static {
         + 'static;
 
     /// The network transaction envelope type.
-    type TxEnvelope: Eip2718Envelope + Debug;
+    type TxEnvelope: Eip2718Envelope<Self::TxType> + Debug;
 
     /// An enum over the various transaction types.
     type UnsignedTx: From<Self::TxEnvelope>;
 
     /// The network receipt envelope type.
-    type ReceiptEnvelope: Eip2718Envelope + TxReceipt;
+    type ReceiptEnvelope: Eip2718Envelope<Self::TxType> + TxReceipt;
 
     /// The network header type.
     type Header;
