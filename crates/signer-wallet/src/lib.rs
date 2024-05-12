@@ -15,7 +15,7 @@
 #![deny(unused_must_use, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use alloy_consensus::SignableTransaction;
+use alloy_consensus::{SignableTransaction, TxType};
 use alloy_network::{TxSigner, TxSignerSync};
 use alloy_primitives::{Address, ChainId, Signature, B256};
 use alloy_signer::{sign_transaction_with_chain_id, Result, Signer, SignerSync};
@@ -118,11 +118,7 @@ impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)>> SignerSync for Wallet<D> 
     #[inline]
     fn sign_hash_sync(&self, hash: &B256) -> Result<Signature> {
         let (recoverable_sig, recovery_id) = self.signer.sign_prehash(hash.as_ref())?;
-        let mut sig = Signature::from_signature_and_parity(recoverable_sig, recovery_id)?;
-        if let Some(chain_id) = self.chain_id {
-            sig = sig.with_chain_id(chain_id);
-        }
-        Ok(sig)
+        Ok(Signature::from_signature_and_parity(recoverable_sig, recovery_id)?)
     }
 
     #[inline]
