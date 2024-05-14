@@ -1,5 +1,28 @@
 # Alloy
 
+Crates used in Core or that are used by other crates
+
+- [ ] consensus
+- [ ] eips
+- [ ] genesis - in work (Misha)
+- [ ] json-rpc
+- [ ] network
+- [ ] node-bindings
+- [ ] provider
+- [ ] pubsub
+- [ ] rpc-client
+- [ ] rpc-types
+- [ ] rpc-types-anvil
+- [ ] rpc-types-engine
+- [ ] rpc-types-trace
+- [ ] serde
+- [ ] signer
+- [ ] signer-wallet
+- [ ] transport
+- [ ] transport-http
+- [ ] transport-ipc
+- [ ] transport-ws
+
 Alloy connects applications to blockchains.
 
 Alloy is a rewrite of [`ethers-rs`] from the ground up, with exciting new
