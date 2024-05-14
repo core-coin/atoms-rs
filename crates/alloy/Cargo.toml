@@ -160,7 +160,6 @@ sol-types = ["alloy-core/sol-types"]
 
 tiny-keccak = ["alloy-core/tiny-keccak"]
 native-keccak = ["alloy-core/native-keccak"]
-asm-keccak = ["alloy-core/asm-keccak"]
 
 postgres = ["alloy-core/postgres"]
 getrandom = ["alloy-core/getrandom"]

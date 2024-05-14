@@ -1,6 +1,6 @@
 [package]
 name = "alloy-genesis"
-description = "Ethereum genesis file definitions"
+description = "Core Blockchain genesis file definitions"
 
 version.workspace = true
 edition.workspace = true
