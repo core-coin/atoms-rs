@@ -4,9 +4,9 @@ Crates used in Core or that are used by other crates
 
 - [ ] consensus
 - [ ] eips
-- [ ] genesis - in work (Misha)
+- [x] genesis - in work (Misha)
 - [ ] json-rpc
-- [ ] network
+- [ ] network - in work (Misha)
 - [ ] node-bindings
 - [ ] provider
 - [ ] pubsub
