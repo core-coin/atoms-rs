@@ -30,3 +30,4 @@ tokio.workspace = true
 
 [features]
 k256 = ["alloy-primitives/k256", "alloy-consensus/k256"]
+typed_tx = []

@@ -2,16 +2,16 @@ use crate::{
     BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
 };
 use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
-use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
-    fn chain_id(&self) -> Option<ChainId> {
-        self.chain_id
+    fn network_id(&self) -> Option<ChainId> {
+        self.network_id
     }
 
-    fn set_chain_id(&mut self, chain_id: ChainId) {
-        self.chain_id = Some(chain_id);
+    fn set_network_id(&mut self, network_id: ChainId) {
+        self.network_id = Some(network_id);
     }
 
     fn nonce(&self) -> Option<u64> {
@@ -30,11 +30,11 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         self.input.input = Some(input.into());
     }
 
-    fn from(&self) -> Option<Address> {
+    fn from(&self) -> Option<IcanAddress> {
         self.from
     }
 
-    fn set_from(&mut self, from: Address) {
+    fn set_from(&mut self, from: IcanAddress) {
         self.from = Some(from);
     }
 
@@ -58,63 +58,74 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         self.value = Some(value)
     }
 
-    fn gas_price(&self) -> Option<u128> {
-        self.gas_price
+    fn energy_price(&self) -> Option<u128> {
+        self.energy_price
     }
 
-    fn set_gas_price(&mut self, gas_price: u128) {
-        self.gas_price = Some(gas_price);
+    fn set_energy_price(&mut self, energy_price: u128) {
+        self.energy_price = Some(energy_price);
     }
 
+    fn energy_limit(&self) -> Option<u128> {
+        self.gas
+    }
+
+    fn set_energy_limit(&mut self, energy_limit: u128) {
+        self.gas = Some(energy_limit);
+    }
+
+    #[cfg(feature = "typed_tx")]
     fn max_fee_per_gas(&self) -> Option<u128> {
         self.max_fee_per_gas
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_gas(&mut self, max_fee_per_gas: u128) {
         self.max_fee_per_gas = Some(max_fee_per_gas);
     }
 
+    #[cfg(feature = "typed_tx")]
     fn max_priority_fee_per_gas(&self) -> Option<u128> {
         self.max_priority_fee_per_gas
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_priority_fee_per_gas(&mut self, max_priority_fee_per_gas: u128) {
         self.max_priority_fee_per_gas = Some(max_priority_fee_per_gas);
     }
 
+    #[cfg(feature = "typed_tx")]
     fn max_fee_per_blob_gas(&self) -> Option<u128> {
         self.max_fee_per_blob_gas
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128) {
         self.max_fee_per_blob_gas = Some(max_fee_per_blob_gas)
     }
 
-    fn gas_limit(&self) -> Option<u128> {
-        self.gas
-    }
-
-    fn set_gas_limit(&mut self, gas_limit: u128) {
-        self.gas = Some(gas_limit);
-    }
-
+    #[cfg(feature = "typed_tx")]
     fn access_list(&self) -> Option<&AccessList> {
         self.access_list.as_ref()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_access_list(&mut self, access_list: AccessList) {
         self.access_list = Some(access_list);
     }
 
+    #[cfg(feature = "typed_tx")]
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
         self.sidecar.as_ref()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
         self.sidecar = Some(sidecar);
         self.populate_blob_hashes();
     }
 
+    #[cfg(feature = "typed_tx")]
     fn complete_type(&self, ty: TxType) -> Result<(), Vec<&'static str>> {
         match ty {
             TxType::Legacy => self.complete_legacy(),
@@ -137,28 +148,37 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
         // chain_id and from may be none.
         let common = self.gas.is_some() && self.nonce.is_some();
+        let legacy = self.energy_price.is_some();
 
-        let legacy = self.gas_price.is_some();
-        let eip2930 = legacy && self.access_list().is_some();
+        #[cfg(feature = "typed_tx")]
+        {
+            let eip2930 = legacy && self.access_list().is_some();
+            let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();
+            let eip4844 = eip1559 && self.sidecar.is_some() && self.to.is_some();
+            common && (legacy || eip2930 || eip1559 || eip4844)
+        }
 
-        let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();
-
-        let eip4844 = eip1559 && self.sidecar.is_some() && self.to.is_some();
-        common && (legacy || eip2930 || eip1559 || eip4844)
+        common && legacy
     }
 
+    #[cfg(feature = "typed_tx")]
     fn output_tx_type(&self) -> TxType {
         self.preferred_type()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn output_tx_type_checked(&self) -> Option<TxType> {
         self.buildable_type()
     }
 
     fn prep_for_submission(&mut self) {
         self.transaction_type = Some(self.preferred_type() as u8);
-        self.trim_conflicting_keys();
-        self.populate_blob_hashes();
+
+        #[cfg(feature = "typed_tx")]
+        {
+            self.trim_conflicting_keys();
+            self.populate_blob_hashes();
+        }
     }
 
     fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
@@ -205,7 +225,7 @@ mod tests {
     fn test_4844_when_sidecar() {
         let request = TransactionRequest::default()
             .with_nonce(1)
-            .with_gas_limit(0)
+            .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
             .with_to(Address::ZERO)
@@ -225,7 +245,7 @@ mod tests {
     fn test_2930_when_access_list() {
         let request = TransactionRequest::default()
             .with_nonce(1)
-            .with_gas_limit(0)
+            .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
             .with_to(Address::ZERO)
@@ -241,7 +261,7 @@ mod tests {
     fn test_default_to_1559() {
         let request = TransactionRequest::default()
             .with_nonce(1)
-            .with_gas_limit(0)
+            .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
             .with_to(Address::ZERO);
@@ -268,7 +288,7 @@ mod tests {
 
     #[test]
     fn test_invalid_legacy_fields() {
-        let request = TransactionRequest::default().with_gas_price(0);
+        let request = TransactionRequest::default().with_energy_price(0);
 
         let error = request.clone().build_unsigned().unwrap_err();
 
@@ -306,7 +326,7 @@ mod tests {
     fn test_invalid_2930_fields() {
         let request = TransactionRequest::default()
             .with_access_list(AccessList::default())
-            .with_gas_price(Default::default());
+            .with_energy_price(Default::default());
 
         let error = request.clone().build_unsigned().unwrap_err();
 

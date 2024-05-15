@@ -1,7 +1,7 @@
 use super::signer::NetworkSigner;
 use crate::Network;
 use alloy_consensus::BlobTransactionSidecar;
-use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_rpc_types::AccessList;
 use alloy_sol_types::SolCall;
 use futures_utils_wasm::impl_future;
@@ -51,15 +51,15 @@ impl<N: Network> TransactionBuilderError<N> {
 /// Transaction builders should be able to construct all available transaction types on a given
 /// network.
 pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'static {
-    /// Get the chain ID for the transaction.
-    fn chain_id(&self) -> Option<ChainId>;
+    /// Get the network ID for the transaction.
+    fn network_id(&self) -> Option<ChainId>;
 
-    /// Set the chain ID for the transaction.
-    fn set_chain_id(&mut self, chain_id: ChainId);
+    /// Set the network ID for the transaction.
+    fn set_network_id(&mut self, chain_id: ChainId);
 
-    /// Builder-pattern method for setting the chain ID.
-    fn with_chain_id(mut self, chain_id: alloy_primitives::ChainId) -> Self {
-        self.set_chain_id(chain_id);
+    /// Builder-pattern method for setting the network ID.
+    fn with_network_id(mut self, network_id: alloy_primitives::ChainId) -> Self {
+        self.set_network_id(chain_id);
         self
     }
 
@@ -88,13 +88,13 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Get the sender for the transaction.
-    fn from(&self) -> Option<Address>;
+    fn from(&self) -> Option<IcanAddress>;
 
     /// Set the sender for the transaction.
-    fn set_from(&mut self, from: Address);
+    fn set_from(&mut self, from: IcanAddress);
 
     /// Builder-pattern method for setting the sender.
-    fn with_from(mut self, from: Address) -> Self {
+    fn with_from(mut self, from: IcanAddress) -> Self {
         self.set_from(from);
         self
     }
@@ -115,7 +115,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Get the recipient for the transaction.
-    fn to(&self) -> Option<Address> {
+    fn to(&self) -> Option<IcanAddress> {
         if let Some(TxKind::Call(addr)) = self.kind() {
             return Some(addr);
         }
@@ -123,12 +123,12 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Set the recipient for the transaction.
-    fn set_to(&mut self, to: Address) {
+    fn set_to(&mut self, to: IcanAddress) {
         self.set_kind(to.into());
     }
 
     /// Builder-pattern method for setting the recipient.
-    fn with_to(mut self, to: Address) -> Self {
+    fn with_to(mut self, to: IcanAddress) -> Self {
         self.set_to(to);
         self
     }
@@ -177,7 +177,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     ///
     /// Returns `None` if the transaction is not a contract creation (the `to` field is set), or if
     /// the `from` or `nonce` fields are not set.
-    fn calculate_create_address(&self) -> Option<Address> {
+    fn calculate_create_address(&self) -> Option<IcanAddress> {
         if !self.kind().is_some_and(|to| to.is_create()) {
             return None;
         }
@@ -198,103 +198,121 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the legacy gas price for the transaction.
-    fn gas_price(&self) -> Option<u128>;
+    /// Get the legacy energy price for the transaction.
+    fn energy_price(&self) -> Option<u128>;
 
-    /// Set the legacy gas price for the transaction.
-    fn set_gas_price(&mut self, gas_price: u128);
+    /// Set the legacy energy price for the transaction.
+    fn set_energy_price(&mut self, energy_price: u128);
 
-    /// Builder-pattern method for setting the legacy gas price.
-    fn with_gas_price(mut self, gas_price: u128) -> Self {
-        self.set_gas_price(gas_price);
+    /// Builder-pattern method for setting the legacy energy price.
+    fn with_energy_price(mut self, energy_price: u128) -> Self {
+        self.set_energy_price(gas_price);
         self
     }
 
+    /// Get the energy limit for the transaction.
+    fn energy_limit(&self) -> Option<u128>;
+
+    /// Set the energy limit for the transaction.
+    fn set_energy_limit(&mut self, energy_limit: u128);
+
+    /// Builder-pattern method for setting the energy limit.
+    fn with_energy_limit(mut self, energy_limit: u128) -> Self {
+        self.set_energy_limit(energy_limit);
+        self
+    }
+
+    #[cfg(feature = "typed_tx")]
     /// Get the max fee per gas for the transaction.
     fn max_fee_per_gas(&self) -> Option<u128>;
 
+    #[cfg(feature = "typed_tx")]
     /// Set the max fee per gas  for the transaction.
     fn set_max_fee_per_gas(&mut self, max_fee_per_gas: u128);
 
+    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max fee per gas .
     fn with_max_fee_per_gas(mut self, max_fee_per_gas: u128) -> Self {
         self.set_max_fee_per_gas(max_fee_per_gas);
         self
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Get the max priority fee per gas for the transaction.
     fn max_priority_fee_per_gas(&self) -> Option<u128>;
 
+    #[cfg(feature = "typed_tx")]
     /// Set the max priority fee per gas for the transaction.
     fn set_max_priority_fee_per_gas(&mut self, max_priority_fee_per_gas: u128);
 
+    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max priority fee per gas.
     fn with_max_priority_fee_per_gas(mut self, max_priority_fee_per_gas: u128) -> Self {
         self.set_max_priority_fee_per_gas(max_priority_fee_per_gas);
         self
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Get the max fee per blob gas for the transaction.
     fn max_fee_per_blob_gas(&self) -> Option<u128>;
 
+    #[cfg(feature = "typed_tx")]
     /// Set the max fee per blob gas  for the transaction.
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128);
 
+    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max fee per blob gas .
     fn with_max_fee_per_blob_gas(mut self, max_fee_per_blob_gas: u128) -> Self {
         self.set_max_fee_per_blob_gas(max_fee_per_blob_gas);
         self
     }
 
-    /// Get the gas limit for the transaction.
-    fn gas_limit(&self) -> Option<u128>;
-
-    /// Set the gas limit for the transaction.
-    fn set_gas_limit(&mut self, gas_limit: u128);
-
-    /// Builder-pattern method for setting the gas limit.
-    fn with_gas_limit(mut self, gas_limit: u128) -> Self {
-        self.set_gas_limit(gas_limit);
-        self
-    }
-
+    #[cfg(feature = "typed_tx")]
     /// Get the EIP-2930 access list for the transaction.
     fn access_list(&self) -> Option<&AccessList>;
 
+    #[cfg(feature = "typed_tx")]
     /// Sets the EIP-2930 access list.
     fn set_access_list(&mut self, access_list: AccessList);
 
+    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting the access list.
     fn with_access_list(mut self, access_list: AccessList) -> Self {
         self.set_access_list(access_list);
         self
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Gets the EIP-4844 blob sidecar of the transaction.
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar>;
 
+    #[cfg(feature = "typed_tx")]
     /// Sets the EIP-4844 blob sidecar of the transaction.
     ///
     /// Note: This will also set the versioned blob hashes accordingly:
     /// [BlobTransactionSidecar::versioned_hashes]
     fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar);
 
+    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting the EIP-4844 blob sidecar of the transaction.
     fn with_blob_sidecar(mut self, sidecar: BlobTransactionSidecar) -> Self {
         self.set_blob_sidecar(sidecar);
         self
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Check if all necessary keys are present to build the specified type,
     /// returning a list of missing keys.
     fn complete_type(&self, ty: N::TxType) -> Result<(), Vec<&'static str>>;
 
+    #[cfg(feature = "typed_tx")]
     /// Check if all necessary keys are present to build the currently-preferred
     /// transaction type, returning a list of missing keys.
     fn complete_preferred(&self) -> Result<(), Vec<&'static str>> {
         self.complete_type(self.output_tx_type())
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Assert that the builder prefers a certain transaction type. This does
     /// not indicate that the builder is ready to build. This function uses a
     /// `dbg_assert_eq!` to check the builder status, and will have no affect
@@ -303,6 +321,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         debug_assert_eq!(self.output_tx_type(), ty);
     }
 
+    #[cfg(feature = "typed_tx")]
     /// Assert that the builder prefers a certain transaction type. This does
     /// not indicate that the builder is ready to build. This function uses a
     /// `dbg_assert_eq!` to check the builder status, and will have no affect
@@ -320,10 +339,12 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     /// a valid transaction.
     fn can_build(&self) -> bool;
 
+    #[cfg(feature = "typed_tx")]
     /// Returns the transaction type that this builder will attempt to build.
     /// This does not imply that the builder is ready to build.
     fn output_tx_type(&self) -> N::TxType;
 
+    #[cfg(feature = "typed_tx")]
     /// Returns the transaction type that this builder will build. `None` if
     /// the builder is not ready to build.
     fn output_tx_type_checked(&self) -> Option<N::TxType>;

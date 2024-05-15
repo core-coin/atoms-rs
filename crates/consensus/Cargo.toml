@@ -57,3 +57,4 @@ serde = [
     "dep:alloy-serde",
     "alloy-eips/serde",
 ]
+typed_tx = []

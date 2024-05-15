@@ -7,12 +7,12 @@ use alloy_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
 use crate::{any::AnyNetwork, BuildResult, Network, TransactionBuilder, TransactionBuilderError};
 
 impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
-    fn chain_id(&self) -> Option<alloy_primitives::ChainId> {
-        self.deref().chain_id()
+    fn network_id(&self) -> Option<alloy_primitives::ChainId> {
+        self.deref().network_id()
     }
 
-    fn set_chain_id(&mut self, chain_id: alloy_primitives::ChainId) {
-        self.deref_mut().set_chain_id(chain_id)
+    fn set_network_id(&mut self, chain_id: alloy_primitives::ChainId) {
+        self.deref_mut().set_network_id(chain_id)
     }
 
     fn nonce(&self) -> Option<u64> {
@@ -31,11 +31,11 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_input(input);
     }
 
-    fn from(&self) -> Option<alloy_primitives::Address> {
+    fn from(&self) -> Option<alloy_primitives::IcanAddress> {
         self.deref().from()
     }
 
-    fn set_from(&mut self, from: alloy_primitives::Address) {
+    fn set_from(&mut self, from: alloy_primitives::IcanAddress) {
         self.deref_mut().set_from(from);
     }
 
@@ -59,66 +59,87 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_value(value)
     }
 
-    fn gas_price(&self) -> Option<u128> {
-        self.deref().gas_price()
+    fn energy_price(&self) -> Option<u128> {
+        self.deref().energy_price()
     }
 
-    fn set_gas_price(&mut self, gas_price: u128) {
-        self.deref_mut().set_gas_price(gas_price);
+    fn set_energy_price(&mut self, gas_price: u128) {
+        self.deref_mut().set_energy_price(gas_price);
     }
 
+    fn energy_limit(&self) -> Option<u128> {
+        self.deref().energy_limit()
+    }
+
+    fn set_energy_limit(&mut self, energy_limit: u128) {
+        self.deref_mut().set_energy_limit(energy_limit);
+    }
+
+    #[cfg(feature = "typed_tx")]
     fn max_fee_per_gas(&self) -> Option<u128> {
         self.deref().max_fee_per_gas()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_gas(&mut self, max_fee_per_gas: u128) {
         self.deref_mut().set_max_fee_per_gas(max_fee_per_gas);
     }
 
+    #[cfg(feature = "typed_tx")]
     fn max_priority_fee_per_gas(&self) -> Option<u128> {
         self.deref().max_priority_fee_per_gas()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_priority_fee_per_gas(&mut self, max_priority_fee_per_gas: u128) {
         self.deref_mut().set_max_priority_fee_per_gas(max_priority_fee_per_gas);
     }
 
+    #[cfg(feature = "typed_tx")]
     fn max_fee_per_blob_gas(&self) -> Option<u128> {
         self.deref().max_fee_per_blob_gas()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128) {
         self.deref_mut().set_max_fee_per_blob_gas(max_fee_per_blob_gas)
     }
 
-    fn gas_limit(&self) -> Option<u128> {
-        self.deref().gas_limit()
-    }
-
-    fn set_gas_limit(&mut self, gas_limit: u128) {
-        self.deref_mut().set_gas_limit(gas_limit);
-    }
-
     /// Get the EIP-2930 access list for the transaction.
+    #[cfg(feature = "typed_tx")]
     fn access_list(&self) -> Option<&AccessList> {
         self.deref().access_list()
     }
 
     /// Sets the EIP-2930 access list.
+    #[cfg(feature = "typed_tx")]
     fn set_access_list(&mut self, access_list: AccessList) {
         self.deref_mut().set_access_list(access_list)
     }
 
+    #[cfg(feature = "typed_tx")]
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
         self.deref().blob_sidecar()
     }
 
+    #[cfg(feature = "typed_tx")]
     fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
         self.deref_mut().set_blob_sidecar(sidecar)
     }
 
+    #[cfg(feature = "typed_tx")]
     fn complete_type(&self, ty: <AnyNetwork as Network>::TxType) -> Result<(), Vec<&'static str>> {
         self.deref().complete_type(ty.try_into().map_err(|_| vec!["supported tx type"])?)
+    }
+
+    #[cfg(feature = "typed_tx")]
+    fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
+        self.deref().output_tx_type().into()
+    }
+
+    #[cfg(feature = "typed_tx")]
+    fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
+        self.deref().output_tx_type_checked().map(Into::into)
     }
 
     fn can_build(&self) -> bool {
@@ -127,14 +148,6 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
 
     fn can_submit(&self) -> bool {
         self.deref().can_submit()
-    }
-
-    fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
-        self.deref().output_tx_type().into()
-    }
-
-    fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
-        self.deref().output_tx_type_checked().map(Into::into)
     }
 
     fn prep_for_submission(&mut self) {

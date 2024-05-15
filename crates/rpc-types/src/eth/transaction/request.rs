@@ -25,7 +25,7 @@ pub struct TransactionRequest {
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u128_opt_via_ruint"
     )]
-    pub gas_price: Option<u128>,
+    pub energy_price: Option<u128>,
     /// The max base fee per gas the sender is willing to pay.
     #[serde(
         default,
@@ -73,7 +73,7 @@ pub struct TransactionRequest {
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u64_opt_via_ruint"
     )]
-    pub chain_id: Option<ChainId>,
+    pub network_id: Option<ChainId>,
     /// An EIP-2930 access list, which lowers cost for accessing accounts and storages in the list. See [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) for more information.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_list: Option<AccessList>,
@@ -161,7 +161,7 @@ impl TransactionRequest {
     /// The returns `gas_price` (legacy) if set or `max_fee_per_gas` (EIP1559)
     #[inline]
     pub fn fee_cap(&self) -> Option<u128> {
-        self.gas_price.or(self.max_fee_per_gas)
+        self.energy_price.or(self.max_fee_per_gas)
     }
 
     /// Populate the `blob_versioned_hashes` key, if a sidecar exists. No
@@ -212,9 +212,9 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_legacy.");
 
         TxLegacy {
-            chain_id: self.chain_id,
+            chain_id: self.network_id,
             nonce: self.nonce.expect("checked in complete_legacy"),
-            gas_price: self.gas_price.expect("checked in complete_legacy"),
+            gas_price: self.energy_price.expect("checked in complete_legacy"),
             gas_limit: self.gas.expect("checked in complete_legacy"),
             to: checked_to,
             value: self.value.unwrap_or_default(),
@@ -232,7 +232,7 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_1559.");
 
         TxEip1559 {
-            chain_id: self.chain_id.unwrap_or(1),
+            chain_id: self.network_id.unwrap_or(1),
             nonce: self.nonce.expect("checked in invalid_common_fields"),
             max_priority_fee_per_gas: self
                 .max_priority_fee_per_gas
@@ -256,9 +256,9 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_2930.");
 
         TxEip2930 {
-            chain_id: self.chain_id.unwrap_or(1),
+            chain_id: self.network_id.unwrap_or(1),
             nonce: self.nonce.expect("checked in complete_2930"),
-            gas_price: self.gas_price.expect("checked in complete_2930"),
+            gas_price: self.energy_price.expect("checked in complete_2930"),
             gas_limit: self.gas.expect("checked in complete_2930"),
             to: checked_to,
             value: self.value.unwrap_or_default(),
@@ -285,7 +285,7 @@ impl TransactionRequest {
         TxEip4844WithSidecar {
             sidecar: self.sidecar.expect("checked in complete_4844"),
             tx: TxEip4844 {
-                chain_id: self.chain_id.unwrap_or(1),
+                chain_id: self.network_id.unwrap_or(1),
                 nonce: self.nonce.expect("checked in complete_4844"),
                 gas_limit: self.gas.expect("checked in complete_4844"),
                 max_fee_per_gas: self.max_fee_per_gas.expect("checked in complete_4844"),
@@ -319,7 +319,7 @@ impl TransactionRequest {
     }
 
     fn check_legacy_fields(&self, missing: &mut Vec<&'static str>) {
-        if self.gas_price.is_none() {
+        if self.energy_price.is_none() {
             missing.push("gas_price");
         }
     }
@@ -356,12 +356,12 @@ impl TransactionRequest {
                 self.sidecar = None;
             }
             TxType::Eip1559 => {
-                self.gas_price = None;
+                self.energy_price = None;
                 self.blob_versioned_hashes = None;
                 self.sidecar = None;
             }
             TxType::Eip4844 => {
-                self.gas_price = None;
+                self.energy_price = None;
             }
         }
     }
@@ -376,9 +376,9 @@ impl TransactionRequest {
     pub const fn preferred_type(&self) -> TxType {
         if self.sidecar.is_some() || self.max_fee_per_blob_gas.is_some() {
             TxType::Eip4844
-        } else if self.access_list.is_some() && self.gas_price.is_some() {
+        } else if self.access_list.is_some() && self.energy_price.is_some() {
             TxType::Eip2930
-        } else if self.gas_price.is_some() {
+        } else if self.energy_price.is_some() {
             TxType::Legacy
         } else {
             TxType::Eip1559
@@ -600,12 +600,12 @@ impl From<TxLegacy> for TransactionRequest {
     fn from(tx: TxLegacy) -> Self {
         Self {
             to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
-            gas_price: Some(tx.gas_price),
+            energy_price: Some(tx.gas_price),
             gas: Some(tx.gas_limit),
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: tx.chain_id,
+            network_id: tx.chain_id,
             transaction_type: Some(0),
             ..Default::default()
         }
@@ -616,12 +616,12 @@ impl From<TxEip2930> for TransactionRequest {
     fn from(tx: TxEip2930) -> Self {
         Self {
             to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
-            gas_price: Some(tx.gas_price),
+            energy_price: Some(tx.gas_price),
             gas: Some(tx.gas_limit),
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             transaction_type: Some(1),
             ..Default::default()
@@ -639,7 +639,7 @@ impl From<TxEip1559> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             transaction_type: Some(2),
             ..Default::default()
@@ -658,7 +658,7 @@ impl From<TxEip4844> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             transaction_type: Some(3),
@@ -680,7 +680,7 @@ impl From<TxEip4844WithSidecar> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             sidecar: Some(sidecar),
@@ -847,11 +847,11 @@ mod tests {
 
         let chain_id_as_num = format!(r#"{{"chainId": {} }}"#, chain_id);
         let req1 = serde_json::from_str::<TransactionRequest>(&chain_id_as_num).unwrap();
-        assert_eq!(req1.chain_id.unwrap(), chain_id);
+        assert_eq!(req1.network_id.unwrap(), chain_id);
 
         let chain_id_as_hex = format!(r#"{{"chainId": "0x{:x}" }}"#, chain_id);
         let req2 = serde_json::from_str::<TransactionRequest>(&chain_id_as_hex).unwrap();
-        assert_eq!(req2.chain_id.unwrap(), chain_id);
+        assert_eq!(req2.network_id.unwrap(), chain_id);
     }
 
     #[test]
