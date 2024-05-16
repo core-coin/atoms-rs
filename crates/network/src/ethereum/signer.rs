@@ -122,17 +122,14 @@ where
                 let sig = self.sign_transaction_inner(sender, &mut t).await?;
                 Ok(t.into_signed(sig).into())
             }
-            #[cfg(feature = "typed_tx")]
             TypedTransaction::Eip2930(mut t) => {
                 let sig = self.sign_transaction_inner(sender, &mut t).await?;
                 Ok(t.into_signed(sig).into())
             }
-            #[cfg(feature = "typed_tx")]
             TypedTransaction::Eip1559(mut t) => {
                 let sig = self.sign_transaction_inner(sender, &mut t).await?;
                 Ok(t.into_signed(sig).into())
             }
-            #[cfg(feature = "typed_tx")]
             TypedTransaction::Eip4844(mut t) => {
                 let sig = self.sign_transaction_inner(sender, &mut t).await?;
                 Ok(t.into_signed(sig).into())

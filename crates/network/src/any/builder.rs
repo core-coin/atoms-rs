@@ -59,14 +59,6 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_value(value)
     }
 
-    fn energy_price(&self) -> Option<u128> {
-        self.deref().energy_price()
-    }
-
-    fn set_energy_price(&mut self, gas_price: u128) {
-        self.deref_mut().set_energy_price(gas_price);
-    }
-
     fn energy_limit(&self) -> Option<u128> {
         self.deref().energy_limit()
     }
@@ -75,69 +67,64 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_energy_limit(energy_limit);
     }
 
-    #[cfg(feature = "typed_tx")]
     fn max_fee_per_gas(&self) -> Option<u128> {
         self.deref().max_fee_per_gas()
     }
 
-    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_gas(&mut self, max_fee_per_gas: u128) {
         self.deref_mut().set_max_fee_per_gas(max_fee_per_gas);
     }
 
-    #[cfg(feature = "typed_tx")]
     fn max_priority_fee_per_gas(&self) -> Option<u128> {
         self.deref().max_priority_fee_per_gas()
     }
 
-    #[cfg(feature = "typed_tx")]
     fn set_max_priority_fee_per_gas(&mut self, max_priority_fee_per_gas: u128) {
         self.deref_mut().set_max_priority_fee_per_gas(max_priority_fee_per_gas);
     }
 
-    #[cfg(feature = "typed_tx")]
     fn max_fee_per_blob_gas(&self) -> Option<u128> {
         self.deref().max_fee_per_blob_gas()
     }
 
-    #[cfg(feature = "typed_tx")]
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128) {
         self.deref_mut().set_max_fee_per_blob_gas(max_fee_per_blob_gas)
     }
 
+    fn energy_price(&self) -> Option<u128> {
+        self.deref().energy_price()
+    }
+
+    fn set_energy_price(&mut self, gas_price: u128) {
+        self.deref_mut().set_energy_price(gas_price);
+    }
+
     /// Get the EIP-2930 access list for the transaction.
-    #[cfg(feature = "typed_tx")]
     fn access_list(&self) -> Option<&AccessList> {
         self.deref().access_list()
     }
 
     /// Sets the EIP-2930 access list.
-    #[cfg(feature = "typed_tx")]
     fn set_access_list(&mut self, access_list: AccessList) {
         self.deref_mut().set_access_list(access_list)
     }
 
-    #[cfg(feature = "typed_tx")]
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
         self.deref().blob_sidecar()
     }
 
-    #[cfg(feature = "typed_tx")]
     fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
         self.deref_mut().set_blob_sidecar(sidecar)
     }
 
-    #[cfg(feature = "typed_tx")]
     fn complete_type(&self, ty: <AnyNetwork as Network>::TxType) -> Result<(), Vec<&'static str>> {
         self.deref().complete_type(ty.try_into().map_err(|_| vec!["supported tx type"])?)
     }
 
-    #[cfg(feature = "typed_tx")]
     fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
         self.deref().output_tx_type().into()
     }
 
-    #[cfg(feature = "typed_tx")]
     fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
         self.deref().output_tx_type_checked().map(Into::into)
     }

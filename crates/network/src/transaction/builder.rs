@@ -222,97 +222,79 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Get the max fee per gas for the transaction.
     fn max_fee_per_gas(&self) -> Option<u128>;
 
-    #[cfg(feature = "typed_tx")]
     /// Set the max fee per gas  for the transaction.
     fn set_max_fee_per_gas(&mut self, max_fee_per_gas: u128);
 
-    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max fee per gas .
     fn with_max_fee_per_gas(mut self, max_fee_per_gas: u128) -> Self {
         self.set_max_fee_per_gas(max_fee_per_gas);
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Get the max priority fee per gas for the transaction.
     fn max_priority_fee_per_gas(&self) -> Option<u128>;
 
-    #[cfg(feature = "typed_tx")]
     /// Set the max priority fee per gas for the transaction.
     fn set_max_priority_fee_per_gas(&mut self, max_priority_fee_per_gas: u128);
 
-    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max priority fee per gas.
     fn with_max_priority_fee_per_gas(mut self, max_priority_fee_per_gas: u128) -> Self {
         self.set_max_priority_fee_per_gas(max_priority_fee_per_gas);
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Get the max fee per blob gas for the transaction.
     fn max_fee_per_blob_gas(&self) -> Option<u128>;
 
-    #[cfg(feature = "typed_tx")]
     /// Set the max fee per blob gas  for the transaction.
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128);
 
-    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting max fee per blob gas .
     fn with_max_fee_per_blob_gas(mut self, max_fee_per_blob_gas: u128) -> Self {
         self.set_max_fee_per_blob_gas(max_fee_per_blob_gas);
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Get the EIP-2930 access list for the transaction.
     fn access_list(&self) -> Option<&AccessList>;
 
-    #[cfg(feature = "typed_tx")]
     /// Sets the EIP-2930 access list.
     fn set_access_list(&mut self, access_list: AccessList);
 
-    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting the access list.
     fn with_access_list(mut self, access_list: AccessList) -> Self {
         self.set_access_list(access_list);
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Gets the EIP-4844 blob sidecar of the transaction.
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar>;
 
-    #[cfg(feature = "typed_tx")]
     /// Sets the EIP-4844 blob sidecar of the transaction.
     ///
     /// Note: This will also set the versioned blob hashes accordingly:
     /// [BlobTransactionSidecar::versioned_hashes]
     fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar);
 
-    #[cfg(feature = "typed_tx")]
     /// Builder-pattern method for setting the EIP-4844 blob sidecar of the transaction.
     fn with_blob_sidecar(mut self, sidecar: BlobTransactionSidecar) -> Self {
         self.set_blob_sidecar(sidecar);
         self
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Check if all necessary keys are present to build the specified type,
     /// returning a list of missing keys.
     fn complete_type(&self, ty: N::TxType) -> Result<(), Vec<&'static str>>;
 
-    #[cfg(feature = "typed_tx")]
     /// Check if all necessary keys are present to build the currently-preferred
     /// transaction type, returning a list of missing keys.
     fn complete_preferred(&self) -> Result<(), Vec<&'static str>> {
         self.complete_type(self.output_tx_type())
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Assert that the builder prefers a certain transaction type. This does
     /// not indicate that the builder is ready to build. This function uses a
     /// `dbg_assert_eq!` to check the builder status, and will have no affect
@@ -321,7 +303,6 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         debug_assert_eq!(self.output_tx_type(), ty);
     }
 
-    #[cfg(feature = "typed_tx")]
     /// Assert that the builder prefers a certain transaction type. This does
     /// not indicate that the builder is ready to build. This function uses a
     /// `dbg_assert_eq!` to check the builder status, and will have no affect
@@ -339,12 +320,10 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     /// a valid transaction.
     fn can_build(&self) -> bool;
 
-    #[cfg(feature = "typed_tx")]
     /// Returns the transaction type that this builder will attempt to build.
     /// This does not imply that the builder is ready to build.
     fn output_tx_type(&self) -> N::TxType;
 
-    #[cfg(feature = "typed_tx")]
     /// Returns the transaction type that this builder will build. `None` if
     /// the builder is not ready to build.
     fn output_tx_type_checked(&self) -> Option<N::TxType>;
