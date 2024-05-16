@@ -210,18 +210,6 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the energy limit for the transaction.
-    fn energy_limit(&self) -> Option<u128>;
-
-    /// Set the energy limit for the transaction.
-    fn set_energy_limit(&mut self, energy_limit: u128);
-
-    /// Builder-pattern method for setting the energy limit.
-    fn with_energy_limit(mut self, energy_limit: u128) -> Self {
-        self.set_energy_limit(energy_limit);
-        self
-    }
-
     /// Get the max fee per gas for the transaction.
     fn max_fee_per_gas(&self) -> Option<u128>;
 
@@ -255,6 +243,18 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     /// Builder-pattern method for setting max fee per blob gas .
     fn with_max_fee_per_blob_gas(mut self, max_fee_per_blob_gas: u128) -> Self {
         self.set_max_fee_per_blob_gas(max_fee_per_blob_gas);
+        self
+    }
+
+    /// Get the energy limit for the transaction.
+    fn energy_limit(&self) -> Option<u128>;
+
+    /// Set the energy limit for the transaction.
+    fn set_energy_limit(&mut self, energy_limit: u128);
+
+    /// Builder-pattern method for setting the energy limit.
+    fn with_energy_limit(mut self, energy_limit: u128) -> Self {
+        self.set_energy_limit(energy_limit);
         self
     }
 

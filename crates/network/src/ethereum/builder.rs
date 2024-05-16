@@ -66,14 +66,6 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         self.energy_price = Some(energy_price);
     }
 
-    fn energy_limit(&self) -> Option<u128> {
-        self.gas
-    }
-
-    fn set_energy_limit(&mut self, energy_limit: u128) {
-        self.gas = Some(energy_limit);
-    }
-
     fn max_fee_per_gas(&self) -> Option<u128> {
         self.max_fee_per_gas
     }
@@ -96,6 +88,14 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
     fn set_max_fee_per_blob_gas(&mut self, max_fee_per_blob_gas: u128) {
         self.max_fee_per_blob_gas = Some(max_fee_per_blob_gas)
+    }
+
+    fn energy_limit(&self) -> Option<u128> {
+        self.gas
+    }
+
+    fn set_energy_limit(&mut self, energy_limit: u128) {
+        self.gas = Some(energy_limit);
     }
 
     fn access_list(&self) -> Option<&AccessList> {

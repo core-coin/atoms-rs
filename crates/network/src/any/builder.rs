@@ -121,20 +121,20 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref().complete_type(ty.try_into().map_err(|_| vec!["supported tx type"])?)
     }
 
-    fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
-        self.deref().output_tx_type().into()
-    }
-
-    fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
-        self.deref().output_tx_type_checked().map(Into::into)
-    }
-
     fn can_build(&self) -> bool {
         self.deref().can_build()
     }
 
     fn can_submit(&self) -> bool {
         self.deref().can_submit()
+    }
+
+    fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
+        self.deref().output_tx_type().into()
+    }
+
+    fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
+        self.deref().output_tx_type_checked().map(Into::into)
     }
 
     fn prep_for_submission(&mut self) {
