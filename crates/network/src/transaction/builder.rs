@@ -1,7 +1,7 @@
 use super::signer::NetworkSigner;
 use crate::Network;
 use alloy_consensus::BlobTransactionSidecar;
-use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::AccessList;
 use alloy_sol_types::SolCall;
 use futures_utils_wasm::impl_future;
@@ -195,6 +195,18 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     /// Builder-pattern method for setting the value.
     fn with_value(mut self, value: U256) -> Self {
         self.set_value(value);
+        self
+    }
+
+    /// Get the signature for the transaction.
+    fn signature(&self) -> Option<B1368>;
+
+    /// Set the signature for the transaction.
+    fn set_signature(&mut self, signature: B1368);
+
+    /// Builder-pattern method for setting the signature.
+    fn with_signature(mut self, signature: B1368) -> Self {
+        self.set_signature(signature);
         self
     }
 

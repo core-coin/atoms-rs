@@ -59,6 +59,14 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_value(value)
     }
 
+    fn signature(&self) -> Option<alloy_primitives::B1368> {
+        self.deref().signature()
+    }
+
+    fn set_signature(&mut self, signature: alloy_primitives::B1368) {
+        self.deref_mut().set_signature(signature)
+    }
+
     fn energy_limit(&self) -> Option<u128> {
         self.deref().energy_limit()
     }

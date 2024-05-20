@@ -2,7 +2,7 @@ use crate::{
     BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
 };
 use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
-use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
@@ -56,6 +56,14 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
     fn set_value(&mut self, value: U256) {
         self.value = Some(value)
+    }
+
+    fn signature(&self) -> Option<B1368> {
+        self.signature
+    }
+
+    fn set_signature(&mut self, signature: B1368) {
+        self.signature = Some(signature)
     }
 
     fn energy_price(&self) -> Option<u128> {
@@ -128,7 +136,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         // value and data may be None. If they are, they will be set to default.
         // gas fields and nonce may be None, if they are, they will be populated
         // with default values by the RPC server
-        self.from.is_some()
+        self.from.is_some() && self.signature.is_some()
     }
 
     fn can_build(&self) -> bool {
