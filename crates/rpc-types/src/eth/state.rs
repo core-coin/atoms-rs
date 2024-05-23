@@ -1,11 +1,11 @@
 //! bindings for state overrides in eth_call
 
-use alloy_primitives::{Address, Bytes, B256, U256, U64};
+use alloy_primitives::{Bytes, IcanAddress, B256, U256, U64};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// A set of account overrides
-pub type StateOverride = HashMap<Address, AccountOverride>;
+pub type StateOverride = HashMap<IcanAddress, AccountOverride>;
 
 /// Custom account override used in call
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]

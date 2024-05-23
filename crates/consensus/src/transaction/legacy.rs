@@ -1,5 +1,5 @@
 use crate::{SignableTransaction, Signed, Transaction};
-use alloy_primitives::{keccak256, Bytes, ChainId, Signature, TxKind, U256};
+use alloy_primitives::{keccak256, Bytes, ChainId, Signature, TxKind, B1368, U256};
 use alloy_rlp::{length_of_length, BufMut, Decodable, Encodable, Header, Result};
 use core::mem;
 
@@ -12,34 +12,27 @@ use alloc::vec::Vec;
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct TxLegacy {
     /// Added as EIP-155: Simple replay attack protection
-    #[cfg_attr(
-        feature = "serde",
-        serde(
-            default,
-            with = "alloy_serde::u64_opt_via_ruint",
-            skip_serializing_if = "Option::is_none",
-        )
-    )]
-    pub chain_id: Option<ChainId>,
+    #[cfg_attr(feature = "serde", serde(default, with = "alloy_serde::u64_opt_via_ruint",))]
+    pub network_id: ChainId,
     /// A scalar value equal to the number of transactions sent by the sender; formally Tn.
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u64_via_ruint"))]
     pub nonce: u64,
     /// A scalar value equal to the number of
-    /// Wei to be paid per unit of gas for all computation
+    /// Ore to be paid per unit of energy for all computation
     /// costs incurred as a result of the execution of this transaction; formally Tp.
     ///
-    /// As ethereum circulation is around 120mil eth as of 2022 that is around
-    /// 120000000000000000000000000 wei we are safe to use u128 as its max number is:
+    /// As core circulation is around 120mil xcb as of 2022 that is around
+    /// 120000000000000000000000000 ore we are safe to use u128 as its max number is:
     /// 340282366920938463463374607431768211455
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
-    pub gas_price: u128,
+    pub energy_price: u128,
     /// A scalar value equal to the maximum
-    /// amount of gas that should be used in executing
+    /// amount of enerhy that should be used in executing
     /// this transaction. This is paid up-front, before any
     /// computation is done and may not be increased
     /// later; formally Tg.
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
-    pub gas_limit: u128,
+    pub energy_limit: u128,
     /// The 160-bit address of the message call’s recipient or, for a contract creation
     /// transaction, ∅, used here to denote the only member of B0 ; formally Tt.
     #[cfg_attr(feature = "serde", serde(default, skip_serializing_if = "TxKind::is_create"))]
@@ -79,8 +72,8 @@ impl TxLegacy {
     pub fn fields_len(&self) -> usize {
         let mut len = 0;
         len += self.nonce.length();
-        len += self.gas_price.length();
-        len += self.gas_limit.length();
+        len += self.energy_price.length();
+        len += self.energy_limit.length();
         len += self.to.length();
         len += self.value.length();
         len += self.input.0.length();
@@ -91,8 +84,8 @@ impl TxLegacy {
     /// eip155 fields.
     pub(crate) fn encode_fields(&self, out: &mut dyn BufMut) {
         self.nonce.encode(out);
-        self.gas_price.encode(out);
-        self.gas_limit.encode(out);
+        self.energy_price.encode(out);
+        self.energy_limit.encode(out);
         self.to.encode(out);
         self.value.encode(out);
         self.input.0.encode(out);
@@ -126,7 +119,7 @@ impl TxLegacy {
     pub(crate) fn encode_eip155_signing_fields(&self, out: &mut dyn BufMut) {
         // if this is a legacy transaction without a chain ID, it must be pre-EIP-155
         // and does not need to encode the chain ID for the signature hash encoding
-        if let Some(id) = self.chain_id {
+        if let Some(id) = self.network_id {
             // EIP-155 encodes the chain ID and two zeroes
             id.encode(out);
             0x00u8.encode(out);
@@ -137,7 +130,7 @@ impl TxLegacy {
     /// Outputs the length of EIP-155 fields. Only outputs a non-zero value for EIP-155 legacy
     /// transactions.
     pub(crate) fn eip155_fields_len(&self) -> usize {
-        if let Some(id) = self.chain_id {
+        if let Some(id) = self.network_id {
             // EIP-155 encodes the chain ID and two zeroes, so we add 2 to the length of the chain
             // ID to get the length of all 3 fields
             // len(chain_id) + (0x00) + (0x00)
@@ -169,7 +162,7 @@ impl TxLegacy {
 
         // extract chain id from signature
         let v = signature.v();
-        tx.chain_id = v.chain_id();
+        tx.network_id = v.chain_id();
 
         let signed = tx.into_signed(signature);
         if buf.len() + header.payload_length != original_len {
@@ -187,12 +180,12 @@ impl TxLegacy {
     pub(crate) fn decode_fields(data: &mut &[u8]) -> Result<Self> {
         Ok(Self {
             nonce: Decodable::decode(data)?,
-            gas_price: Decodable::decode(data)?,
-            gas_limit: Decodable::decode(data)?,
+            energy_price: Decodable::decode(data)?,
+            energy_limit: Decodable::decode(data)?,
             to: Decodable::decode(data)?,
             value: Decodable::decode(data)?,
             input: Decodable::decode(data)?,
-            chain_id: None,
+            network_id: None,
         })
     }
 }
@@ -211,7 +204,7 @@ impl Transaction for TxLegacy {
     }
 
     fn chain_id(&self) -> Option<ChainId> {
-        self.chain_id
+        self.network_id
     }
 
     fn nonce(&self) -> u64 {
@@ -219,17 +212,17 @@ impl Transaction for TxLegacy {
     }
 
     fn gas_limit(&self) -> u128 {
-        self.gas_limit
+        self.energy_limit
     }
 
     fn gas_price(&self) -> Option<u128> {
-        Some(self.gas_price)
+        Some(self.energy_price)
     }
 }
 
 impl SignableTransaction<Signature> for TxLegacy {
     fn set_chain_id(&mut self, chain_id: ChainId) {
-        self.chain_id = Some(chain_id);
+        self.network_id = Some(chain_id);
     }
 
     fn encode_for_signing(&self, out: &mut dyn BufMut) {
@@ -280,7 +273,7 @@ impl Decodable for TxLegacy {
 
         // If we still have data, it should be an eip-155 encoded chain_id
         if !data.is_empty() {
-            transaction.chain_id = Some(Decodable::decode(data)?);
+            transaction.network_id = Some(Decodable::decode(data)?);
             let _: U256 = Decodable::decode(data)?; // r
             let _: U256 = Decodable::decode(data)?; // s
         }

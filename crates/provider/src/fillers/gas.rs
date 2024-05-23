@@ -277,7 +277,7 @@ mod tests {
         let tx = tx.get_receipt().await.unwrap();
 
         assert_eq!(tx.effective_gas_price, 0x3b9aca00);
-        assert_eq!(tx.gas_used, 0x5208);
+        assert_eq!(tx.energy_used, 0x5208);
     }
 
     #[tokio::test]
@@ -299,7 +299,7 @@ mod tests {
 
         let receipt = tx.get_receipt().await.unwrap();
 
-        assert_eq!(receipt.gas_used, 0x5208);
+        assert_eq!(receipt.energy_used, 0x5208);
     }
 
     #[tokio::test]

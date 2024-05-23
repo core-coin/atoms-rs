@@ -6,8 +6,8 @@ use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
-    fn chain_id(&self) -> Option<ChainId> {
-        self.chain_id
+    fn network_id(&self) -> ChainId {
+        self.network_id
     }
 
     fn set_chain_id(&mut self, chain_id: ChainId) {
@@ -90,12 +90,12 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         self.max_fee_per_blob_gas = Some(max_fee_per_blob_gas)
     }
 
-    fn gas_limit(&self) -> Option<u128> {
-        self.gas
+    fn energy_limit(&self) -> Option<u128> {
+        self.energy
     }
 
-    fn set_gas_limit(&mut self, gas_limit: u128) {
-        self.gas = Some(gas_limit);
+    fn set_energy_limit(&mut self, energy_limit: u128) {
+        self.energy = Some(energy_limit);
     }
 
     fn access_list(&self) -> Option<&AccessList> {
@@ -136,8 +136,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         // values.
 
         // chain_id and from may be none.
-        let common = self.gas.is_some() && self.nonce.is_some();
-
+        let common = self.energy.is_some() && self.nonce.is_some();
         let legacy = self.gas_price.is_some();
         let eip2930 = legacy && self.access_list().is_some();
 

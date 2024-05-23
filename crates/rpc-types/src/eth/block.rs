@@ -7,7 +7,7 @@ pub use alloy_eips::{
     calc_blob_gasprice, calc_excess_blob_gas, BlockHashOrNumber, BlockId, BlockNumHash,
     BlockNumberOrTag, ForkBlock, RpcBlockHash,
 };
-use alloy_primitives::{Address, Bloom, Bytes, B256, B64, U256, U64};
+use alloy_primitives::{Address, Bloom, Bytes, IcanAddress, B256, B64, U256, U64};
 use serde::{ser::Error, Deserialize, Serialize, Serializer};
 use std::{collections::BTreeMap, ops::Deref};
 
@@ -59,7 +59,7 @@ pub struct Header {
     #[serde(rename = "sha3Uncles")]
     pub uncles_hash: B256,
     /// Alias of `author`
-    pub miner: Address,
+    pub miner: IcanAddress,
     /// State root hash
     pub state_root: B256,
     /// Transactions root hash
@@ -73,12 +73,12 @@ pub struct Header {
     /// Block number
     #[serde(default, with = "alloy_serde::num::u64_opt_via_ruint")]
     pub number: Option<u64>,
-    /// Gas Limit
+    /// Energy Limit
     #[serde(default, with = "alloy_serde::num::u128_via_ruint")]
-    pub gas_limit: u128,
-    /// Gas Used
+    pub energy_limit: u128,
+    /// Energy Used
     #[serde(default, with = "alloy_serde::num::u128_via_ruint")]
-    pub gas_used: u128,
+    pub energy_used: u128,
     /// Timestamp
     #[serde(default, with = "alloy_serde::num::u64_via_ruint")]
     pub timestamp: u64,
@@ -546,9 +546,9 @@ pub struct BlockOverrides {
     // Note: geth uses `time`, erigon uses `timestamp`
     #[serde(default, skip_serializing_if = "Option::is_none", alias = "timestamp")]
     pub time: Option<U64>,
-    /// Overrides the gas limit of the block.
+    /// Overrides the energy limit of the block.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub gas_limit: Option<U64>,
+    pub energy_limit: Option<U64>,
     /// Overrides the coinbase address of the block.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub coinbase: Option<Address>,
@@ -611,8 +611,8 @@ mod tests {
                 receipts_root: B256::with_last_byte(7),
                 withdrawals_root: Some(B256::with_last_byte(8)),
                 number: Some(9),
-                gas_used: 10,
-                gas_limit: 11,
+                energy_used: 10,
+                energy_limit: 11,
                 extra_data: Bytes::from(vec![1, 2, 3]),
                 logs_bloom: Bloom::default(),
                 timestamp: 12,
@@ -654,8 +654,8 @@ mod tests {
                 receipts_root: B256::with_last_byte(7),
                 withdrawals_root: Some(B256::with_last_byte(8)),
                 number: Some(9),
-                gas_used: 10,
-                gas_limit: 11,
+                energy_used: 10,
+                energy_limit: 11,
                 extra_data: Bytes::from(vec![1, 2, 3]),
                 logs_bloom: Bloom::default(),
                 timestamp: 12,
@@ -697,8 +697,8 @@ mod tests {
                 receipts_root: B256::with_last_byte(7),
                 withdrawals_root: None,
                 number: Some(9),
-                gas_used: 10,
-                gas_limit: 11,
+                energy_used: 10,
+                energy_limit: 11,
                 extra_data: Bytes::from(vec![1, 2, 3]),
                 logs_bloom: Bloom::default(),
                 timestamp: 12,

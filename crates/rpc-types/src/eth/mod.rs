@@ -23,7 +23,7 @@ pub use admin::NodeInfo;
 pub use alloy_eips::eip4895::Withdrawal;
 pub use block::*;
 pub use call::{Bundle, EthCallResponse, StateContext};
-pub use fee::{FeeHistory, TxGasAndReward};
+pub use fee::{FeeHistory, TxEnergyAndReward};
 pub use filter::*;
 pub use index::Index;
 pub use log::*;

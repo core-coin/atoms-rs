@@ -5,7 +5,7 @@ Crates used in Core or that are used by other crates
 - [ ] consensus
 - [ ] eips
 - [x] genesis - in work (Misha)
-- [ ] json-rpc
+- [ ] json-rpc - in work (Misha)
 - [ ] network - in work (Misha)
 - [ ] node-bindings
 - [ ] provider

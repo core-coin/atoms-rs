@@ -1,5 +1,5 @@
 use crate::{eth::log::Log as RpcLog, BlockNumberOrTag, Transaction};
-use alloy_primitives::{keccak256, Address, Bloom, BloomInput, B256, U256, U64};
+use alloy_primitives::{sha3, Address, Bloom, BloomInput, B256, U256, U64};
 use itertools::{EitherOrBoth::*, Itertools};
 use serde::{
     de::{DeserializeOwned, MapAccess, Visitor},
@@ -259,7 +259,7 @@ pub struct Filter {
     // https://eips.ethereum.org/EIPS/eip-234
     pub block_option: FilterBlockOption,
     /// Address
-    pub address: FilterSet<Address>,
+    pub address: FilterSet<IcanAddress>,
     /// Topics (maximum of 4)
     pub topics: [Topic; 4],
 }
@@ -408,14 +408,14 @@ impl Filter {
     /// Given the event signature in string form, it hashes it and adds it to the topics to monitor
     #[must_use]
     pub fn event(self, event_name: &str) -> Self {
-        let hash = keccak256(event_name.as_bytes());
+        let hash = sha3(event_name.as_bytes());
         self.event_signature(hash)
     }
 
     /// Hashes all event signatures and sets them as array to event_signature(topic0)
     #[must_use]
     pub fn events(self, events: impl IntoIterator<Item = impl AsRef<[u8]>>) -> Self {
-        let events = events.into_iter().map(|e| keccak256(e.as_ref())).collect::<Vec<_>>();
+        let events = events.into_iter().map(|e| sha3(e.as_ref())).collect::<Vec<_>>();
         self.event_signature(events)
     }
 
@@ -523,7 +523,7 @@ impl Serialize for Filter {
     }
 }
 
-type RawAddressFilter = ValueOrArray<Option<Address>>;
+type RawAddressFilter = ValueOrArray<Option<IcanAddress>>;
 type RawTopicsFilter = Vec<Option<ValueOrArray<Option<B256>>>>;
 
 impl<'de> Deserialize<'de> for Filter {
@@ -732,7 +732,7 @@ impl FilteredParams {
     }
 
     /// Returns the [BloomFilter] for the given address
-    pub fn address_filter(address: &FilterSet<Address>) -> BloomFilter {
+    pub fn address_filter(address: &FilterSet<IcanAddress>) -> BloomFilter {
         address.to_bloom_filter()
     }
 
@@ -812,7 +812,7 @@ impl FilteredParams {
     }
 
     /// Returns `true` if the filter matches the given address.
-    pub fn filter_address(&self, address: &Address) -> bool {
+    pub fn filter_address(&self, address: &IcanAddress) -> bool {
         self.filter.as_ref().map(|f| f.address.matches(address)).unwrap_or(true)
     }
 
@@ -1117,7 +1117,7 @@ mod tests {
         });
 
         let event = "ValueChanged(address,string,string)";
-        let t0 = keccak256(event.as_bytes());
+        let t0 = sha3(event.as_bytes());
         let addr: Address = "f817796F60D268A36a57b8D2dF1B97B14C0D0E1d".parse().unwrap();
         let filter = Filter::new();
 

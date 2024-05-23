@@ -219,8 +219,8 @@ mod test {
             let mut before = tx.clone();
             let sig = sign_dyn_tx_test(tx, chain_id).await?;
             if let Some(chain_id) = chain_id {
-                assert_eq!(tx.chain_id, Some(chain_id), "chain ID was not set");
-                before.chain_id = Some(chain_id);
+                assert_eq!(tx.network_id, Some(chain_id), "chain ID was not set");
+                before.network_id = Some(chain_id);
             }
             assert_eq!(*tx, before);
             Ok(sig)
@@ -249,40 +249,40 @@ mod test {
         let mut tx = TxLegacy {
             to: address!("F0109fC8DF283027b6285cc889F5aA624EaC1F55").into(),
             value: U256::from(1_000_000_000),
-            gas_limit: 2_000_000,
+            energy_limit: 2_000_000,
             nonce: 0,
-            gas_price: 21_000_000_000,
+            energy_price: 21_000_000_000,
             input: Default::default(),
-            chain_id: None,
+            network_id: None,
         };
         let sig_none = sign_tx_test(&mut tx, None).await.unwrap();
 
-        tx.chain_id = Some(1);
+        tx.network_id = Some(1);
         let sig_1 = sign_tx_test(&mut tx, None).await.unwrap();
         let expected = "c9cf86333bcb065d140032ecaab5d9281bde80f21b9687b3e94161de42d51895727a108a0b8d101465414033c3f705a9c7b826e596766046ee1183dbc8aeaa6825".parse().unwrap();
         assert_eq!(sig_1, expected);
         assert_ne!(sig_1, sig_none);
 
-        tx.chain_id = Some(2);
+        tx.network_id = Some(2);
         let sig_2 = sign_tx_test(&mut tx, None).await.unwrap();
         assert_ne!(sig_2, sig_1);
         assert_ne!(sig_2, sig_none);
 
         // Sets chain ID.
-        tx.chain_id = None;
+        tx.network_id = None;
         let sig_none_none = sign_tx_test(&mut tx, None).await.unwrap();
         assert_eq!(sig_none_none, sig_none);
 
-        tx.chain_id = None;
+        tx.network_id = None;
         let sig_none_1 = sign_tx_test(&mut tx, Some(1)).await.unwrap();
         assert_eq!(sig_none_1, sig_1);
 
-        tx.chain_id = None;
+        tx.network_id = None;
         let sig_none_2 = sign_tx_test(&mut tx, Some(2)).await.unwrap();
         assert_eq!(sig_none_2, sig_2);
 
         // Errors on mismatch.
-        tx.chain_id = Some(2);
+        tx.network_id = Some(2);
         let error = sign_tx_test(&mut tx, Some(1)).await.unwrap_err();
         let expected_error = alloy_signer::Error::TransactionChainIdMismatch { signer: 1, tx: 2 };
         assert_eq!(error.to_string(), expected_error.to_string());

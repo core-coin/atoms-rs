@@ -495,10 +495,10 @@ mod tests {
     #[cfg(feature = "serde")]
     fn test_serde_roundtrip_legacy() {
         let tx = TxLegacy {
-            chain_id: Some(1),
+            network_id: Some(1),
             nonce: 100,
-            gas_price: 3_000_000_000,
-            gas_limit: 50_000,
+            energy_price: 3_000_000_000,
+            energy_limit: 50_000,
             to: Address::default().into(),
             value: U256::from(10e18),
             input: Bytes::new(),

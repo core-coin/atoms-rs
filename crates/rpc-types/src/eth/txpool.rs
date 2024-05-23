@@ -1,7 +1,7 @@
 //! Types for the `txpool` namespace: <https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-txpool>
 
 use crate::Transaction;
-use alloy_primitives::{Address, U256};
+use alloy_primitives::{IcanAddress, U256};
 use serde::{
     de::{self, Deserializer, Visitor},
     Deserialize, Serialize,
@@ -12,13 +12,13 @@ use std::{collections::BTreeMap, fmt, str::FromStr};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TxpoolInspectSummary {
     /// Recipient (None when contract creation)
-    pub to: Option<Address>,
+    pub to: Option<IcanAddress>,
     /// Transferred value
     pub value: U256,
-    /// Gas amount
-    pub gas: u128,
-    /// Gas Price
-    pub gas_price: u128,
+    /// Energy amount
+    pub energy: u128,
+    /// Energy Price
+    pub energy_price: u128,
 }
 
 /// Visitor struct for TxpoolInspectSummary.
@@ -30,7 +30,7 @@ impl<'de> Visitor<'de> for TxpoolInspectSummaryVisitor {
     type Value = TxpoolInspectSummary;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("to: value wei + gasLimit gas × gas_price wei")
+        formatter.write_str("to: value wei + energyLimit energy × energy_price wei")
     }
 
     fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -43,29 +43,29 @@ impl<'de> Visitor<'de> for TxpoolInspectSummaryVisitor {
         }
         let value_split: Vec<&str> = addr_split[1].split(" wei + ").collect();
         if value_split.len() != 2 {
-            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: gasLimit"));
+            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: energyLimit"));
         }
-        let gas_split: Vec<&str> = value_split[1].split(" gas × ").collect();
-        if gas_split.len() != 2 {
-            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: gas"));
+        let energy_split: Vec<&str> = value_split[1].split(" energy × ").collect();
+        if energy_split.len() != 2 {
+            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: energy"));
         }
-        let gas_price_split: Vec<&str> = gas_split[1].split(" wei").collect();
-        if gas_price_split.len() != 2 {
-            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: gas_price"));
+        let energy_price_split: Vec<&str> = energy_split[1].split(" wei").collect();
+        if energy_price_split.len() != 2 {
+            return Err(de::Error::custom("invalid format for TxpoolInspectSummary: energy_price"));
         }
         let to = match addr_split[0] {
             "" => None,
             "0x" => None,
             "contract creation" => None,
-            addr => {
-                Some(Address::from_str(addr.trim_start_matches("0x")).map_err(de::Error::custom)?)
-            }
+            addr => Some(
+                IcanAddress::from_str(addr.trim_start_matches("0x")).map_err(de::Error::custom)?,
+            ),
         };
         let value = U256::from_str(value_split[0]).map_err(de::Error::custom)?;
-        let gas = u128::from_str(gas_split[0]).map_err(de::Error::custom)?;
-        let gas_price = u128::from_str(gas_price_split[0]).map_err(de::Error::custom)?;
+        let energy = u128::from_str(energy_split[0]).map_err(de::Error::custom)?;
+        let energy_price = u128::from_str(energy_price_split[0]).map_err(de::Error::custom)?;
 
-        Ok(TxpoolInspectSummary { to, value, gas, gas_price })
+        Ok(TxpoolInspectSummary { to, value, energy, energy_price })
     }
 
     fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
@@ -99,8 +99,8 @@ impl Serialize for TxpoolInspectSummary {
             "contract creation".to_string()
         };
         let formatted = format!(
-            "{}: {} wei + {} gas × {} wei",
-            formatted_to, self.value, self.gas, self.gas_price
+            "{}: {} wei + {} energy × {} wei",
+            formatted_to, self.value, self.energy, self.energy_price
         );
         serializer.serialize_str(&formatted)
     }
@@ -116,14 +116,14 @@ impl Serialize for TxpoolInspectSummary {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TxpoolContent {
     /// pending tx
-    pub pending: BTreeMap<Address, BTreeMap<String, Transaction>>,
+    pub pending: BTreeMap<IcanAddress, BTreeMap<String, Transaction>>,
     /// queued tx
-    pub queued: BTreeMap<Address, BTreeMap<String, Transaction>>,
+    pub queued: BTreeMap<IcanAddress, BTreeMap<String, Transaction>>,
 }
 
 impl TxpoolContent {
     /// Removes the transactions from the given sender
-    pub fn remove_from(&mut self, sender: &Address) -> TxpoolContentFrom {
+    pub fn remove_from(&mut self, sender: &IcanAddress) -> TxpoolContentFrom {
         TxpoolContentFrom {
             pending: self.pending.remove(sender).unwrap_or_default(),
             queued: self.queued.remove(sender).unwrap_or_default(),
@@ -156,9 +156,9 @@ pub struct TxpoolContentFrom {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TxpoolInspect {
     /// pending tx
-    pub pending: BTreeMap<Address, BTreeMap<String, TxpoolInspectSummary>>,
+    pub pending: BTreeMap<IcanAddress, BTreeMap<String, TxpoolInspectSummary>>,
     /// queued tx
-    pub queued: BTreeMap<Address, BTreeMap<String, TxpoolInspectSummary>>,
+    pub queued: BTreeMap<IcanAddress, BTreeMap<String, TxpoolInspectSummary>>,
 }
 
 /// Transaction Pool Status
@@ -195,10 +195,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x00000000863b56a3c1f0f1be8bc4f8b7bd78f57a",
-        "gas": "0x2af9e",
-        "gasPrice": "0x218711a00",
-        "maxFeePerGas": "0x218711a00",
-        "maxPriorityFeePerGas": "0x3b9aca00",
+        "energy": "0x2af9e",
+        "energyPrice": "0x218711a00",
+        "maxFeePerEnergy": "0x218711a00",
+        "maxPriorityFeePerEnergy": "0x3b9aca00",
         "hash": "0xfbc6fd04ba1c4114f06574263f04099b4fb2da72acc6f9709f0a3d2361308344",
         "input": "0x5ae401dc00000000000000000000000000000000000000000000000000000000636c757700000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000e404e45aaf000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000863b56a3c1f0f1be8bc4f8b7bd78f57a000000000000000000000000000000000000000000000000000000007781df4000000000000000000000000000000000000000000000006c240454bf9c87cd84000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         "nonce": "0x1d",
@@ -218,8 +218,8 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x000042429c09de5881f05a0c2a068222f4f5b091",
-        "gas": "0x61a80",
-        "gasPrice": "0x2540be400",
+        "energy": "0x61a80",
+        "energyPrice": "0x2540be400",
         "hash": "0x054ad1ccf5917139a9b1952f62048f742255a7c11100f593c4f18c1ed49b8dfd",
         "input": "0x27dc297e800332e506f28f49a13c1edf087bdd6482d6cb3abdf2a4c455642aef1e98fc240000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000002d7b22444149223a313439332e37342c2254555344223a313438392e36362c2255534443223a313439322e34387d00000000000000000000000000000000000000",
         "nonce": "0x26",
@@ -238,10 +238,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x000fab888651fbceb55de230493562159ead0340",
-        "gas": "0x12fed",
-        "gasPrice": "0x1a13b8600",
-        "maxFeePerGas": "0x1a13b8600",
-        "maxPriorityFeePerGas": "0x59682f00",
+        "energy": "0x12fed",
+        "energyPrice": "0x1a13b8600",
+        "maxFeePerEnergy": "0x1a13b8600",
+        "maxPriorityFeePerEnergy": "0x59682f00",
         "hash": "0xfae0cffdae6774abe11662a2cdbea019fce48fca87ba9ebf5e9e7c2454c01715",
         "input": "0xa9059cbb00000000000000000000000050272a56ef9aff7238e8b40347da62e87c1f69e200000000000000000000000000000000000000000000000000000000428d3dfc",
         "nonce": "0xc",
@@ -263,10 +263,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x00b846f07f5e7c61569437ca16f88a9dfa00f1bf",
-        "gas": "0x33c3b",
-        "gasPrice": "0x218711a00",
-        "maxFeePerGas": "0x218711a00",
-        "maxPriorityFeePerGas": "0x77359400",
+        "energy": "0x33c3b",
+        "energyPrice": "0x218711a00",
+        "maxFeePerEnergy": "0x218711a00",
+        "maxPriorityFeePerEnergy": "0x77359400",
         "hash": "0x68959706857f7a58d752ede0a5118a5f55f4ae40801f31377e1af201944720b2",
         "input": "0x03a9ea6d00000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000f2ff840000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000041d0c4694374d7893d63605625687be2f01028a5b49eca00f72901e773ad8ba7906e58d43e114a28353efaf8abd6a2675de83a3a07af579b8b268e6b714376610d1c00000000000000000000000000000000000000000000000000000000000000",
         "nonce": "0x8f",
@@ -286,10 +286,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x025276ec2de8ee570cfd4c1010319f14a6d9f0dd",
-        "gas": "0x7918",
-        "gasPrice": "0x12e531724e",
-        "maxFeePerGas": "0x12e531724e",
-        "maxPriorityFeePerGas": "0x59682f00",
+        "energy": "0x7918",
+        "energyPrice": "0x12e531724e",
+        "maxFeePerEnergy": "0x12e531724e",
+        "maxPriorityFeePerEnergy": "0x59682f00",
         "hash": "0x35109918ab6129a4d69480514ebec0ea08dc4a4de032fec59003ea66718828c4",
         "input": "0x",
         "nonce": "0x1",
@@ -307,10 +307,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x025276ec2de8ee570cfd4c1010319f14a6d9f0dd",
-        "gas": "0x7530",
-        "gasPrice": "0x1919617600",
-        "maxFeePerGas": "0x1919617600",
-        "maxPriorityFeePerGas": "0x5c7261c0",
+        "energy": "0x7530",
+        "energyPrice": "0x1919617600",
+        "maxFeePerEnergy": "0x1919617600",
+        "maxPriorityFeePerEnergy": "0x5c7261c0",
         "hash": "0xa58e54464b2ca62a5e2d976604ed9a53b13f8823a170ee4c3ae0cd91cde2a6c5",
         "input": "0x",
         "nonce": "0x4",
@@ -330,10 +330,10 @@ mod tests {
         "blockHash": null,
         "blockNumber": null,
         "from": "0x02666081cfb787de3562efbbca5f0fe890e927f1",
-        "gas": "0x16404",
-        "gasPrice": "0x4bad00695",
-        "maxFeePerGas": "0x4bad00695",
-        "maxPriorityFeePerGas": "0xa3e9ab80",
+        "energy": "0x16404",
+        "energyPrice": "0x4bad00695",
+        "maxFeePerEnergy": "0x4bad00695",
+        "maxPriorityFeePerEnergy": "0xa3e9ab80",
         "hash": "0xf627e59d7a59eb650f4c9df222858572601a566263809fdacbb755ac2277a4a7",
         "input": "0x095ea7b300000000000000000000000029fbd00940df70cfc5dad3f2370686991e2bbf5cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         "nonce": "0x2c",
@@ -365,25 +365,25 @@ mod tests {
 {
   "pending": {
     "0x0512261a7486b1e29704ac49a5eb355b6fd86872": {
-      "124930": "0x000000000000000000000000000000000000007E: 0 wei + 100187 gas × 20000000000 wei"
+      "124930": "0x000000000000000000000000000000000000007E: 0 wei + 100187 energy × 20000000000 wei"
     },
     "0x201354729f8d0f8b64e9a0c353c672c6a66b3857": {
-      "252350": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65792 gas × 2000000000 wei",
-      "252351": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65792 gas × 2000000000 wei",
-      "252352": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65780 gas × 2000000000 wei",
-      "252353": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65780 gas × 2000000000 wei"
+      "252350": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65792 energy × 2000000000 wei",
+      "252351": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65792 energy × 2000000000 wei",
+      "252352": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65780 energy × 2000000000 wei",
+      "252353": "0xd10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF: 0 wei + 65780 energy × 2000000000 wei"
     },
     "0x00000000863B56a3C1f0F1be8BC4F8b7BD78F57a": {
-      "40": "contract creation: 0 wei + 612412 gas × 6000000000 wei"
+      "40": "contract creation: 0 wei + 612412 energy × 6000000000 wei"
     }
   },
   "queued": {
     "0x0f87ffcd71859233eb259f42b236c8e9873444e3": {
-      "7": "0x3479BE69e07E838D9738a301Bb0c89e8EA2Bef4a: 1000000000000000 wei + 21000 gas × 10000000000 wei",
-      "8": "0x73Aaf691bc33fe38f86260338EF88f9897eCaa4F: 1000000000000000 wei + 21000 gas × 10000000000 wei"
+      "7": "0x3479BE69e07E838D9738a301Bb0c89e8EA2Bef4a: 1000000000000000 wei + 21000 energy × 10000000000 wei",
+      "8": "0x73Aaf691bc33fe38f86260338EF88f9897eCaa4F: 1000000000000000 wei + 21000 energy × 10000000000 wei"
     },
     "0x307e8f249bcccfa5b245449256c5d7e6e079943e": {
-      "3": "0x73Aaf691bc33fe38f86260338EF88f9897eCaa4F: 10000000000000000 wei + 21000 gas × 10000000000 wei"
+      "3": "0x73Aaf691bc33fe38f86260338EF88f9897eCaa4F: 10000000000000000 wei + 21000 energy × 10000000000 wei"
     }
   }
 }"#;
@@ -415,8 +415,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("000000000000000000000000000000000000007E").unwrap()),
                 value: U256::from(0u128),
-                gas: 100187u128,
-                gas_price: 20000000000u128,
+                energy: 100187u128,
+                energy_price: 20000000000u128,
             },
         );
         pending_map.insert(
@@ -429,8 +429,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
-                gas: 65792u128,
-                gas_price: 2000000000u128,
+                energy: 65792u128,
+                energy_price: 2000000000u128,
             },
         );
         pending_map_inner.insert(
@@ -438,8 +438,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
-                gas: 65792u128,
-                gas_price: 2000000000u128,
+                energy: 65792u128,
+                energy_price: 2000000000u128,
             },
         );
         pending_map_inner.insert(
@@ -447,8 +447,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
-                gas: 65780u128,
-                gas_price: 2000000000u128,
+                energy: 65780u128,
+                energy_price: 2000000000u128,
             },
         );
         pending_map_inner.insert(
@@ -456,8 +456,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
-                gas: 65780u128,
-                gas_price: 2000000000u128,
+                energy: 65780u128,
+                energy_price: 2000000000u128,
             },
         );
         pending_map.insert(
@@ -470,8 +470,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: None,
                 value: U256::from(0u128),
-                gas: 612412u128,
-                gas_price: 6000000000u128,
+                energy: 612412u128,
+                energy_price: 6000000000u128,
             },
         );
         pending_map.insert(
@@ -485,8 +485,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("3479BE69e07E838D9738a301Bb0c89e8EA2Bef4a").unwrap()),
                 value: U256::from(1000000000000000u128),
-                gas: 21000u128,
-                gas_price: 10000000000u128,
+                energy: 21000u128,
+                energy_price: 10000000000u128,
             },
         );
         queued_map_inner.insert(
@@ -494,8 +494,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
                 value: U256::from(1000000000000000u128),
-                gas: 21000u128,
-                gas_price: 10000000000u128,
+                energy: 21000u128,
+                energy_price: 10000000000u128,
             },
         );
         queued_map.insert(
@@ -508,8 +508,8 @@ mod tests {
             TxpoolInspectSummary {
                 to: Some(Address::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
                 value: U256::from(10000000000000000u128),
-                gas: 21000u128,
-                gas_price: 10000000000u128,
+                energy: 21000u128,
+                energy_price: 10000000000u128,
             },
         );
         queued_map.insert(

@@ -43,7 +43,7 @@ pub struct Log<T = LogData> {
 
 impl<T> Log<T> {
     /// Getter for the address field. Shortcut for `log.inner.address`.
-    pub const fn address(&self) -> alloy_primitives::Address {
+    pub const fn address(&self) -> alloy_primitives::IcanAddress {
         self.inner.address
     }
 
