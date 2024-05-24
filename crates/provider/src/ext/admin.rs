@@ -72,13 +72,13 @@ mod test {
     use crate::ProviderBuilder;
 
     use super::*;
-    use alloy_node_bindings::Geth;
+    use alloy_node_bindings::Gocore;
     use tempfile::TempDir;
 
     #[tokio::test]
     async fn node_info() {
         let temp_dir = TempDir::with_prefix("geth-test-").unwrap();
-        let geth = Geth::new().disable_discovery().data_dir(temp_dir.path()).spawn();
+        let geth = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
         let provider = ProviderBuilder::new().on_http(geth.endpoint_url());
         let node_info = provider.node_info().await.unwrap();
         assert!(node_info.enode.starts_with("enode://"));
@@ -88,9 +88,9 @@ mod test {
     async fn admin_peers() {
         let temp_dir = TempDir::with_prefix("geth-test-1").unwrap();
         let temp_dir_2 = TempDir::with_prefix("geth-test-2").unwrap();
-        let geth1 = Geth::new().disable_discovery().data_dir(temp_dir.path()).spawn();
+        let geth1 = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
         let mut geth2 =
-            Geth::new().disable_discovery().port(0u16).data_dir(temp_dir_2.path()).spawn();
+            Gocore::new().disable_discovery().port(0u16).data_dir(temp_dir_2.path()).spawn();
 
         let provider1 = ProviderBuilder::new().on_http(geth1.endpoint_url());
         let provider2 = ProviderBuilder::new().on_http(geth2.endpoint_url());
