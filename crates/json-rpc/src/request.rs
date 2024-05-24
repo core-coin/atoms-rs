@@ -1,5 +1,5 @@
 use crate::{common::Id, RpcParam};
-use alloy_primitives::{keccak256, B256};
+use alloy_primitives::{sha3, B256};
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Serialize};
 use serde_json::value::RawValue;
 use std::borrow::Cow;
@@ -11,7 +11,7 @@ pub struct RequestMeta {
     pub method: Cow<'static, str>,
     /// The request ID.
     pub id: Id,
-    /// Whether the request is a subscription, other than `eth_subscribe`.
+    /// Whether the request is a subscription, other than `xcb_subscribe`.
     is_subscription: bool,
 }
 
@@ -23,11 +23,11 @@ impl RequestMeta {
 
     /// Returns `true` if the request is a subscription.
     pub fn is_subscription(&self) -> bool {
-        self.is_subscription || self.method == "eth_subscribe"
+        self.is_subscription || self.method == "xcb_subscribe"
     }
 
     /// Indicates that the request is a non-standard subscription (i.e. not
-    /// "eth_subscribe").
+    /// "xcb_subscribe").
     pub fn set_is_subscription(&mut self) {
         self.set_subscription_status(true);
     }
@@ -68,7 +68,7 @@ impl<Params> Request<Params> {
     }
 
     /// Indicates that the request is a non-standard subscription (i.e. not
-    /// "eth_subscribe").
+    /// "xcb_subscribe").
     pub fn set_is_subscription(&mut self) {
         self.meta.set_is_subscription()
     }
@@ -212,7 +212,7 @@ impl SerializedRequest {
     }
 
     /// Mark the request as a non-standard subscription (i.e. not
-    /// `eth_subscribe`)
+    /// `xcb_subscribe`)
     pub fn set_is_subscription(&mut self) {
         self.meta.set_is_subscription();
     }
@@ -267,9 +267,9 @@ impl SerializedRequest {
     /// possible.
     pub fn params_hash(&self) -> B256 {
         if let Some(params) = self.params() {
-            keccak256(params.get())
+            sha3(params.get())
         } else {
-            keccak256("")
+            sha3("")
         }
     }
 }
