@@ -5,10 +5,10 @@ Crates used in Core or that are used by other crates
 - [ ] consensus
 - [ ] eips
 - [x] genesis - in work (Misha)
-- [ ] json-rpc
-- [x] network - in work (Misha) #todo fix tests
-- [ ] node-bindings
-- [ ] provider
+- [x] json-rpc - in work (Misha)
+- [x] network - in work (Misha)
+- [x] node-bindings - in work (Misha)
+- [ ] provider - in work (Misha)
 - [ ] pubsub
 - [ ] rpc-client
 - [ ] rpc-types - in work (Misha)

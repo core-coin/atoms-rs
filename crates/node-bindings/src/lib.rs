@@ -22,11 +22,11 @@ use alloy_primitives::U256;
 pub mod anvil;
 pub use anvil::{Anvil, AnvilInstance};
 
-pub mod geth;
-pub use geth::{Geth, GethInstance};
+pub mod gocore;
+pub use gocore::{Gocore, GocoreInstance};
 
-/// 1 Ether = 1e18 Wei == 0x0de0b6b3a7640000 Wei
-pub const WEI_IN_ETHER: U256 = U256::from_limbs([0x0de0b6b3a7640000, 0x0, 0x0, 0x0]);
+/// 1 Core = 1e18 Ore == 0x0de0b6b3a7640000 Ore
+pub const ORE_IN_CORE: U256 = U256::from_limbs([0x0de0b6b3a7640000, 0x0, 0x0, 0x0]);
 
 /// The number of blocks from the past for which the fee rewards are fetched for fee estimation.
 pub const EIP1559_FEE_ESTIMATION_PAST_BLOCKS: u64 = 10;

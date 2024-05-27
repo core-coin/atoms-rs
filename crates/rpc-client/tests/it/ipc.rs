@@ -1,4 +1,4 @@
-use alloy_node_bindings::Geth;
+use alloy_node_bindings::Gocore;
 use alloy_primitives::U64;
 use alloy_rpc_client::{ClientBuilder, RpcCall};
 use alloy_transport_ipc::IpcConnect;
@@ -6,7 +6,7 @@ use alloy_transport_ipc::IpcConnect;
 #[tokio::test]
 async fn it_makes_a_request() {
     let temp_dir = tempfile::TempDir::with_prefix("geth-test-").unwrap();
-    let geth = Geth::new()
+    let geth = Gocore::new()
         .disable_discovery()
         .ipc_path(temp_dir.path().join("alloy.ipc"))
         .enable_ipc()
