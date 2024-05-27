@@ -202,7 +202,7 @@ where
     }
 
     /// Set the request to be a non-standard subscription (i.e. not
-    /// "eth_subscribe").
+    /// "xcb_subscribe").
     ///
     /// # Panics
     ///
