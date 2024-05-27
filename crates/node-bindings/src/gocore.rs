@@ -2,8 +2,7 @@
 
 use crate::unused_port;
 use alloy_genesis::{CliqueConfig, Genesis};
-use alloy_primitives::{hex, Address, B256};
-use k256::ecdsa::SigningKey;
+use alloy_primitives::{hex, IcanAddress, PrivateKey, B256};
 use std::{
     borrow::Cow,
     fs::{create_dir, File},
@@ -17,46 +16,46 @@ use tempfile::tempdir;
 use thiserror::Error;
 use url::Url;
 
-/// How long we will wait for geth to indicate that it is ready.
-const GETH_STARTUP_TIMEOUT: Duration = Duration::from_secs(10);
+/// How long we will wait for gocore to indicate that it is ready.
+const GOCORE_STARTUP_TIMEOUT: Duration = Duration::from_secs(10);
 
-/// Timeout for waiting for geth to add a peer.
-const GETH_DIAL_LOOP_TIMEOUT: Duration = Duration::from_secs(20);
+/// Timeout for waiting for gocore to add a peer.
+const GOCORE_DIAL_LOOP_TIMEOUT: Duration = Duration::from_secs(20);
 
 /// The exposed APIs
-const API: &str = "eth,net,web3,txpool,admin,personal,miner,debug";
+const API: &str = "xcb,net,web3,txpool,admin,personal,miner,debug";
 
-/// The geth command
-const GETH: &str = "geth";
+/// The gocore command
+const GOCORE: &str = "gocore";
 
-/// Errors that can occur when working with the [`GethInstance`].
+/// Errors that can occur when working with the [`GocoreInstance`].
 #[derive(Debug)]
-pub enum GethInstanceError {
-    /// Timed out waiting for a message from geth's stderr.
+pub enum GocoreInstanceError {
+    /// Timed out waiting for a message from gocore's stderr.
     Timeout(String),
 
-    /// A line could not be read from the geth stderr.
+    /// A line could not be read from the gocore stderr.
     ReadLineError(std::io::Error),
 
-    /// The child geth process's stderr was not captured.
+    /// The child gocore process's stderr was not captured.
     NoStderr,
 }
 
-/// A geth instance. Will close the instance when dropped.
+/// A gocore instance. Will close the instance when dropped.
 ///
-/// Construct this using [`Geth`].
+/// Construct this using [`Gocore`].
 #[derive(Debug)]
-pub struct GethInstance {
+pub struct GocoreInstance {
     pid: Child,
     port: u16,
     ipc: Option<PathBuf>,
     data_dir: Option<PathBuf>,
     p2p_port: Option<u16>,
     genesis: Option<Genesis>,
-    clique_private_key: Option<SigningKey>,
+    clique_private_key: Option<PrivateKey>,
 }
 
-impl GethInstance {
+impl GocoreInstance {
     /// Returns the port of this instance
     pub fn port(&self) -> u16 {
         self.port
@@ -82,7 +81,7 @@ impl GethInstance {
         if let Some(ipc) = self.ipc.clone() {
             ipc.display().to_string()
         } else {
-            "geth.ipc".to_string()
+            "gocore.ipc".to_string()
         }
     }
 
@@ -107,8 +106,8 @@ impl GethInstance {
     }
 
     /// Returns the private key used to configure clique on this instance
-    #[deprecated = "clique support was removed in geth >=1.14"]
-    pub fn clique_private_key(&self) -> &Option<SigningKey> {
+    #[deprecated = "clique support was removed in gocore >=1.14"]
+    pub fn clique_private_key(&self) -> &Option<PrivateKey> {
         &self.clique_private_key
     }
 
@@ -116,49 +115,49 @@ impl GethInstance {
     ///
     /// This leaves a `None` in its place, so calling methods that require a stderr to be present
     /// will fail if called after this.
-    pub fn stderr(&mut self) -> Result<ChildStderr, GethInstanceError> {
-        self.pid.stderr.take().ok_or(GethInstanceError::NoStderr)
+    pub fn stderr(&mut self) -> Result<ChildStderr, GocoreInstanceError> {
+        self.pid.stderr.take().ok_or(GocoreInstanceError::NoStderr)
     }
 
-    /// Blocks until geth adds the specified peer, using 20s as the timeout.
+    /// Blocks until gocore adds the specified peer, using 20s as the timeout.
     ///
-    /// Requires the stderr to be present in the `GethInstance`.
-    pub fn wait_to_add_peer(&mut self, id: B256) -> Result<(), GethInstanceError> {
-        let mut stderr = self.pid.stderr.as_mut().ok_or(GethInstanceError::NoStderr)?;
+    /// Requires the stderr to be present in the `GocoreInstance`.
+    pub fn wait_to_add_peer(&mut self, id: B256) -> Result<(), GocoreInstanceError> {
+        let mut stderr = self.pid.stderr.as_mut().ok_or(GocoreInstanceError::NoStderr)?;
         let mut err_reader = BufReader::new(&mut stderr);
         let mut line = String::new();
         let start = Instant::now();
 
-        while start.elapsed() < GETH_DIAL_LOOP_TIMEOUT {
+        while start.elapsed() < GOCORE_DIAL_LOOP_TIMEOUT {
             line.clear();
-            err_reader.read_line(&mut line).map_err(GethInstanceError::ReadLineError)?;
+            err_reader.read_line(&mut line).map_err(GocoreInstanceError::ReadLineError)?;
 
-            // geth ids are trunated
+            // gocore ids are trunated
             let truncated_id = hex::encode(&id.0[..8]);
             if line.contains("Adding p2p peer") && line.contains(&truncated_id) {
                 return Ok(());
             }
         }
-        Err(GethInstanceError::Timeout("Timed out waiting for geth to add a peer".into()))
+        Err(GocoreInstanceError::Timeout("Timed out waiting for gocore to add a peer".into()))
     }
 }
 
-impl Drop for GethInstance {
+impl Drop for GocoreInstance {
     fn drop(&mut self) {
-        self.pid.kill().expect("could not kill geth");
+        self.pid.kill().expect("could not kill gocore");
     }
 }
 
-/// Whether or not geth is in `dev` mode and configuration options that depend on the mode.
+/// Whether or not gocore is in `dev` mode and configuration options that depend on the mode.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum GethMode {
+pub enum GocoreMode {
     /// Options that can be set in dev mode
     Dev(DevOptions),
     /// Options that cannot be set in dev mode
     NonDev(PrivateNetOptions),
 }
 
-impl Default for GethMode {
+impl Default for GocoreMode {
     fn default() -> Self {
         Self::Dev(Default::default())
     }
@@ -167,7 +166,7 @@ impl Default for GethMode {
 /// Configuration options that can be set in dev mode.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct DevOptions {
-    /// The interval at which the dev chain will mine new blocks.
+    /// The interval at which the dev network will mine new blocks.
     pub block_time: Option<u64>,
 }
 
@@ -187,96 +186,96 @@ impl Default for PrivateNetOptions {
     }
 }
 
-/// Errors that can occur when working with the [`Geth`].
+/// Errors that can occur when working with the [`Gocore`].
 #[derive(Debug, Error)]
-pub enum GethError {
+pub enum GocoreError {
     /// Clique private key error
     #[error("clique address error: {0}")]
     CliqueAddressError(String),
-    /// The chain id was not set.
-    #[error("the chain ID was not set")]
-    ChainIdNotSet,
+    /// The network id was not set.
+    #[error("the network ID was not set")]
+    NetworkIdNotSet,
     /// Could not create the data directory.
     #[error("could not create directory: {0}")]
     CreateDirError(std::io::Error),
     /// No stderr was captured from the child process.
     #[error("no stderr was captured from the process")]
     NoStderr,
-    /// Timed out waiting for geth to start.
-    #[error("timed out waiting for geth to spawn; is geth installed?")]
+    /// Timed out waiting for gocore to start.
+    #[error("timed out waiting for gocore to spawn; is gocore installed?")]
     Timeout,
     /// Encountered a fatal error.
     #[error("fatal error: {0}")]
     Fatal(String),
-    /// A line could not be read from the geth stderr.
-    #[error("could not read line from geth stderr: {0}")]
+    /// A line could not be read from the gocore stderr.
+    #[error("could not read line from gocore stderr: {0}")]
     ReadLineError(std::io::Error),
     /// Genesis error
     #[error("genesis error occurred: {0}")]
     GenesisError(String),
-    /// Geth init error
-    #[error("geth init error occurred")]
+    /// Gocore init error
+    #[error("gocore init error occurred")]
     InitError,
-    /// Spawn geth error
-    #[error("could not spawn geth: {0}")]
+    /// Spawn gocore error
+    #[error("could not spawn gocore: {0}")]
     SpawnError(std::io::Error),
     /// Wait error
-    #[error("could not wait for geth to exit: {0}")]
+    #[error("could not wait for gocore to exit: {0}")]
     WaitError(std::io::Error),
 }
 
-/// Builder for launching `geth`.
+/// Builder for launching `gocore`.
 ///
 /// # Panics
 ///
-/// If `spawn` is called without `geth` being available in the user's $PATH
+/// If `spawn` is called without `gocore` being available in the user's $PATH
 ///
 /// # Example
 ///
 /// ```no_run
-/// use alloy_node_bindings::Geth;
+/// use alloy_node_bindings::Gocore;
 ///
 /// let port = 8545u16;
 /// let url = format!("http://localhost:{}", port).to_string();
 ///
-/// let geth = Geth::new().port(port).block_time(5000u64).spawn();
+/// let gocore = Gocore::new().port(port).block_time(5000u64).spawn();
 ///
-/// drop(geth); // this will kill the instance
+/// drop(gocore); // this will kill the instance
 /// ```
 #[derive(Clone, Debug, Default)]
 #[must_use = "This Builder struct does nothing unless it is `spawn`ed"]
-pub struct Geth {
+pub struct Gocore {
     program: Option<PathBuf>,
     port: Option<u16>,
     authrpc_port: Option<u16>,
     ipc_path: Option<PathBuf>,
     ipc_enabled: bool,
     data_dir: Option<PathBuf>,
-    chain_id: Option<u64>,
+    network_id: Option<u64>,
     insecure_unlock: bool,
     genesis: Option<Genesis>,
-    mode: GethMode,
-    clique_private_key: Option<SigningKey>,
+    mode: GocoreMode,
+    clique_private_key: Option<PrivateKey>,
 }
 
-impl Geth {
-    /// Creates an empty Geth builder.
+impl Gocore {
+    /// Creates an empty Gocore builder.
     ///
     /// The mnemonic is chosen randomly.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Creates a Geth builder which will execute `geth` at the given path.
+    /// Creates a Gocore builder which will execute `gocore` at the given path.
     ///
     /// # Example
     ///
     /// ```
-    /// use alloy_node_bindings::Geth;
+    /// use alloy_node_bindings::Gocore;
     /// # fn a() {
-    /// let geth = Geth::at("../go-ethereum/build/bin/geth").spawn();
+    /// let gocore = Gocore::at("../go-core/build/bin/gocore").spawn();
     ///
-    /// println!("Geth running at `{}`", geth.endpoint());
+    /// println!("Gocore running at `{}`", gocore.endpoint());
     /// # }
     /// ```
     pub fn at(path: impl Into<PathBuf>) -> Self {
@@ -289,34 +288,34 @@ impl Geth {
     }
 
     /// Calculates the address of the Clique consensus address.
-    pub fn clique_address(&self) -> Option<Address> {
-        self.clique_private_key.as_ref().map(|pk| Address::from_public_key(pk.verifying_key()))
+    pub fn clique_address(&self) -> Option<IcanAddress> {
+        self.clique_private_key.as_ref().map(|pk| IcanAddress::from_public_key(pk.public_key()))
     }
 
-    /// Sets the `path` to the `geth` executable
+    /// Sets the `path` to the `gocore` executable
     ///
-    /// By default, it's expected that `geth` is in `$PATH`, see also
+    /// By default, it's expected that `gocore` is in `$PATH`, see also
     /// [`std::process::Command::new()`]
     pub fn path<T: Into<PathBuf>>(mut self, path: T) -> Self {
         self.program = Some(path.into());
         self
     }
 
-    /// Sets the Clique Private Key to the `geth` executable, which will be later
+    /// Sets the Clique Private Key to the `gocore` executable, which will be later
     /// loaded on the node.
     ///
     /// The address derived from this private key will be used to set the `miner.etherbase` field
     /// on the node.
-    #[deprecated = "clique support was removed in geth >=1.14"]
-    pub fn set_clique_private_key<T: Into<SigningKey>>(mut self, private_key: T) -> Self {
+    #[deprecated = "clique support was removed in gocore >=1.14"]
+    pub fn set_clique_private_key<T: Into<PrivateKey>>(mut self, private_key: T) -> Self {
         self.clique_private_key = Some(private_key.into());
         self
     }
 
-    /// Sets the port which will be used when the `geth-cli` instance is launched.
+    /// Sets the port which will be used when the `gocore-cli` instance is launched.
     ///
     /// If port is 0 then the OS will choose a random port.
-    /// [GethInstance::port] will return the port that was chosen.
+    /// [GocoreInstance::port] will return the port that was chosen.
     pub fn port<T: Into<u16>>(mut self, port: T) -> Self {
         self.port = Some(port.into());
         self
@@ -324,51 +323,51 @@ impl Geth {
 
     /// Sets the port which will be used for incoming p2p connections.
     ///
-    /// This will put the geth instance into non-dev mode, discarding any previously set dev-mode
+    /// This will put the gocore instance into non-dev mode, discarding any previously set dev-mode
     /// options.
     pub fn p2p_port(mut self, port: u16) -> Self {
         match &mut self.mode {
-            GethMode::Dev(_) => {
-                self.mode = GethMode::NonDev(PrivateNetOptions {
+            GocoreMode::Dev(_) => {
+                self.mode = GocoreMode::NonDev(PrivateNetOptions {
                     p2p_port: Some(port),
                     ..Default::default()
                 })
             }
-            GethMode::NonDev(opts) => opts.p2p_port = Some(port),
+            GocoreMode::NonDev(opts) => opts.p2p_port = Some(port),
         }
         self
     }
 
-    /// Sets the block-time which will be used when the `geth-cli` instance is launched.
+    /// Sets the block-time which will be used when the `gocore-cli` instance is launched.
     ///
-    /// This will put the geth instance in `dev` mode, discarding any previously set options that
+    /// This will put the gocore instance in `dev` mode, discarding any previously set options that
     /// cannot be used in dev mode.
     pub fn block_time(mut self, block_time: u64) -> Self {
-        self.mode = GethMode::Dev(DevOptions { block_time: Some(block_time) });
+        self.mode = GocoreMode::Dev(DevOptions { block_time: Some(block_time) });
         self
     }
 
-    /// Sets the chain id for the geth instance.
-    pub fn chain_id(mut self, chain_id: u64) -> Self {
-        self.chain_id = Some(chain_id);
+    /// Sets the network id for the gocore instance.
+    pub fn network_id(mut self, network_id: u64) -> Self {
+        self.network_id = Some(network_id);
         self
     }
 
-    /// Allow geth to unlock accounts when rpc apis are open.
+    /// Allow gocore to unlock accounts when rpc apis are open.
     pub fn insecure_unlock(mut self) -> Self {
         self.insecure_unlock = true;
         self
     }
 
-    /// Enable IPC for the geth instance.
+    /// Enable IPC for the gocore instance.
     pub fn enable_ipc(mut self) -> Self {
         self.ipc_enabled = true;
         self
     }
 
-    /// Disable discovery for the geth instance.
+    /// Disable discovery for the gocore instance.
     ///
-    /// This will put the geth instance into non-dev mode, discarding any previously set dev-mode
+    /// This will put the gocore instance into non-dev mode, discarding any previously set dev-mode
     /// options.
     pub fn disable_discovery(mut self) -> Self {
         self.inner_disable_discovery();
@@ -377,11 +376,11 @@ impl Geth {
 
     fn inner_disable_discovery(&mut self) {
         match &mut self.mode {
-            GethMode::Dev(_) => {
+            GocoreMode::Dev(_) => {
                 self.mode =
-                    GethMode::NonDev(PrivateNetOptions { discovery: false, ..Default::default() })
+                    GocoreMode::NonDev(PrivateNetOptions { discovery: false, ..Default::default() })
             }
-            GethMode::NonDev(opts) => opts.discovery = false,
+            GocoreMode::NonDev(opts) => opts.discovery = false,
         }
     }
 
@@ -391,15 +390,15 @@ impl Geth {
         self
     }
 
-    /// Sets the data directory for geth.
+    /// Sets the data directory for gocore.
     pub fn data_dir<T: Into<PathBuf>>(mut self, path: T) -> Self {
         self.data_dir = Some(path.into());
         self
     }
 
-    /// Sets the `genesis.json` for the geth instance.
+    /// Sets the `genesis.json` for the gocore instance.
     ///
-    /// If this is set, geth will be initialized with `geth init` and the `--datadir` option will be
+    /// If this is set, gocore will be initialized with `gocore init` and the `--datadir` option will be
     /// set to the same value as `data_dir`.
     ///
     /// This is destructive and will overwrite any existing data in the data directory.
@@ -414,25 +413,25 @@ impl Geth {
         self
     }
 
-    /// Consumes the builder and spawns `geth`.
+    /// Consumes the builder and spawns `gocore`.
     ///
     /// # Panics
     ///
     /// If spawning the instance fails at any point.
     #[track_caller]
-    pub fn spawn(self) -> GethInstance {
+    pub fn spawn(self) -> GocoreInstance {
         self.try_spawn().unwrap()
     }
 
-    /// Consumes the builder and spawns `geth`. If spawning fails, returns an error.
-    pub fn try_spawn(mut self) -> Result<GethInstance, GethError> {
+    /// Consumes the builder and spawns `gocore`. If spawning fails, returns an error.
+    pub fn try_spawn(mut self) -> Result<GocoreInstance, GocoreError> {
         let bin_path = match self.program.as_ref() {
             Some(bin) => bin.as_os_str(),
-            None => GETH.as_ref(),
+            None => GOCORE.as_ref(),
         }
         .to_os_string();
         let mut cmd = Command::new(&bin_path);
-        // geth uses stderr for its logs
+        // gocore uses stderr for its logs
         cmd.stderr(Stdio::piped());
 
         // If no port provided, let the os chose it for us
@@ -468,7 +467,7 @@ impl Geth {
         let authrpc_port = self.authrpc_port.unwrap_or_else(&mut unused_port);
         cmd.arg("--authrpc.port").arg(authrpc_port.to_string());
 
-        // use geth init to initialize the datadir if the genesis exists
+        // use gocore init to initialize the datadir if the genesis exists
         if is_clique {
             let clique_addr = self.clique_address();
             if let Some(genesis) = &mut self.genesis {
@@ -476,7 +475,7 @@ impl Geth {
                 let clique_config = CliqueConfig { period: Some(0), epoch: Some(8) };
                 genesis.config.clique = Some(clique_config);
 
-                let clique_addr = clique_addr.ok_or(GethError::CliqueAddressError(
+                let clique_addr = clique_addr.ok_or(GocoreError::CliqueAddressError(
                     "could not calculates the address of the Clique consensus address.".to_string(),
                 ))?;
 
@@ -485,42 +484,42 @@ impl Geth {
                     [&[0u8; 32][..], clique_addr.as_ref(), &[0u8; 65][..]].concat();
                 genesis.extra_data = extra_data_bytes.into();
 
-                // we must set the etherbase if using clique
+                // we must set the corebase if using clique
                 // need to use format! / Debug here because the Address Display impl doesn't show
                 // the entire address
-                cmd.arg("--miner.etherbase").arg(format!("{clique_addr:?}"));
+                cmd.arg("--miner.corebase").arg(format!("{clique_addr:?}"));
             }
 
-            let clique_addr = self.clique_address().ok_or(GethError::CliqueAddressError(
+            let clique_addr = self.clique_address().ok_or(GocoreError::CliqueAddressError(
                 "could not calculates the address of the Clique consensus address.".to_string(),
             ))?;
 
             self.genesis = Some(Genesis::clique_genesis(
-                self.chain_id.ok_or(GethError::ChainIdNotSet)?,
+                self.network_id.ok_or(GocoreError::NetworkIdNotSet)?,
                 clique_addr,
             ));
 
-            // we must set the etherbase if using clique
+            // we must set the corebase if using clique
             // need to use format! / Debug here because the Address Display impl doesn't show the
             // entire address
-            cmd.arg("--miner.etherbase").arg(format!("{clique_addr:?}"));
+            cmd.arg("--miner.corebase").arg(format!("{clique_addr:?}"));
         }
 
         if let Some(genesis) = &self.genesis {
             // create a temp dir to store the genesis file
-            let temp_genesis_dir_path = tempdir().map_err(GethError::CreateDirError)?.into_path();
+            let temp_genesis_dir_path = tempdir().map_err(GocoreError::CreateDirError)?.into_path();
 
             // create a temp dir to store the genesis file
             let temp_genesis_path = temp_genesis_dir_path.join("genesis.json");
 
             // create the genesis file
             let mut file = File::create(&temp_genesis_path).map_err(|_| {
-                GethError::GenesisError("could not create genesis file".to_string())
+                GocoreError::GenesisError("could not create genesis file".to_string())
             })?;
 
             // serialize genesis and write to file
             serde_json::to_writer_pretty(&mut file, &genesis).map_err(|_| {
-                GethError::GenesisError("could not write genesis to file".to_string())
+                GocoreError::GenesisError("could not write genesis to file".to_string())
             })?;
 
             let mut init_cmd = Command::new(bin_path);
@@ -534,17 +533,17 @@ impl Geth {
             init_cmd.arg("init").arg(temp_genesis_path);
             let res = init_cmd
                 .spawn()
-                .map_err(GethError::SpawnError)?
+                .map_err(GocoreError::SpawnError)?
                 .wait()
-                .map_err(GethError::WaitError)?;
-            // .expect("failed to wait for geth init to exit");
+                .map_err(GocoreError::WaitError)?;
+            // .expect("failed to wait for gocore init to exit");
             if !res.success() {
-                return Err(GethError::InitError);
+                return Err(GocoreError::InitError);
             }
 
             // clean up the temp dir which is now persisted
             std::fs::remove_dir_all(temp_genesis_dir_path).map_err(|_| {
-                GethError::GenesisError("could not remove genesis temp dir".to_string())
+                GocoreError::GenesisError("could not remove genesis temp dir".to_string())
             })?;
         }
 
@@ -553,20 +552,20 @@ impl Geth {
 
             // create the directory if it doesn't exist
             if !data_dir.exists() {
-                create_dir(data_dir).map_err(GethError::CreateDirError)?;
+                create_dir(data_dir).map_err(GocoreError::CreateDirError)?;
             }
         }
 
         // Dev mode with custom block time
         let mut p2p_port = match self.mode {
-            GethMode::Dev(DevOptions { block_time }) => {
+            GocoreMode::Dev(DevOptions { block_time }) => {
                 cmd.arg("--dev");
                 if let Some(block_time) = block_time {
                     cmd.arg("--dev.period").arg(block_time.to_string());
                 }
                 None
             }
-            GethMode::NonDev(PrivateNetOptions { p2p_port, discovery }) => {
+            GocoreMode::NonDev(PrivateNetOptions { p2p_port, discovery }) => {
                 // if no port provided, let the os chose it for us
                 let port = p2p_port.unwrap_or(0);
                 cmd.arg("--port").arg(port.to_string());
@@ -579,8 +578,8 @@ impl Geth {
             }
         };
 
-        if let Some(chain_id) = self.chain_id {
-            cmd.arg("--networkid").arg(chain_id.to_string());
+        if let Some(network_id) = self.network_id {
+            cmd.arg("--networkid").arg(network_id.to_string());
         }
 
         // debug verbosity is needed to check when peers are added
@@ -590,31 +589,32 @@ impl Geth {
             cmd.arg("--ipcpath").arg(ipc);
         }
 
-        let mut child = cmd.spawn().map_err(GethError::SpawnError)?;
+        let mut child = cmd.spawn().map_err(GocoreError::SpawnError)?;
 
-        let stderr = child.stderr.ok_or(GethError::NoStderr)?;
+        let stderr = child.stderr.ok_or(GocoreError::NoStderr)?;
 
         let start = Instant::now();
         let mut reader = BufReader::new(stderr);
 
-        // we shouldn't need to wait for p2p to start if geth is in dev mode - p2p is disabled in
+        // we shouldn't need to wait for p2p to start if gocore is in dev mode - p2p is disabled in
         // dev mode
-        let mut p2p_started = matches!(self.mode, GethMode::Dev(_));
+        let mut p2p_started = matches!(self.mode, GocoreMode::Dev(_));
         let mut http_started = false;
 
         loop {
-            if start + GETH_STARTUP_TIMEOUT <= Instant::now() {
-                return Err(GethError::Timeout);
+            if start + GOCORE_STARTUP_TIMEOUT <= Instant::now() {
+                return Err(GocoreError::Timeout);
             }
 
             let mut line = String::with_capacity(120);
-            reader.read_line(&mut line).map_err(GethError::ReadLineError)?;
+            reader.read_line(&mut line).map_err(GocoreError::ReadLineError)?;
 
-            if matches!(self.mode, GethMode::NonDev(_)) && line.contains("Started P2P networking") {
+            if matches!(self.mode, GocoreMode::NonDev(_)) && line.contains("Started P2P networking")
+            {
                 p2p_started = true;
             }
 
-            if !matches!(self.mode, GethMode::Dev(_)) {
+            if !matches!(self.mode, GocoreMode::Dev(_)) {
                 // try to find the p2p port, if not in dev mode
                 if line.contains("New local node record") {
                     if let Some(port) = extract_value("tcp=", &line) {
@@ -623,7 +623,7 @@ impl Geth {
                 }
             }
 
-            // geth 1.9.23 uses "server started" while 1.9.18 uses "endpoint opened"
+            // gocore 1.9.23 uses "server started" while 1.9.18 uses "endpoint opened"
             // the unauthenticated api is used for regular non-engine API requests
             if line.contains("HTTP endpoint opened")
                 || (line.contains("HTTP server started") && !line.contains("auth=true"))
@@ -640,7 +640,7 @@ impl Geth {
             // Encountered an error such as Fatal: Error starting protocol stack: listen tcp
             // 127.0.0.1:8545: bind: address already in use
             if line.contains("Fatal:") {
-                return Err(GethError::Fatal(line));
+                return Err(GocoreError::Fatal(line));
             }
 
             if p2p_started && http_started {
@@ -650,7 +650,7 @@ impl Geth {
 
         child.stderr = Some(reader.into_inner());
 
-        Ok(GethInstance {
+        Ok(GocoreInstance {
             pid: child,
             port,
             ipc: self.ipc_path,
@@ -681,7 +681,7 @@ fn extract_endpoint(line: &str) -> Option<SocketAddr> {
     val.parse::<SocketAddr>().ok()
 }
 
-// These tests should use a different datadir for each `Geth` spawned
+// These tests should use a different datadir for each `Gocore` spawned
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -696,7 +696,7 @@ mod tests {
     #[test]
     fn port_0() {
         run_with_tempdir(|_| {
-            let _geth = Geth::new().disable_discovery().port(0u16).spawn();
+            let _gocore = Gocore::new().disable_discovery().port(0u16).spawn();
         });
     }
 
@@ -717,8 +717,8 @@ mod tests {
     #[test]
     fn p2p_port() {
         run_with_tempdir(|temp_dir_path| {
-            let geth = Geth::new().disable_discovery().data_dir(temp_dir_path).spawn();
-            let p2p_port = geth.p2p_port();
+            let gocore = Gocore::new().disable_discovery().data_dir(temp_dir_path).spawn();
+            let p2p_port = gocore.p2p_port();
             assert!(p2p_port.is_some());
         });
     }
@@ -727,8 +727,8 @@ mod tests {
     fn explicit_p2p_port() {
         run_with_tempdir(|temp_dir_path| {
             // if a p2p port is explicitly set, it should be used
-            let geth = Geth::new().p2p_port(1234).data_dir(temp_dir_path).spawn();
-            let p2p_port = geth.p2p_port();
+            let gocore = gocore::new().p2p_port(1234).data_dir(temp_dir_path).spawn();
+            let p2p_port = gocore.p2p_port();
             assert_eq!(p2p_port, Some(1234));
         });
     }
@@ -737,27 +737,27 @@ mod tests {
     fn dev_mode() {
         run_with_tempdir(|temp_dir_path| {
             // dev mode should not have a p2p port, and dev should be the default
-            let geth = Geth::new().data_dir(temp_dir_path).spawn();
-            let p2p_port = geth.p2p_port();
+            let gocore = Gocore::new().data_dir(temp_dir_path).spawn();
+            let p2p_port = gocore.p2p_port();
             assert!(p2p_port.is_none(), "{p2p_port:?}");
         })
     }
 
     #[test]
-    #[ignore = "fails on geth >=1.14"]
+    #[ignore = "fails on gocore >=1.14"]
     #[allow(deprecated)]
     fn clique_correctly_configured() {
         run_with_tempdir(|temp_dir_path| {
-            let private_key = SigningKey::random(&mut rand::thread_rng());
-            let geth = Geth::new()
+            let private_key = PrivateKey::generate();
+            let gocore = Gocore::new()
                 .set_clique_private_key(private_key)
-                .chain_id(1337u64)
+                .network_id(1337u64)
                 .data_dir(temp_dir_path)
                 .spawn();
 
-            assert!(geth.p2p_port.is_some());
-            assert!(geth.clique_private_key().is_some());
-            assert!(geth.genesis().is_some());
+            assert!(gocore.p2p_port.is_some());
+            assert!(gocore.clique_private_key().is_some());
+            assert!(gocore.genesis().is_some());
         })
     }
 }
