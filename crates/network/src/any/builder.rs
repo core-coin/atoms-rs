@@ -31,11 +31,11 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_input(input);
     }
 
-    fn from(&self) -> Option<alloy_primitives::Address> {
+    fn from(&self) -> Option<alloy_primitives::IcanAddress> {
         self.deref().from()
     }
 
-    fn set_from(&mut self, from: alloy_primitives::Address) {
+    fn set_from(&mut self, from: alloy_primitives::IcanAddress) {
         self.deref_mut().set_from(from);
     }
 

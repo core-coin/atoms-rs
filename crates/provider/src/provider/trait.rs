@@ -2,19 +2,19 @@
 
 use crate::{
     utils::{self, Eip1559Estimation, EstimatorFunction},
-    EthCall, PendingTransaction, PendingTransactionBuilder, PendingTransactionConfig, RootProvider,
-    SendableTx,
+    PendingTransaction, PendingTransactionBuilder, PendingTransactionConfig, RootProvider,
+    SendableTx, XcbCall,
 };
 use alloy_eips::eip2718::Encodable2718;
 use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
-use alloy_network::{Ethereum, Network};
+use alloy_network::{Core, Network};
 use alloy_primitives::{
-    hex, Address, BlockHash, BlockNumber, Bytes, StorageKey, StorageValue, TxHash, B256, U128,
+    hex, IcanAddress, BlockHash, BlockNumber, Bytes, StorageKey, StorageValue, TxHash, B256, U128,
     U256, U64,
 };
 use alloy_rpc_client::{ClientRef, PollerBuilder, WeakClient};
 use alloy_rpc_types::{
-    AccessListWithGasUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
+    AccessListWithEnergyUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
     FeeHistory, Filter, FilterChanges, Log, SyncStatus,
 };
 use alloy_rpc_types_trace::parity::{LocalizedTransactionTrace, TraceResults, TraceType};
@@ -22,7 +22,7 @@ use alloy_transport::{BoxTransport, Transport, TransportErrorKind, TransportResu
 use serde_json::value::RawValue;
 use std::borrow::Cow;
 
-/// A task that polls the provider with `eth_getFilterChanges`, returning a list of `R`.
+/// A task that polls the provider with `xcb_getFilterChanges`, returning a list of `R`.
 ///
 /// See [`PollerBuilder`] for more details.
 pub type FilterPollerBuilder<T, R> = PollerBuilder<T, (U256,), Vec<R>>;
@@ -46,9 +46,7 @@ pub type FilterPollerBuilder<T, R> = PollerBuilder<T, (U256,), Vec<R>>;
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 #[auto_impl::auto_impl(&, &mut, Rc, Arc, Box)]
-pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
-    Send + Sync
-{
+pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Core>: Send + Sync {
     /// Returns the root provider.
     fn root(&self) -> &RootProvider<T, N>;
 
@@ -108,7 +106,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     #[cfg(feature = "pubsub")]
     async fn subscribe_blocks(&self) -> TransportResult<alloy_pubsub::Subscription<Block>> {
         self.root().pubsub_frontend()?;
-        let id = self.client().request("eth_subscribe", ("newHeads",)).await?;
+        let id = self.client().request("xcb_subscribe", ("newHeads",)).await?;
         self.root().get_subscription(id).await
     }
 
@@ -142,7 +140,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
     ) -> TransportResult<alloy_pubsub::Subscription<B256>> {
         self.root().pubsub_frontend()?;
-        let id = self.client().request("eth_subscribe", ("newPendingTransactions",)).await?;
+        let id = self.client().request("xcb_subscribe", ("newPendingTransactions",)).await?;
         self.root().get_subscription(id).await
     }
 
@@ -150,7 +148,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ///
     /// # Support
     ///
-    /// This endpoint is compatible only with Geth client version 1.11.0 or later.
+    /// This endpoint is compatible only with Gocore client version 1.11.0 or later.
     ///
     /// # Errors
     ///
@@ -181,7 +179,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
     ) -> TransportResult<alloy_pubsub::Subscription<N::TransactionResponse>> {
         self.root().pubsub_frontend()?;
-        let id = self.client().request("eth_subscribe", ("newPendingTransactions", true)).await?;
+        let id = self.client().request("xcb_subscribe", ("newPendingTransactions", true)).await?;
         self.root().get_subscription(id).await
     }
 
@@ -221,7 +219,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         filter: &Filter,
     ) -> TransportResult<alloy_pubsub::Subscription<Log>> {
         self.root().pubsub_frontend()?;
-        let id = self.client().request("eth_subscribe", ("logs", filter)).await?;
+        let id = self.client().request("xcb_subscribe", ("logs", filter)).await?;
         self.root().get_subscription(id).await
     }
 
@@ -235,7 +233,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         Self: Sized,
     {
         self.root().pubsub_frontend()?;
-        let id = self.client().request("eth_subscribe", params).await?;
+        let id = self.client().request("xcb_subscribe", params).await?;
         self.root().get_subscription(id).await
     }
 
@@ -246,7 +244,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     }
 
     /// Watch for new blocks by polling the provider with
-    /// [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// Returns a builder that is used to configure the poller. See [`PollerBuilder`] for more
     /// details.
@@ -269,11 +267,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// ```
     async fn watch_blocks(&self) -> TransportResult<FilterPollerBuilder<T, B256>> {
         let id = self.new_block_filter().await?;
-        Ok(PollerBuilder::new(self.weak_client(), "eth_getFilterChanges", (id,)))
+        Ok(PollerBuilder::new(self.weak_client(), "xcb_getFilterChanges", (id,)))
     }
 
     /// Watch for new pending transaction by polling the provider with
-    /// [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// Returns a builder that is used to configure the poller. See [`PollerBuilder`] for more
     /// details.
@@ -296,11 +294,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// ```
     async fn watch_pending_transactions(&self) -> TransportResult<FilterPollerBuilder<T, B256>> {
         let id = self.new_pending_transactions_filter(false).await?;
-        Ok(PollerBuilder::new(self.weak_client(), "eth_getFilterChanges", (id,)))
+        Ok(PollerBuilder::new(self.weak_client(), "xcb_getFilterChanges", (id,)))
     }
 
     /// Watch for new pending transaction bodies by polling the provider with
-    /// [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// Returns a builder that is used to configure the poller. See [`PollerBuilder`] for more
     /// details.
@@ -329,11 +327,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
     ) -> TransportResult<FilterPollerBuilder<T, N::TransactionResponse>> {
         let id = self.new_pending_transactions_filter(true).await?;
-        Ok(PollerBuilder::new(self.weak_client(), "eth_getFilterChanges", (id,)))
+        Ok(PollerBuilder::new(self.weak_client(), "xcb_getFilterChanges", (id,)))
     }
 
     /// Watch for new logs using the given filter by polling the provider with
-    /// [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// Returns a builder that is used to configure the poller. See [`PollerBuilder`] for more
     /// details.
@@ -362,16 +360,16 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// ```
     async fn watch_logs(&self, filter: &Filter) -> TransportResult<FilterPollerBuilder<T, Log>> {
         let id = self.new_filter(filter).await?;
-        Ok(PollerBuilder::new(self.weak_client(), "eth_getFilterChanges", (id,)))
+        Ok(PollerBuilder::new(self.weak_client(), "xcb_getFilterChanges", (id,)))
     }
 
     /// Notify the provider that we are interested in new blocks.
     ///
-    /// Returns the ID to use with [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// Returns the ID to use with [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// See also [`watch_blocks`](Self::watch_blocks) to configure a poller.
     async fn new_block_filter(&self) -> TransportResult<U256> {
-        self.client().request("eth_newBlockFilter", ()).await
+        self.client().request("xcb_newBlockFilter", ()).await
     }
 
     /// Notify the provider that we are interested in new pending transactions.
@@ -379,23 +377,23 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// If `full` is `true`, the stream will consist of full transaction bodies instead of just the
     /// hashes. This not supported by all clients.
     ///
-    /// Returns the ID to use with [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// Returns the ID to use with [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// See also [`watch_pending_transactions`](Self::watch_pending_transactions) to configure a
     /// poller.
     async fn new_pending_transactions_filter(&self, full: bool) -> TransportResult<U256> {
         // NOTE: We don't want to send `false` as the client might not support it.
         let param = if full { &[true][..] } else { &[] };
-        self.client().request("eth_newPendingTransactionFilter", param).await
+        self.client().request("xcb_newPendingTransactionFilter", param).await
     }
 
     /// Notify the provider that we are interested in logs that match the given filter.
     ///
-    /// Returns the ID to use with [`eth_getFilterChanges`](Self::get_filter_changes).
+    /// Returns the ID to use with [`xcb_getFilterChanges`](Self::get_filter_changes).
     ///
     /// See also [`watch_logs`](Self::watch_logs) to configure a poller.
     async fn new_filter(&self, filter: &Filter) -> TransportResult<U256> {
-        self.client().request("eth_newFilter", (filter,)).await
+        self.client().request("xcb_newFilter", (filter,)).await
     }
 
     /// Get a list of values that have been added since the last poll.
@@ -407,7 +405,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     where
         Self: Sized,
     {
-        self.client().request("eth_getFilterChanges", (id,)).await
+        self.client().request("xcb_getFilterChanges", (id,)).await
     }
 
     /// Get a list of values that have been added since the last poll.
@@ -415,20 +413,20 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// This returns an enum over all possible return values. You probably want to use
     /// [`get_filter_changes`](Self::get_filter_changes) instead.
     async fn get_filter_changes_dyn(&self, id: U256) -> TransportResult<FilterChanges> {
-        self.client().request("eth_getFilterChanges", (id,)).await
+        self.client().request("xcb_getFilterChanges", (id,)).await
     }
 
     /// Get the last block number available.
     async fn get_block_number(&self) -> TransportResult<BlockNumber> {
-        self.client().request("eth_blockNumber", ()).await.map(|num: U64| num.to::<u64>())
+        self.client().request("xcb_blockNumber", ()).await.map(|num: U64| num.to::<u64>())
     }
 
     /// Gets the transaction count (AKA "nonce") of the corresponding address.
     #[doc(alias = "get_nonce")]
     #[doc(alias = "get_account_nonce")]
-    async fn get_transaction_count(&self, address: Address, tag: BlockId) -> TransportResult<u64> {
+    async fn get_transaction_count(&self, address: IcanAddress, tag: BlockId) -> TransportResult<u64> {
         self.client()
-            .request("eth_getTransactionCount", (address, tag))
+            .request("xcb_getTransactionCount", (address, tag))
             .await
             .map(|count: U64| count.to::<u64>())
     }
@@ -440,7 +438,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         number: BlockNumberOrTag,
         hydrate: bool,
     ) -> TransportResult<Option<Block>> {
-        self.client().request("eth_getBlockByNumber", (number, hydrate)).await
+        self.client().request("xcb_getBlockByNumber", (number, hydrate)).await
     }
 
     /// Broadcasts a transaction to the network.
@@ -486,7 +484,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         match tx {
             SendableTx::Builder(mut tx) => {
                 alloy_network::TransactionBuilder::prep_for_submission(&mut tx);
-                let tx_hash = self.client().request("eth_sendTransaction", (tx,)).await?;
+                let tx_hash = self.client().request("xcb_sendTransaction", (tx,)).await?;
                 Ok(PendingTransactionBuilder::new(self.root(), tx_hash))
             }
             SendableTx::Envelope(tx) => {
@@ -505,13 +503,13 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         encoded_tx: &[u8],
     ) -> TransportResult<PendingTransactionBuilder<'_, T, N>> {
         let rlp_hex = hex::encode_prefixed(encoded_tx);
-        let tx_hash = self.client().request("eth_sendRawTransaction", (rlp_hex,)).await?;
+        let tx_hash = self.client().request("xcb_sendRawTransaction", (rlp_hex,)).await?;
         Ok(PendingTransactionBuilder::new(self.root(), tx_hash))
     }
 
     /// Gets the balance of the account at the specified tag, which defaults to latest.
-    async fn get_balance(&self, address: Address, tag: BlockId) -> TransportResult<U256> {
-        self.client().request("eth_getBalance", (address, tag)).await
+    async fn get_balance(&self, address: IcanAddress, tag: BlockId) -> TransportResult<U256> {
+        self.client().request("xcb_getBalance", (address, tag)).await
     }
 
     /// Gets a block by either its hash, tag, or number, with full transactions or only hashes.
@@ -528,7 +526,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         hash: BlockHash,
         full: bool,
     ) -> TransportResult<Option<Block>> {
-        self.client().request("eth_getBlockByHash", (hash, full)).await
+        self.client().request("xcb_getBlockByHash", (hash, full)).await
     }
 
     /// Gets the client version of the chain client().
@@ -538,27 +536,27 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
 
     /// Gets the chain ID.
     async fn get_chain_id(&self) -> TransportResult<u64> {
-        self.client().request("eth_chainId", ()).await.map(|id: U64| id.to::<u64>())
+        self.client().request("xcb_chainId", ()).await.map(|id: U64| id.to::<u64>())
     }
 
-    /// Gets the network ID. Same as `eth_chainId`.
+    /// Gets the network ID. Same as `xcb_chainId`.
     async fn get_net_version(&self) -> TransportResult<u64> {
         self.client().request("net_version", ()).await.map(|id: U64| id.to::<u64>())
     }
 
-    /// Gets the specified storage value from [Address].
+    /// Gets the specified storage value from [IcanAddress].
     async fn get_storage_at(
         &self,
-        address: Address,
+        address: IcanAddress,
         key: U256,
         tag: BlockId,
     ) -> TransportResult<StorageValue> {
-        self.client().request("eth_getStorageAt", (address, key, tag)).await
+        self.client().request("xcb_getStorageAt", (address, key, tag)).await
     }
 
-    /// Gets the bytecode located at the corresponding [Address].
-    async fn get_code_at(&self, address: Address, tag: BlockId) -> TransportResult<Bytes> {
-        self.client().request("eth_getCode", (address, tag)).await
+    /// Gets the bytecode located at the corresponding [IcanAddress].
+    async fn get_code_at(&self, address: IcanAddress, tag: BlockId) -> TransportResult<Bytes> {
+        self.client().request("xcb_getCode", (address, tag)).await
     }
 
     /// Gets a transaction by its [TxHash].
@@ -566,36 +564,36 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
         hash: TxHash,
     ) -> TransportResult<Option<N::TransactionResponse>> {
-        self.client().request("eth_getTransactionByHash", (hash,)).await
+        self.client().request("xcb_getTransactionByHash", (hash,)).await
     }
 
     /// Retrieves a [`Vec<Log>`] with the given [Filter].
     async fn get_logs(&self, filter: &Filter) -> TransportResult<Vec<Log>> {
-        self.client().request("eth_getLogs", (filter,)).await
+        self.client().request("xcb_getLogs", (filter,)).await
     }
 
     /// Gets the accounts in the remote node. This is usually empty unless you're using a local
     /// node.
-    async fn get_accounts(&self) -> TransportResult<Vec<Address>> {
-        self.client().request("eth_accounts", ()).await
+    async fn get_accounts(&self) -> TransportResult<Vec<IcanAddress>> {
+        self.client().request("xcb_accounts", ()).await
     }
 
-    /// Gets the current gas price in wei.
-    async fn get_gas_price(&self) -> TransportResult<u128> {
-        self.client().request("eth_gasPrice", ()).await.map(|price: U128| price.to::<u128>())
+    /// Gets the current energy price in wei.
+    async fn get_energy_price(&self) -> TransportResult<u128> {
+        self.client().request("xcb_energyPrice", ()).await.map(|price: U128| price.to::<u128>())
     }
 
-    /// Returns a suggestion for the current `maxPriorityFeePerGas` in wei.
-    async fn get_max_priority_fee_per_gas(&self) -> TransportResult<u128> {
+    /// Returns a suggestion for the current `maxPriorityFeePerEnergy` in wei.
+    async fn get_max_priority_fee_per_energy(&self) -> TransportResult<u128> {
         self.client()
-            .request("eth_maxPriorityFeePerGas", ())
+            .request("xcb_maxPriorityFeePerEnergy", ())
             .await
             .map(|fee: U128| fee.to::<u128>())
     }
 
-    /// Returns the base fee per blob gas (blob gas price) in wei.
+    /// Returns the base fee per blob energy (blob energy price) in wei.
     async fn get_blob_base_fee(&self) -> TransportResult<u128> {
-        self.client().request("eth_blobBaseFee", ()).await.map(|fee: U128| fee.to::<u128>())
+        self.client().request("xcb_blobBaseFee", ()).await.map(|fee: U128| fee.to::<u128>())
     }
 
     /// Gets a transaction receipt if it exists, by its [TxHash].
@@ -603,7 +601,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
         hash: TxHash,
     ) -> TransportResult<Option<N::ReceiptResponse>> {
-        self.client().request("eth_getTransactionReceipt", (hash,)).await
+        self.client().request("xcb_getTransactionReceipt", (hash,)).await
     }
 
     /// Gets the selected block [BlockNumberOrTag] receipts.
@@ -611,7 +609,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
         block: BlockNumberOrTag,
     ) -> TransportResult<Option<Vec<N::ReceiptResponse>>> {
-        self.client().request("eth_getBlockReceipts", (block,)).await
+        self.client().request("xcb_getBlockReceipts", (block,)).await
     }
 
     /// Gets an uncle block through the tag [BlockId] and index [u64].
@@ -620,11 +618,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         match tag {
             BlockId::Hash(hash) => {
                 self.client()
-                    .request("eth_getUncleByBlockHashAndIndex", (hash.block_hash, idx))
+                    .request("xcb_getUncleByBlockHashAndIndex", (hash.block_hash, idx))
                     .await
             }
             BlockId::Number(number) => {
-                self.client().request("eth_getUncleByBlockNumberAndIndex", (number, idx)).await
+                self.client().request("xcb_getUncleByBlockNumberAndIndex", (number, idx)).await
             }
         }
     }
@@ -634,12 +632,12 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         match tag {
             BlockId::Hash(hash) => self
                 .client()
-                .request("eth_getUncleCountByBlockHash", (hash.block_hash,))
+                .request("xcb_getUncleCountByBlockHash", (hash.block_hash,))
                 .await
                 .map(|count: U64| count.to::<u64>()),
             BlockId::Number(number) => self
                 .client()
-                .request("eth_getUncleCountByBlockNumber", (number,))
+                .request("xcb_getUncleCountByBlockNumber", (number,))
                 .await
                 .map(|count: U64| count.to::<u64>()),
         }
@@ -647,7 +645,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
 
     /// Gets syncing info.
     async fn syncing(&self) -> TransportResult<SyncStatus> {
-        self.client().request("eth_syncing", ()).await
+        self.client().request("xcb_syncing", ()).await
     }
 
     /// Execute a smart contract call with a transaction request and state
@@ -685,14 +683,14 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Note
     ///
     /// Not all client implementations support state overrides.
-    #[doc(alias = "eth_call")]
+    #[doc(alias = "xcb_call")]
     #[doc(alias = "call_with_overrides")]
-    fn call<'req>(&self, tx: &'req N::TransactionRequest) -> EthCall<'req, 'static, T, N> {
-        EthCall::new(self.weak_client(), tx)
+    fn call<'req>(&self, tx: &'req N::TransactionRequest) -> XcbCall<'req, 'static, T, N> {
+        XcbCall::new(self.weak_client(), tx)
     }
 
-    /// Returns a collection of historical gas information [FeeHistory] which
-    /// can be used to calculate the EIP1559 fields `maxFeePerGas` and `maxPriorityFeePerGas`.
+    /// Returns a collection of historical energy information [FeeHistory] which
+    /// can be used to calculate the EIP1559 fields `maxFeePerEnergy` and `maxPriorityFeePerEnergy`.
     /// `block_count` can range from 1 to 1024 blocks in a single request.
     async fn get_fee_history(
         &self,
@@ -701,23 +699,23 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         reward_percentiles: &[f64],
     ) -> TransportResult<FeeHistory> {
         self.client()
-            .request("eth_feeHistory", (U64::from(block_count), last_block, reward_percentiles))
+            .request("xcb_feeHistory", (U64::from(block_count), last_block, reward_percentiles))
             .await
     }
 
-    /// Estimate the gas needed for a transaction.
-    async fn estimate_gas(
+    /// Estimate the energy needed for a transaction.
+    async fn estimate_energy(
         &self,
         tx: &N::TransactionRequest,
         block: BlockId,
     ) -> TransportResult<u128> {
         self.client()
-            .request("eth_estimateGas", (tx, block))
+            .request("xcb_estimateEnergy", (tx, block))
             .await
-            .map(|gas: U128| gas.to::<u128>())
+            .map(|energy: U128| energy.to::<u128>())
     }
 
-    /// Estimates the EIP1559 `maxFeePerGas` and `maxPriorityFeePerGas` fields.
+    /// Estimates the EIP1559 `maxFeePerEnergy` and `maxPriorityFeePerEnergy` fields.
     ///
     /// Receives an optional [EstimatorFunction] that can be used to modify
     /// how to estimate these fees.
@@ -735,7 +733,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
 
         // if the base fee of the Latest block is 0 then we need check if the latest block even has
         // a base fee/supports EIP1559
-        let base_fee_per_gas = match fee_history.latest_block_base_fee() {
+        let base_fee_per_energy = match fee_history.latest_block_base_fee() {
             Some(base_fee) if (base_fee != 0) => base_fee,
             _ => {
                 // empty response, fetch basefee from latest block directly
@@ -743,13 +741,13 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
                     .await?
                     .ok_or(RpcError::NullResp)?
                     .header
-                    .base_fee_per_gas
+                    .base_fee_per_energy
                     .ok_or(RpcError::UnsupportedFeature("eip1559"))?
             }
         };
 
         Ok(estimator.unwrap_or(utils::eip1559_default_estimator)(
-            base_fee_per_gas,
+            base_fee_per_energy,
             &fee_history.reward.unwrap_or_default(),
         ))
     }
@@ -759,11 +757,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// This call can be used to verify that the data has not been tampered with.
     async fn get_proof(
         &self,
-        address: Address,
+        address: IcanAddress,
         keys: Vec<StorageKey>,
         block: BlockId,
     ) -> TransportResult<EIP1186AccountProofResponse> {
-        self.client().request("eth_getProof", (address, keys, block)).await
+        self.client().request("xcb_getProof", (address, keys, block)).await
     }
 
     /// Create an [EIP-2930] access list.
@@ -773,8 +771,8 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         &self,
         request: &N::TransactionRequest,
         block: BlockId,
-    ) -> TransportResult<AccessListWithGasUsed> {
-        self.client().request("eth_createAccessList", (request, block)).await
+    ) -> TransportResult<AccessListWithEnergyUsed> {
+        self.client().request("xcb_createAccessList", (request, block)).await
     }
 
     /// Executes the given transaction and returns a number of possible traces.
@@ -832,7 +830,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /* ------------------------------------------ anvil ----------------------------------------- */
 
     /// Set the bytecode of a given account.
-    async fn set_code(&self, address: Address, code: &str) -> TransportResult<()> {
+    async fn set_code(&self, address: IcanAddress, code: &str) -> TransportResult<()> {
         self.client().request("anvil_setCode", (address, code)).await
     }
 
@@ -847,13 +845,13 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// use alloy_rpc_types::BlockNumberOrTag;
     ///
     /// // No parameters: `()`
-    /// let block_number = provider.raw_request("eth_blockNumber".into(), ()).await?;
+    /// let block_number = provider.raw_request("xcb_blockNumber".into(), ()).await?;
     ///
     /// // One parameter: `(param,)` or `[param]`
-    /// let block = provider.raw_request("eth_getBlockByNumber".into(), (BlockNumberOrTag::Latest,)).await?;
+    /// let block = provider.raw_request("xcb_getBlockByNumber".into(), (BlockNumberOrTag::Latest,)).await?;
     ///
     /// // Two or more parameters: `(param1, param2, ...)` or `[param1, param2, ...]`
-    /// let full_block = provider.raw_request("eth_getBlockByNumber".into(), (BlockNumberOrTag::Latest, true)).await?;
+    /// let full_block = provider.raw_request("xcb_getBlockByNumber".into(), (BlockNumberOrTag::Latest, true)).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -876,15 +874,15 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ///
     /// // No parameters: `()`
     /// let params = serde_json::value::to_raw_value(&())?;
-    /// let block_number = provider.raw_request_dyn("eth_blockNumber".into(), &params).await?;
+    /// let block_number = provider.raw_request_dyn("xcb_blockNumber".into(), &params).await?;
     ///
     /// // One parameter: `(param,)` or `[param]`
     /// let params = serde_json::value::to_raw_value(&(BlockNumberOrTag::Latest,))?;
-    /// let block = provider.raw_request_dyn("eth_getBlockByNumber".into(), &params).await?;
+    /// let block = provider.raw_request_dyn("xcb_getBlockByNumber".into(), &params).await?;
     ///
     /// // Two or more parameters: `(param1, param2, ...)` or `[param1, param2, ...]`
     /// let params = serde_json::value::to_raw_value(&(BlockNumberOrTag::Latest, true))?;
-    /// let full_block = provider.raw_request_dyn("eth_getBlockByNumber".into(), &params).await?;
+    /// let full_block = provider.raw_request_dyn("xcb_getBlockByNumber".into(), &params).await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -995,7 +993,7 @@ mod tests {
         let anvil = Anvil::new().block_time(1).spawn();
         let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
         let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
-        let provider = RootProvider::<_, Ethereum>::new(client);
+        let provider = RootProvider::<_, Core>::new(client);
 
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(2);
@@ -1016,7 +1014,7 @@ mod tests {
         let anvil = Anvil::new().block_time(1).spawn();
         let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
         let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
-        let provider = RootProvider::<_, Ethereum>::new(client);
+        let provider = RootProvider::<_, Core>::new(client);
         let provider = provider.boxed();
 
         let sub = provider.subscribe_blocks().await.unwrap();
@@ -1038,7 +1036,7 @@ mod tests {
         let url = "wss://eth-mainnet.g.alchemy.com/v2/viFmeVzhg6bWKVMIWWS8MhmzREB-D4f7";
         let ws = alloy_rpc_client::WsConnect::new(url);
         let Ok(client) = alloy_rpc_client::RpcClient::connect_pubsub(ws).await else { return };
-        let provider = RootProvider::<_, Ethereum>::new(client);
+        let provider = RootProvider::<_, Core>::new(client);
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(1);
         while let Some(block) = stream.next().await {
@@ -1054,8 +1052,8 @@ mod tests {
         let tx = TransactionRequest {
             value: Some(U256::from(100)),
             to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            gas_price: Some(20e9 as u128),
-            gas: Some(21000),
+            energy_price: Some(20e9 as u128),
+            energy: Some(21000),
             ..Default::default()
         };
 
@@ -1083,7 +1081,7 @@ mod tests {
     async fn gets_block_number_with_raw_req() {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil();
-        let num: U64 = provider.raw_request("eth_blockNumber".into(), ()).await.unwrap();
+        let num: U64 = provider.raw_request("xcb_blockNumber".into(), ()).await.unwrap();
         assert_eq!(0, num.to::<u64>())
     }
 
@@ -1122,7 +1120,7 @@ mod tests {
         let block = provider.get_block_by_number(tag, true).await.unwrap().unwrap();
         let hash = block.header.hash.unwrap();
         let block: Block = provider
-            .raw_request::<(B256, bool), Block>("eth_getBlockByHash".into(), (hash, true))
+            .raw_request::<(B256, bool), Block>("xcb_getBlockByHash".into(), (hash, true))
             .await
             .unwrap();
         assert_eq!(block.header.hash.unwrap(), hash);
@@ -1181,7 +1179,7 @@ mod tests {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil();
         // Set the code
-        let addr = Address::with_last_byte(16);
+        let addr = IcanAddress::with_last_byte(16);
         provider.set_code(addr, "0xbeef").await.unwrap();
         let _code = provider.get_code_at(addr, BlockId::default()).await.unwrap();
     }
@@ -1190,7 +1188,7 @@ mod tests {
     async fn gets_storage_at() {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil();
-        let addr = Address::with_last_byte(16);
+        let addr = IcanAddress::with_last_byte(16);
         let storage = provider.get_storage_at(addr, U256::ZERO, BlockId::default()).await.unwrap();
         assert_eq!(storage, U256::ZERO);
     }
@@ -1213,7 +1211,7 @@ mod tests {
 
         let req = TransactionRequest::default()
             .from(provider.default_signer_address())
-            .to(Address::repeat_byte(5))
+            .to(IcanAddress::repeat_byte(5))
             .value(U256::ZERO)
             .input(bytes!("deadbeef").into());
 
@@ -1263,10 +1261,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn gets_max_priority_fee_per_gas() {
+    async fn gets_max_priority_fee_per_energy() {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil();
-        let _fee = provider.get_max_priority_fee_per_gas().await.unwrap();
+        let _fee = provider.get_max_priority_fee_per_energy().await.unwrap();
     }
 
     #[tokio::test]
@@ -1323,8 +1321,7 @@ mod tests {
         let anvil = Anvil::new().spawn();
 
         let provider =
-            RootProvider::<BoxTransport, Ethereum>::connect_builtin(anvil.endpoint().as_str())
-                .await;
+            RootProvider::<BoxTransport, Core>::connect_builtin(anvil.endpoint().as_str()).await;
 
         match provider {
             Ok(provider) => {

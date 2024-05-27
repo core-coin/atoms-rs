@@ -1,5 +1,5 @@
 use crate::Error;
-use alloy_network::Ethereum;
+use alloy_network::Core;
 use alloy_primitives::{Address, LogData};
 use alloy_provider::{FilterPollerBuilder, Network, Provider};
 use alloy_rpc_types::{Filter, Log};
@@ -11,7 +11,7 @@ use std::{fmt, marker::PhantomData};
 
 /// Helper for managing the event filter before querying or streaming its logs
 #[must_use = "event filters do nothing unless you `query`, `watch`, or `stream` them"]
-pub struct Event<T, P, E, N = Ethereum> {
+pub struct Event<T, P, E, N = Core> {
     /// The provider to use for querying or streaming logs.
     pub provider: P,
     /// The filter to use for querying or streaming logs.

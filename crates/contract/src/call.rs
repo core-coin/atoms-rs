@@ -1,7 +1,7 @@
 use crate::{CallDecoder, Error, EthCall, Result};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt};
 use alloy_json_abi::Function;
-use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
+use alloy_network::{Core, Network, ReceiptResponse, TransactionBuilder};
 use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
 use alloy_provider::{PendingTransactionBuilder, Provider};
 use alloy_rpc_types::{state::StateOverride, AccessList, BlobTransactionSidecar, BlockId};
@@ -15,13 +15,13 @@ use std::{
 
 /// [`CallBuilder`] using a [`SolCall`] type as the call decoder.
 // NOTE: please avoid changing this type due to its use in the `sol!` macro.
-pub type SolCallBuilder<T, P, C, N = Ethereum> = CallBuilder<T, P, PhantomData<C>, N>;
+pub type SolCallBuilder<T, P, C, N = Core> = CallBuilder<T, P, PhantomData<C>, N>;
 
 /// [`CallBuilder`] using a [`Function`] as the call decoder.
-pub type DynCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, Function, N>;
+pub type DynCallBuilder<T, P, N = Core> = CallBuilder<T, P, Function, N>;
 
 /// [`CallBuilder`] that does not have a call decoder.
-pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
+pub type RawCallBuilder<T, P, N = Core> = CallBuilder<T, P, (), N>;
 
 /// A builder for sending a transaction via `eth_sendTransaction`, or calling a contract via
 /// `eth_call`.
@@ -120,7 +120,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// [sol]: alloy_sol_types::sol
 #[derive(Clone)]
 #[must_use = "call builders do nothing unless you `.call`, `.send`, or `.await` them"]
-pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
+pub struct CallBuilder<T, P, D, N: Network = Core> {
     request: N::TransactionRequest,
     block: BlockId,
     state: Option<StateOverride>,
@@ -538,7 +538,7 @@ impl<T, P, D: CallDecoder, N: Network> std::fmt::Debug for CallBuilder<T, P, D, 
 #[allow(unused_imports)]
 mod tests {
     use super::*;
-    use alloy_network::Ethereum;
+    use alloy_network::Core;
     use alloy_node_bindings::{Anvil, AnvilInstance};
     use alloy_primitives::{address, b256, bytes, hex, utils::parse_units, B256};
     use alloy_provider::{

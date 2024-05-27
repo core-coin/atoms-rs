@@ -57,7 +57,7 @@ where
                 Some(overrides) => Cow::Borrowed(*overrides),
                 None => Cow::Owned(StateOverride::default()),
             };
-            client.request("eth_call", (*data, block.unwrap_or_default(), overrides))
+            client.request("xcb_call", (*data, block.unwrap_or_default(), overrides))
         };
 
         self.state = States::Running(fut);
@@ -95,13 +95,13 @@ where
     }
 }
 
-/// A builder for an `"eth_call"` request. This type is returned by the
+/// A builder for an `"xcb_call"` request. This type is returned by the
 /// [`Provider::call`] method.
 ///
 /// [`Provider::call`]: crate::Provider::call
-#[must_use = "EthCall must be awaited to execute the call"]
+#[must_use = "XcbCall must be awaited to execute the call"]
 #[derive(Debug, Clone)]
-pub struct EthCall<'req, 'state, T, N>
+pub struct XcbCall<'req, 'state, T, N>
 where
     T: Transport + Clone,
     N: Network,
@@ -113,7 +113,7 @@ where
     block: Option<BlockId>,
 }
 
-impl<'req, T, N> EthCall<'req, 'static, T, N>
+impl<'req, T, N> XcbCall<'req, 'static, T, N>
 where
     T: Transport + Clone,
     N: Network,
@@ -124,7 +124,7 @@ where
     }
 }
 
-impl<'req, 'state, T, N> EthCall<'req, 'state, T, N>
+impl<'req, 'state, T, N> XcbCall<'req, 'state, T, N>
 where
     T: Transport + Clone,
     N: Network,
@@ -144,7 +144,7 @@ where
     }
 }
 
-impl<'req, 'state, T, N> std::future::IntoFuture for EthCall<'req, 'state, T, N>
+impl<'req, 'state, T, N> std::future::IntoFuture for XcbCall<'req, 'state, T, N>
 where
     T: Transport + Clone,
     N: Network,
