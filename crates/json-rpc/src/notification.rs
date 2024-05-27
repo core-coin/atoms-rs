@@ -5,25 +5,25 @@ use serde::{
     Deserialize, Serialize,
 };
 
-/// An ethereum-style notification, not to be confused with a JSON-RPC
+/// Core-style notification, not to be confused with a JSON-RPC
 /// notification.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EthNotification<T = Box<serde_json::value::RawValue>> {
+pub struct XcbNotification<T = Box<serde_json::value::RawValue>> {
     /// The subscription ID.
     pub subscription: U256,
     /// The notification payload.
     pub result: T,
 }
 
-/// An item received over an Ethereum pubsub transport. Ethereum pubsub uses a
+/// An item received over an Core pubsub transport. Core pubsub uses a
 /// non-standard JSON-RPC notification format. An item received over a pubsub
-/// transport may be a JSON-RPC response or an Ethereum-style notification.
+/// transport may be a JSON-RPC response or Corestyle notification.
 #[derive(Clone, Debug)]
 pub enum PubSubItem {
     /// A [`Response`] to a JSON-RPC request.
     Response(Response),
-    /// An Ethereum-style notification.
-    Notification(EthNotification),
+    /// Core-style notification.
+    Notification(XcbNotification),
 }
 
 impl From<Response> for PubSubItem {
@@ -32,8 +32,8 @@ impl From<Response> for PubSubItem {
     }
 }
 
-impl From<EthNotification> for PubSubItem {
-    fn from(notification: EthNotification) -> Self {
+impl From<XcbNotification> for PubSubItem {
+    fn from(notification: XcbNotification) -> Self {
         Self::Notification(notification)
     }
 }
@@ -49,7 +49,7 @@ impl<'de> Deserialize<'de> for PubSubItem {
             type Value = PubSubItem;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("a JSON-RPC response or an Ethereum-style notification")
+                formatter.write_str("a JSON-RPC response or Core-style notification")
             }
 
             fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
@@ -128,18 +128,17 @@ impl<'de> Deserialize<'de> for PubSubItem {
 #[cfg(test)]
 mod test {
 
-    use crate::{EthNotification, PubSubItem};
+    use crate::{XcbNotification, PubSubItem};
 
     #[test]
     fn deserializer_test() {
-        // https://geth.ethereum.org/docs/interacting-with-geth/rpc/pubsub
-        let notification = r#"{ "jsonrpc": "2.0", "method": "eth_subscription", "params": {"subscription": "0xcd0c3e8af590364c09d0fa6a1210faf5", "result": {"difficulty": "0xd9263f42a87", "uncles": []}} }
+        let notification = r#"{ "jsonrpc": "2.0", "method": "xcb_subscription", "params": {"subscription": "0xcd0c3e8af590364c09d0fa6a1210faf5", "result": {"difficulty": "0xd9263f42a87", "uncles": []}} }
         "#;
 
         let deser = serde_json::from_str::<PubSubItem>(notification).unwrap();
 
         match deser {
-            PubSubItem::Notification(EthNotification { subscription, result }) => {
+            PubSubItem::Notification(XcbNotification { subscription, result }) => {
                 assert_eq!(subscription, "0xcd0c3e8af590364c09d0fa6a1210faf5".parse().unwrap());
                 assert_eq!(result.get(), r#"{"difficulty": "0xd9263f42a87", "uncles": []}"#);
             }

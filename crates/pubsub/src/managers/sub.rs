@@ -1,5 +1,5 @@
 use crate::{managers::ActiveSubscription, RawSubscription};
-use alloy_json_rpc::{EthNotification, SerializedRequest};
+use alloy_json_rpc::{SerializedRequest, XcbNotification};
 use alloy_primitives::{B256, U256};
 use bimap::BiBTreeMap;
 
@@ -82,7 +82,7 @@ impl SubscriptionManager {
     /// Notify the subscription channel of a new value, if the sub is known,
     /// and if any receiver exists. If the sub id is unknown, or no receiver
     /// exists, the notification is dropped.
-    pub(crate) fn notify(&mut self, notification: EthNotification) {
+    pub(crate) fn notify(&mut self, notification: XcbNotification) {
         if let Some(local_id) = self.local_id_for(notification.subscription) {
             if let Some((_, mut sub)) = self.local_to_sub.remove_by_left(&local_id) {
                 sub.notify(notification.result);
