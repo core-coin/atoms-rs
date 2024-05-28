@@ -155,11 +155,11 @@ impl Transaction {
             from: Some(self.from),
             to,
             gas: Some(self.gas),
-            gas_price,
+            energy_price: gas_price,
             value: Some(self.value),
             input: self.input.into(),
             nonce: Some(self.nonce),
-            chain_id: self.chain_id,
+            network_id: self.chain_id,
             access_list: self.access_list,
             transaction_type: self.transaction_type,
             max_fee_per_gas: self.max_fee_per_gas,
@@ -404,7 +404,7 @@ mod tests {
 
         let tx = serde_json::from_str::<Transaction>(rpc_tx).unwrap();
         let request = tx.into_request();
-        assert!(request.gas_price.is_some());
+        assert!(request.energy_price.is_some());
         assert!(request.max_fee_per_gas.is_none());
     }
 
@@ -416,7 +416,7 @@ mod tests {
 
         let tx = serde_json::from_str::<Transaction>(rpc_tx).unwrap();
         let request = tx.into_request();
-        assert!(request.gas_price.is_none());
+        assert!(request.energy_price.is_none());
         assert!(request.max_fee_per_gas.is_some());
     }
 }

@@ -75,13 +75,13 @@ impl GasFiller {
         T: Transport + Clone,
         N: Network,
     {
-        let gas_price_fut = if let Some(gas_price) = tx.gas_price() {
+        let gas_price_fut = if let Some(gas_price) = tx.energy_price() {
             async move { Ok(gas_price) }.left_future()
         } else {
             async { provider.get_gas_price().await }.right_future()
         };
 
-        let gas_limit_fut = if let Some(gas_limit) = tx.gas_limit() {
+        let gas_limit_fut = if let Some(gas_limit) = tx.energy_limit() {
             async move { Ok(gas_limit) }.left_future()
         } else {
             async { provider.estimate_gas(tx, Default::default()).await }.right_future()
@@ -102,7 +102,7 @@ impl GasFiller {
         T: Transport + Clone,
         N: Network,
     {
-        let gas_limit_fut = if let Some(gas_limit) = tx.gas_limit() {
+        let gas_limit_fut = if let Some(gas_limit) = tx.energy_limit() {
             async move { Ok(gas_limit) }.left_future()
         } else {
             async { provider.estimate_gas(tx, Default::default()).await }.right_future()
@@ -132,7 +132,7 @@ impl GasFiller {
         T: Transport + Clone,
         N: Network,
     {
-        let gas_limit_fut = if let Some(gas_limit) = tx.gas_limit() {
+        let gas_limit_fut = if let Some(gas_limit) = tx.energy_limit() {
             async move { Ok(gas_limit) }.left_future()
         } else {
             async { provider.estimate_gas(tx, Default::default()).await }.right_future()
@@ -175,7 +175,7 @@ impl<N: Network> TxFiller<N> for GasFiller {
 
     fn status(&self, tx: &<N as Network>::TransactionRequest) -> FillerControlFlow {
         // legacy and eip2930 tx
-        if tx.gas_price().is_some() && tx.gas_limit().is_some() {
+        if tx.energy_price().is_some() && tx.energy_limit().is_some() {
             return FillerControlFlow::Finished;
         }
 
@@ -183,7 +183,7 @@ impl<N: Network> TxFiller<N> for GasFiller {
         if tx.max_fee_per_blob_gas().is_some()
             && tx.max_fee_per_gas().is_some()
             && tx.max_priority_fee_per_gas().is_some()
-            && tx.gas_limit().is_some()
+            && tx.energy_limit().is_some()
         {
             return FillerControlFlow::Finished;
         }
@@ -192,7 +192,7 @@ impl<N: Network> TxFiller<N> for GasFiller {
         if tx.blob_sidecar().is_none()
             && tx.max_fee_per_gas().is_some()
             && tx.max_priority_fee_per_gas().is_some()
-            && tx.gas_limit().is_some()
+            && tx.energy_limit().is_some()
         {
             return FillerControlFlow::Finished;
         }
@@ -209,7 +209,7 @@ impl<N: Network> TxFiller<N> for GasFiller {
         P: Provider<T, N>,
         T: Transport + Clone,
     {
-        if tx.gas_price().is_some() || tx.access_list().is_some() {
+        if tx.energy_price().is_some() || tx.access_list().is_some() {
             self.prepare_legacy(provider, tx).await
         } else if tx.blob_sidecar().is_some() {
             self.prepare_4844(provider, tx).await
@@ -231,16 +231,16 @@ impl<N: Network> TxFiller<N> for GasFiller {
         if let Some(builder) = tx.as_mut_builder() {
             match fillable {
                 GasFillable::Legacy { gas_limit, gas_price } => {
-                    builder.set_gas_limit(gas_limit);
-                    builder.set_gas_price(gas_price);
+                    builder.set_energy_limit(gas_limit);
+                    builder.set_energy_price(gas_price);
                 }
                 GasFillable::Eip1559 { gas_limit, estimate } => {
-                    builder.set_gas_limit(gas_limit);
+                    builder.set_energy_limit(gas_limit);
                     builder.set_max_fee_per_gas(estimate.max_fee_per_gas);
                     builder.set_max_priority_fee_per_gas(estimate.max_priority_fee_per_gas);
                 }
                 GasFillable::Eip4844 { gas_limit, estimate, max_fee_per_blob_gas } => {
-                    builder.set_gas_limit(gas_limit);
+                    builder.set_energy_limit(gas_limit);
                     builder.set_max_fee_per_gas(estimate.max_fee_per_gas);
                     builder.set_max_priority_fee_per_gas(estimate.max_priority_fee_per_gas);
                     builder.set_max_fee_per_blob_gas(max_fee_per_blob_gas);
@@ -268,7 +268,7 @@ mod tests {
             from: Some(from),
             value: Some(U256::from(100)),
             to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            chain_id: Some(31337),
+            network_id: Some(31337),
             ..Default::default()
         };
 
@@ -291,7 +291,7 @@ mod tests {
             from: Some(from),
             value: Some(U256::from(100)),
             to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            gas_price: Some(gas_price),
+            energy_price: Some(gas_price),
             ..Default::default()
         };
 

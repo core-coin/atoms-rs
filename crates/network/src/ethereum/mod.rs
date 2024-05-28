@@ -32,7 +32,7 @@ impl Network for Ethereum {
 }
 
 impl ReceiptResponse for alloy_rpc_types::TransactionReceipt {
-    fn contract_address(&self) -> Option<alloy_primitives::Address> {
+    fn contract_address(&self) -> Option<alloy_primitives::IcanAddress> {
         self.contract_address
     }
 }
