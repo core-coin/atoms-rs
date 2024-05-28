@@ -291,7 +291,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
 
     /// Sets the `chain_id` field in the transaction to the provided value
     pub fn chain_id(mut self, chain_id: ChainId) -> Self {
-        self.request.set_chain_id(chain_id);
+        self.request.set_network_id(chain_id);
         self
     }
 
@@ -326,7 +326,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
 
     /// Sets the `gas` field in the transaction to the provided value
     pub fn gas(mut self, gas: u128) -> Self {
-        self.request.set_gas_limit(gas);
+        self.request.set_energy_limit(gas);
         self
     }
 
@@ -334,7 +334,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
     /// If the internal transaction is an EIP-1559 one, then it sets both
     /// `max_fee_per_gas` and `max_priority_fee_per_gas` to the same value
     pub fn gas_price(mut self, gas_price: u128) -> Self {
-        self.request.set_gas_price(gas_price);
+        self.request.set_energy_price(gas_price);
         self
     }
 
@@ -612,7 +612,7 @@ mod tests {
     fn change_chain_id() {
         let call_builder = build_call_builder().chain_id(1337);
         assert_eq!(
-            call_builder.request.chain_id.expect("chain_id should be set"),
+            call_builder.request.network_id.expect("chain_id should be set"),
             1337,
             "chain_id of request should be '1337'"
         );
