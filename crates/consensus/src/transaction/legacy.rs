@@ -12,8 +12,15 @@ use alloc::vec::Vec;
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct TxLegacy {
     /// Added as EIP-155: Simple replay attack protection
-    #[cfg_attr(feature = "serde", serde(default, with = "alloy_serde::u64_opt_via_ruint",))]
-    pub network_id: ChainId,
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            with = "alloy_serde::u64_opt_via_ruint",
+            skip_serializing_if = "Option::is_none",
+        )
+    )]
+    pub network_id: Option<ChainId>,
     /// A scalar value equal to the number of transactions sent by the sender; formally Tn.
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u64_via_ruint"))]
     pub nonce: u64,
