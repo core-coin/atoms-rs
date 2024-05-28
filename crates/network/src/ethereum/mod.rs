@@ -5,13 +5,13 @@ mod builder;
 mod signer;
 pub use signer::EthereumSigner;
 
-/// Types for a mainnet-like Ethereum network.
+/// Types for a mainnet-like Core network.
 #[derive(Clone, Copy, Debug)]
-pub struct Ethereum {
+pub struct Core {
     _private: (),
 }
 
-impl Network for Ethereum {
+impl Network for Core {
     type TxType = alloy_consensus::TxType;
 
     type TxEnvelope = alloy_consensus::TxEnvelope;

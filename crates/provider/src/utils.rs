@@ -13,10 +13,10 @@ pub type EstimatorFunction = fn(u128, &[Vec<u128>]) -> Eip1559Estimation;
 /// Return type of EIP1155 gas fee estimator.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Eip1559Estimation {
-    /// The base fee per gas.
-    pub max_fee_per_gas: u128,
-    /// The max priority fee per gas.
-    pub max_priority_fee_per_gas: u128,
+    /// The base fee per energy.
+    pub max_fee_per_energy: u128,
+    /// The max priority fee per energy.
+    pub max_priority_fee_per_energy: u128,
 }
 
 fn estimate_priority_fee(rewards: &[Vec<u128>]) -> u128 {
@@ -48,8 +48,8 @@ pub fn eip1559_default_estimator(
     let potential_max_fee = base_fee_per_gas * EIP1559_BASE_FEE_MULTIPLIER;
 
     Eip1559Estimation {
-        max_fee_per_gas: potential_max_fee + max_priority_fee_per_gas,
-        max_priority_fee_per_gas,
+        max_fee_per_energy: potential_max_fee + max_priority_fee_per_gas,
+        max_priority_fee_per_energy: max_priority_fee_per_gas,
     }
 }
 
@@ -91,8 +91,8 @@ mod tests {
         assert_eq!(
             super::eip1559_default_estimator(base_fee_per_gas, &rewards),
             Eip1559Estimation {
-                max_fee_per_gas: 202_000_000_000_u128,
-                max_priority_fee_per_gas: 200_000_000_000_u128
+                max_fee_per_energy: 202_000_000_000_u128,
+                max_priority_fee_per_energy: 200_000_000_000_u128
             }
         );
 
@@ -106,8 +106,8 @@ mod tests {
         assert_eq!(
             super::eip1559_default_estimator(base_fee_per_gas, &rewards),
             Eip1559Estimation {
-                max_fee_per_gas: 200_000_000_000_u128,
-                max_priority_fee_per_gas: 200_000_000_000_u128
+                max_fee_per_energy: 200_000_000_000_u128,
+                max_priority_fee_per_energy: 200_000_000_000_u128
             }
         );
     }

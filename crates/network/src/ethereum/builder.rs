@@ -1,11 +1,11 @@
 use crate::{
-    BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
+    BuildResult, Core, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
 };
 use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 
-impl TransactionBuilder<Ethereum> for TransactionRequest {
+impl TransactionBuilder<Core> for TransactionRequest {
     fn network_id(&self) -> Option<ChainId> {
         self.network_id
     }
@@ -168,7 +168,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         self.populate_blob_hashes();
     }
 
-    fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
+    fn build_unsigned(self) -> BuildResult<TypedTransaction, Core> {
         if let Err((tx_type, missing)) = self.missing_keys() {
             return Err((
                 self,
@@ -178,10 +178,10 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         Ok(self.build_typed_tx().expect("checked by missing_keys"))
     }
 
-    async fn build<S: NetworkSigner<Ethereum>>(
+    async fn build<S: NetworkSigner<Core>>(
         self,
         signer: &S,
-    ) -> Result<<Ethereum as Network>::TxEnvelope, TransactionBuilderError<Ethereum>> {
+    ) -> Result<<Core as Network>::TxEnvelope, TransactionBuilderError<Core>> {
         Ok(signer.sign_request(self).await?)
     }
 }

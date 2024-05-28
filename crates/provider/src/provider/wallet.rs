@@ -2,12 +2,12 @@ use crate::{
     fillers::{FillProvider, JoinFill, SignerFiller, TxFiller},
     Provider,
 };
-use alloy_network::{Ethereum, Network, NetworkSigner};
-use alloy_primitives::Address;
+use alloy_network::{Core, Network, NetworkSigner};
+use alloy_primitives::IcanAddress;
 use alloy_transport::Transport;
 
 /// Trait for Providers, Fill stacks, etc, which contain [`NetworkSigner`].
-pub trait WalletProvider<N: Network = Ethereum> {
+pub trait WalletProvider<N: Network = Core> {
     /// The underlying [`NetworkSigner`] type contained in this stack.
     type Signer: NetworkSigner<N>;
 
@@ -18,19 +18,19 @@ pub trait WalletProvider<N: Network = Ethereum> {
     fn signer_mut(&mut self) -> &mut Self::Signer;
 
     /// Get the default signer address.
-    fn default_signer_address(&self) -> Address {
+    fn default_signer_address(&self) -> IcanAddress {
         self.signer().default_signer_address()
     }
 
     /// Check if the signer can sign for the given address.
-    fn has_signer_for(&self, address: &Address) -> bool {
+    fn has_signer_for(&self, address: &IcanAddress) -> bool {
         self.signer().has_signer_for(address)
     }
 
     /// Get an iterator of all signer addresses. Note that because the signer
     /// always has at least one address, this iterator will always have at least
     /// one element.
-    fn signer_addresses(&self) -> impl Iterator<Item = Address> {
+    fn signer_addresses(&self) -> impl Iterator<Item = IcanAddress> {
         self.signer().signer_addresses()
     }
 }

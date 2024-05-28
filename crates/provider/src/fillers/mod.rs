@@ -6,8 +6,8 @@
 //!
 //! [`Provider`]: crate::Provider
 
-mod chain_id;
-pub use chain_id::ChainIdFiller;
+mod network_id;
+pub use network_id::NetworkIdFiller;
 
 mod signer;
 pub use signer::SignerFiller;
@@ -15,8 +15,8 @@ pub use signer::SignerFiller;
 mod nonce;
 pub use nonce::NonceFiller;
 
-mod gas;
-pub use gas::GasFiller;
+mod energy;
+pub use energy::EnergyFiller;
 
 mod join_fill;
 pub use join_fill::JoinFill;
@@ -25,7 +25,7 @@ use crate::{
     provider::SendableTx, PendingTransactionBuilder, Provider, ProviderLayer, RootProvider,
 };
 use alloy_json_rpc::RpcError;
-use alloy_network::{Ethereum, Network};
+use alloy_network::{Core, Network};
 use alloy_transport::{Transport, TransportResult};
 use async_trait::async_trait;
 use futures_utils_wasm::impl_future;
@@ -121,7 +121,7 @@ impl FillerControlFlow {
 /// [`TxFiller::status`] should return [`FillerControlFlow::Ready`].
 /// - **Finished**: The filler has filled in all properties that it can fill.
 /// [`TxFiller::status`] should return [`FillerControlFlow::Finished`].
-pub trait TxFiller<N: Network = Ethereum>: Clone + Send + Sync + std::fmt::Debug {
+pub trait TxFiller<N: Network = Core>: Clone + Send + Sync + std::fmt::Debug {
     /// The properties that this filler retrieves from the RPC. to fill in the
     /// TransactionRequest.
     type Fillable: Send + Sync + 'static;

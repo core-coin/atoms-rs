@@ -8,7 +8,7 @@ Crates used in Core or that are used by other crates
 - [x] json-rpc - in work (Misha)
 - [x] network - in work (Misha)
 - [x] node-bindings - in work (Misha)
-- [ ] provider - in work (Misha)
+- [x] provider - in work (Misha)
 - [ ] pubsub - in work (Misha)
 - [x] rpc-client - in work (Misha)
 - [ ] rpc-types - in work (Misha)

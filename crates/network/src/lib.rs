@@ -28,7 +28,7 @@ pub use transaction::{
 };
 
 mod ethereum;
-pub use ethereum::{Ethereum, EthereumSigner};
+pub use ethereum::{Core, EthereumSigner};
 
 mod any;
 pub use any::AnyNetwork;

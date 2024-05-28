@@ -1,5 +1,5 @@
 use crate::{Provider, RootProvider};
-use alloy_network::{Ethereum, Network};
+use alloy_network::{Core, Network};
 use alloy_primitives::{BlockNumber, U64};
 use alloy_rpc_client::{PollerBuilder, WeakClient};
 use alloy_rpc_types::Block;
@@ -18,7 +18,7 @@ const MAX_RETRIES: usize = 3;
 /// Default block number for when we don't have a block yet.
 const NO_BLOCK_NUMBER: BlockNumber = BlockNumber::MAX;
 
-pub(crate) struct ChainStreamPoller<T, N = Ethereum> {
+pub(crate) struct ChainStreamPoller<T, N = Core> {
     client: WeakClient<T>,
     poll_task: PollerBuilder<T, (), U64>,
     next_yield: BlockNumber,
@@ -34,7 +34,7 @@ impl<T: Transport + Clone, N: Network> ChainStreamPoller<T, N> {
     pub(crate) fn new(client: WeakClient<T>) -> Self {
         Self {
             client: client.clone(),
-            poll_task: PollerBuilder::new(client, "eth_blockNumber", ()),
+            poll_task: PollerBuilder::new(client, "xcb_blockNumber", ()),
             next_yield: NO_BLOCK_NUMBER,
             known_blocks: LruCache::new(BLOCK_CACHE_SIZE),
             _phantom: PhantomData,
@@ -85,7 +85,7 @@ impl<T: Transport + Clone, N: Network> ChainStreamPoller<T, N> {
             let mut retries = MAX_RETRIES;
             for number in self.next_yield..=block_number {
                 debug!(number, "fetching block");
-                let block = match client.request("eth_getBlockByNumber", (U64::from(number), false)).await {
+                let block = match client.request("xcb_getBlockByNumber", (U64::from(number), false)).await {
                     Ok(Some(block)) => block,
                     Err(RpcError::Transport(err)) if retries > 0 && err.recoverable() => {
                         debug!(number, %err, "failed to fetch block, retrying");
