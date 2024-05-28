@@ -56,7 +56,7 @@ impl<N: Network> TxFiller<N> for ChainIdFiller {
     type Fillable = u64;
 
     fn status(&self, tx: &N::TransactionRequest) -> FillerControlFlow {
-        if tx.chain_id().is_some() {
+        if tx.network_id().is_some() {
             FillerControlFlow::Finished
         } else {
             FillerControlFlow::Ready
@@ -88,8 +88,8 @@ impl<N: Network> TxFiller<N> for ChainIdFiller {
         mut tx: SendableTx<N>,
     ) -> TransportResult<SendableTx<N>> {
         if let Some(builder) = tx.as_mut_builder() {
-            if builder.chain_id().is_none() {
-                builder.set_chain_id(fillable)
+            if builder.network_id().is_none() {
+                builder.set_network_id(fillable)
             }
         };
         Ok(tx)

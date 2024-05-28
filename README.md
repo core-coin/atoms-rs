@@ -6,12 +6,12 @@ Crates used in Core or that are used by other crates
 - [ ] eips
 - [x] genesis - in work (Misha)
 - [x] json-rpc - in work (Misha)
-- [ ] network - in work (Misha)
+- [x] network - in work (Misha)
 - [x] node-bindings - in work (Misha)
 - [ ] provider - in work (Misha)
 - [ ] pubsub - in work (Misha)
-- [ ] rpc-client - in work (Misha)
-- [ ] rpc-types
+- [x] rpc-client - in work (Misha)
+- [ ] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
 - [ ] rpc-types-trace
