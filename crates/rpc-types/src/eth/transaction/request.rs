@@ -25,7 +25,7 @@ pub struct TransactionRequest {
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u128_opt_via_ruint"
     )]
-    pub gas_price: Option<u128>,
+    pub energy_price: Option<u128>,
     /// The max base fee per gas the sender is willing to pay.
     #[serde(
         default,
@@ -161,7 +161,7 @@ impl TransactionRequest {
     /// The returns `gas_price` (legacy) if set or `max_fee_per_gas` (EIP1559)
     #[inline]
     pub fn fee_cap(&self) -> Option<u128> {
-        self.gas_price.or(self.max_fee_per_gas)
+        self.energy_price.or(self.max_fee_per_gas)
     }
 
     /// Populate the `blob_versioned_hashes` key, if a sidecar exists. No
@@ -356,12 +356,12 @@ impl TransactionRequest {
                 self.sidecar = None;
             }
             TxType::Eip1559 => {
-                self.gas_price = None;
+                self.energy_price = None;
                 self.blob_versioned_hashes = None;
                 self.sidecar = None;
             }
             TxType::Eip4844 => {
-                self.gas_price = None;
+                self.energy_price = None;
             }
         }
     }
@@ -376,9 +376,9 @@ impl TransactionRequest {
     pub const fn preferred_type(&self) -> TxType {
         if self.sidecar.is_some() || self.max_fee_per_blob_gas.is_some() {
             TxType::Eip4844
-        } else if self.access_list.is_some() && self.gas_price.is_some() {
+        } else if self.access_list.is_some() && self.energy_price.is_some() {
             TxType::Eip2930
-        } else if self.gas_price.is_some() {
+        } else if self.energy_price.is_some() {
             TxType::Legacy
         } else {
             TxType::Eip1559
@@ -621,7 +621,7 @@ impl From<TxEip2930> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             transaction_type: Some(1),
             ..Default::default()
@@ -639,7 +639,7 @@ impl From<TxEip1559> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             transaction_type: Some(2),
             ..Default::default()
@@ -658,7 +658,7 @@ impl From<TxEip4844> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             transaction_type: Some(3),
@@ -680,7 +680,7 @@ impl From<TxEip4844WithSidecar> for TransactionRequest {
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            chain_id: Some(tx.chain_id),
+            network_id: Some(tx.chain_id),
             access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             sidecar: Some(sidecar),

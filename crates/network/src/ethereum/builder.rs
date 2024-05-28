@@ -59,11 +59,11 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
     }
 
     fn gas_price(&self) -> Option<u128> {
-        self.gas_price
+        self.energy_price
     }
 
     fn set_gas_price(&mut self, gas_price: u128) {
-        self.gas_price = Some(gas_price);
+        self.energy_price = Some(gas_price);
     }
 
     fn max_fee_per_gas(&self) -> Option<u128> {
@@ -137,7 +137,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
         // chain_id and from may be none.
         let common = self.energy.is_some() && self.nonce.is_some();
-        let legacy = self.gas_price.is_some();
+        let legacy = self.energy_price.is_some();
         let eip2930 = legacy && self.access_list().is_some();
 
         let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();

@@ -5,7 +5,7 @@ use alloy_consensus::{
     SignableTransaction, Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEnvelope,
     TxLegacy, TxType,
 };
-use alloy_primitives::{Address, Bytes, IcanAddress, TxKind, B1368, B256, U256};
+use alloy_primitives::{Address, Bytes, IcanAddress, Signature, TxKind, B1368, B256, U256};
 use serde::{Deserialize, Serialize};
 
 pub use alloy_consensus::BlobTransactionSidecar;
@@ -85,8 +85,11 @@ pub struct Transaction {
     pub max_fee_per_blob_gas: Option<u128>,
     /// Data
     pub input: Bytes,
-    /// Transaction signature.
-    pub signature: B1368,
+    /// All _flattened_ fields of the transaction signature.
+    ///
+    /// Note: this is an option so special transaction types without a signature (e.g. <https://github.com/ethereum-optimism/optimism/blob/0bf643c4147b43cd6f25a759d331ef3a2a61a2a3/specs/deposits.md#the-deposited-transaction-type>) can be supported.
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub signature: Option<Signature>,
     /// The network id of the transaction.
     #[serde(default, with = "alloy_serde::u64_opt_via_ruint")]
     pub network_id: u64,
@@ -304,12 +307,7 @@ mod tests {
             energy_price: Some(9),
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature {
-                v: U256::from(14),
-                r: U256::from(14),
-                s: U256::from(14),
-                y_parity: None,
-            }),
+            signature: Some(Signature::from("0x")),
             network_id: Some(17),
             blob_versioned_hashes: None,
             access_list: None,
@@ -342,12 +340,7 @@ mod tests {
             energy_price: Some(9),
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature {
-                v: U256::from(14),
-                r: U256::from(14),
-                s: U256::from(14),
-                y_parity: Some(Parity(true)),
-            }),
+            signature: Some(Signature::from("0x")),
             network_id: Some(17),
             blob_versioned_hashes: None,
             access_list: None,
@@ -394,7 +387,7 @@ mod tests {
 
         let tx = serde_json::from_str::<Transaction>(rpc_tx).unwrap();
         let request = tx.into_request();
-        assert!(request.gas_price.is_some());
+        assert!(request.energy_price.is_some());
         assert!(request.max_fee_per_gas.is_none());
     }
 
@@ -406,7 +399,7 @@ mod tests {
 
         let tx = serde_json::from_str::<Transaction>(rpc_tx).unwrap();
         let request = tx.into_request();
-        assert!(request.gas_price.is_none());
+        assert!(request.energy_price.is_none());
         assert!(request.max_fee_per_gas.is_some());
     }
 }
