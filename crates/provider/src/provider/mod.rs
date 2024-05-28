@@ -1,5 +1,5 @@
 mod call;
-pub use call::EthCall;
+pub use call::XcbCall;
 
 mod root;
 pub use root::RootProvider;

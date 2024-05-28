@@ -17,7 +17,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     /// It will replay any prior transactions to achieve the same state the transaction was executed
     /// in.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -33,7 +33,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     ///
     /// The parent of the block must be present or it will fail.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -46,7 +46,7 @@ pub trait DebugApi<N, T>: Send + Sync {
 
     /// Same as `debug_trace_block_by_hash` but block is specified by number.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -63,7 +63,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     /// The transaction will be executed in the context of the given block number or tag.
     /// The state its run on is the state of the previous block.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -78,7 +78,7 @@ pub trait DebugApi<N, T>: Send + Sync {
 
     /// Same as `debug_trace_call` but it used to run and trace multiple transactions at once.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -148,7 +148,7 @@ mod test {
 
     use super::*;
     use alloy_network::TransactionBuilder;
-    use alloy_primitives::{address, U256};
+    use alloy_primitives::{cAddress, U256};
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt::try_init();
@@ -160,13 +160,13 @@ mod test {
         let provider = ProviderBuilder::new().with_recommended_fillers().on_anvil_with_signer();
         let from = provider.default_signer_address();
 
-        let gas_price = provider.get_gas_price().await.unwrap();
+        let energy_price = provider.get_energy_price().await.unwrap();
         let tx = TransactionRequest::default()
             .from(from)
-            .to(address!("deadbeef00000000deadbeef00000000deadbeef"))
+            .to(cAddress!("0000deadbeef00000000deadbeef00000000deadbeef"))
             .value(U256::from(100))
-            .max_fee_per_gas(gas_price + 1)
-            .max_priority_fee_per_gas(gas_price + 1);
+            .max_fee_per_gas(energy_price + 1)
+            .max_priority_fee_per_gas(energy_price + 1);
         let pending = provider.send_transaction(tx).await.unwrap();
         let receipt = pending.get_receipt().await.unwrap();
 
@@ -185,12 +185,12 @@ mod test {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil_with_signer();
         let from = provider.default_signer_address();
-        let gas_price = provider.get_gas_price().await.unwrap();
+        let energy_price = provider.get_energy_price().await.unwrap();
         let tx = TransactionRequest::default()
             .from(from)
             .with_input("0xdeadbeef")
-            .max_fee_per_gas(gas_price + 1)
-            .max_priority_fee_per_gas(gas_price + 1);
+            .max_fee_per_gas(energy_price + 1)
+            .max_priority_fee_per_gas(energy_price + 1);
 
         let trace = provider
             .debug_trace_call(tx, BlockNumberOrTag::Latest, GocoreDebugTracingCallOptions::default())

@@ -1,6 +1,6 @@
 use crate::{Network, NetworkSigner, TxSigner};
 use alloy_consensus::{SignableTransaction, TxEnvelope, TypedTransaction};
-use alloy_primitives::Address;
+use alloy_primitives::IcanAddress;
 use alloy_signer::Signature;
 use async_trait::async_trait;
 use std::{collections::BTreeMap, sync::Arc};
@@ -8,8 +8,8 @@ use std::{collections::BTreeMap, sync::Arc};
 /// A signer capable of signing any transaction for the Ethereum network.
 #[derive(Clone, Default)]
 pub struct EthereumSigner {
-    default: Address,
-    secp_signers: BTreeMap<Address, Arc<dyn TxSigner<Signature> + Send + Sync>>,
+    default: IcanAddress,
+    secp_signers: BTreeMap<IcanAddress, Arc<dyn TxSigner<Signature> + Send + Sync>>,
 }
 
 impl std::fmt::Debug for EthereumSigner {
@@ -75,14 +75,14 @@ impl EthereumSigner {
     /// Get the signer for the given address.
     pub fn signer_by_address(
         &self,
-        address: Address,
+        address: IcanAddress,
     ) -> Option<Arc<dyn TxSigner<Signature> + Send + Sync + 'static>> {
         self.secp_signers.get(&address).cloned()
     }
 
     async fn sign_transaction_inner(
         &self,
-        sender: Address,
+        sender: IcanAddress,
         tx: &mut dyn SignableTransaction<Signature>,
     ) -> alloy_signer::Result<Signature> {
         self.signer_by_address(sender)
@@ -100,21 +100,21 @@ impl<N> NetworkSigner<N> for EthereumSigner
 where
     N: Network<UnsignedTx = TypedTransaction, TxEnvelope = TxEnvelope>,
 {
-    fn default_signer_address(&self) -> Address {
+    fn default_signer_address(&self) -> IcanAddress {
         self.default
     }
 
-    fn has_signer_for(&self, address: &Address) -> bool {
+    fn has_signer_for(&self, address: &IcanAddress) -> bool {
         self.secp_signers.contains_key(address)
     }
 
-    fn signer_addresses(&self) -> impl Iterator<Item = Address> {
+    fn signer_addresses(&self) -> impl Iterator<Item = IcanAddress> {
         self.secp_signers.keys().copied()
     }
 
     async fn sign_transaction_from(
         &self,
-        sender: Address,
+        sender: IcanAddress,
         tx: TypedTransaction,
     ) -> alloy_signer::Result<TxEnvelope> {
         match tx {

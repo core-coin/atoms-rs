@@ -18,7 +18,7 @@
 use alloy_consensus::TxReceipt;
 use alloy_eips::eip2718::{Eip2718Envelope, Eip2718Error};
 use alloy_json_rpc::RpcObject;
-use alloy_primitives::Address;
+use alloy_primitives::IcanAddress;
 use core::fmt::{Debug, Display};
 
 mod transaction;
@@ -28,7 +28,7 @@ pub use transaction::{
 };
 
 mod ethereum;
-pub use ethereum::{Ethereum, EthereumSigner};
+pub use ethereum::{Core, EthereumSigner};
 
 mod any;
 pub use any::AnyNetwork;
@@ -42,7 +42,7 @@ pub use alloy_eips::eip2718;
 /// [`TxReceipt`]: alloy_consensus::TxReceipt
 pub trait ReceiptResponse {
     /// Address of the created contract, or `None` if the transaction was not a deployment.
-    fn contract_address(&self) -> Option<Address>;
+    fn contract_address(&self) -> Option<IcanAddress>;
 }
 
 /// Captures type info for network-specific RPC requests/responses.

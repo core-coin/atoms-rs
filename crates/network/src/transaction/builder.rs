@@ -1,7 +1,7 @@
 use super::signer::NetworkSigner;
 use crate::Network;
 use alloy_consensus::BlobTransactionSidecar;
-use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::AccessList;
 use alloy_sol_types::SolCall;
 use futures_utils_wasm::impl_future;
@@ -51,15 +51,15 @@ impl<N: Network> TransactionBuilderError<N> {
 /// Transaction builders should be able to construct all available transaction types on a given
 /// network.
 pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'static {
-    /// Get the chain ID for the transaction.
-    fn chain_id(&self) -> Option<ChainId>;
+    /// Get the network ID for the transaction.
+    fn network_id(&self) -> Option<ChainId>;
 
-    /// Set the chain ID for the transaction.
-    fn set_chain_id(&mut self, chain_id: ChainId);
+    /// Set the network ID for the transaction.
+    fn set_network_id(&mut self, chain_id: ChainId);
 
-    /// Builder-pattern method for setting the chain ID.
-    fn with_chain_id(mut self, chain_id: alloy_primitives::ChainId) -> Self {
-        self.set_chain_id(chain_id);
+    /// Builder-pattern method for setting the network ID.
+    fn with_network_id(mut self, network_id: alloy_primitives::ChainId) -> Self {
+        self.set_network_id(chain_id);
         self
     }
 
@@ -88,13 +88,13 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Get the sender for the transaction.
-    fn from(&self) -> Option<Address>;
+    fn from(&self) -> Option<IcanAddress>;
 
     /// Set the sender for the transaction.
-    fn set_from(&mut self, from: Address);
+    fn set_from(&mut self, from: IcanAddress);
 
     /// Builder-pattern method for setting the sender.
-    fn with_from(mut self, from: Address) -> Self {
+    fn with_from(mut self, from: IcanAddress) -> Self {
         self.set_from(from);
         self
     }
@@ -115,7 +115,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Get the recipient for the transaction.
-    fn to(&self) -> Option<Address> {
+    fn to(&self) -> Option<IcanAddress> {
         if let Some(TxKind::Call(addr)) = self.kind() {
             return Some(addr);
         }
@@ -123,12 +123,12 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Set the recipient for the transaction.
-    fn set_to(&mut self, to: Address) {
+    fn set_to(&mut self, to: IcanAddress) {
         self.set_kind(to.into());
     }
 
     /// Builder-pattern method for setting the recipient.
-    fn with_to(mut self, to: Address) -> Self {
+    fn with_to(mut self, to: IcanAddress) -> Self {
         self.set_to(to);
         self
     }
@@ -177,7 +177,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     ///
     /// Returns `None` if the transaction is not a contract creation (the `to` field is set), or if
     /// the `from` or `nonce` fields are not set.
-    fn calculate_create_address(&self) -> Option<Address> {
+    fn calculate_create_address(&self) -> Option<IcanAddress> {
         if !self.kind().is_some_and(|to| to.is_create()) {
             return None;
         }
@@ -198,15 +198,27 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the legacy gas price for the transaction.
-    fn gas_price(&self) -> Option<u128>;
+    /// Get the signature for the transaction.
+    fn signature(&self) -> Option<B1368>;
 
-    /// Set the legacy gas price for the transaction.
-    fn set_gas_price(&mut self, gas_price: u128);
+    /// Set the signature for the transaction.
+    fn set_signature(&mut self, signature: B1368);
 
-    /// Builder-pattern method for setting the legacy gas price.
-    fn with_gas_price(mut self, gas_price: u128) -> Self {
-        self.set_gas_price(gas_price);
+    /// Builder-pattern method for setting the signature.
+    fn with_signature(mut self, signature: B1368) -> Self {
+        self.set_signature(signature);
+        self
+    }
+
+    /// Get the legacy energy price for the transaction.
+    fn energy_price(&self) -> Option<u128>;
+
+    /// Set the legacy energy price for the transaction.
+    fn set_energy_price(&mut self, energy_price: u128);
+
+    /// Builder-pattern method for setting the legacy energy price.
+    fn with_energy_price(mut self, energy_price: u128) -> Self {
+        self.set_energy_price(gas_price);
         self
     }
 
@@ -246,15 +258,15 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the gas limit for the transaction.
-    fn gas_limit(&self) -> Option<u128>;
+    /// Get the energy limit for the transaction.
+    fn energy_limit(&self) -> Option<u128>;
 
-    /// Set the gas limit for the transaction.
-    fn set_gas_limit(&mut self, gas_limit: u128);
+    /// Set the energy limit for the transaction.
+    fn set_energy_limit(&mut self, energy_limit: u128);
 
-    /// Builder-pattern method for setting the gas limit.
-    fn with_gas_limit(mut self, gas_limit: u128) -> Self {
-        self.set_gas_limit(gas_limit);
+    /// Builder-pattern method for setting the energy limit.
+    fn with_energy_limit(mut self, energy_limit: u128) -> Self {
+        self.set_energy_limit(energy_limit);
         self
     }
 

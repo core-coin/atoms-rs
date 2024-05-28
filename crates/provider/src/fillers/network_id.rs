@@ -8,25 +8,25 @@ use crate::{
     provider::SendableTx,
 };
 
-/// A [`TxFiller`] that populates the chain ID of a transaction.
+/// A [`TxFiller`] that populates the network ID of a transaction.
 ///
-/// If a chain ID is provided, it will be used for filling. If a chain ID
-/// is not provided, the filler will attempt to fetch the chain ID from the
+/// If a network ID is provided, it will be used for filling. If a network ID
+/// is not provided, the filler will attempt to fetch the network ID from the
 /// provider the first time a transaction is prepared, and will cache it for
 /// future transactions.
 ///
-/// Transactions that already have a chain_id set by the user will not be
+/// Transactions that already have a network_id set by the user will not be
 /// modified.
 ///
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
+/// # use alloy_network::{NetworkSigner, EthereumSigner, Core};
 /// # use alloy_rpc_types::TransactionRequest;
 /// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
 /// let provider = ProviderBuilder::new()
-///     .with_chain_id(1)
+///     .with_network_id(1)
 ///     .signer(signer)
 ///     .on_http(url);
 ///
@@ -35,28 +35,28 @@ use crate::{
 /// # }
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct ChainIdFiller(Arc<OnceLock<u64>>);
+pub struct NetworkIdFiller(Arc<OnceLock<u64>>);
 
-impl ChainIdFiller {
-    /// Create a new [`ChainIdFiller`] with an optional chain ID.
+impl NetworkIdFiller {
+    /// Create a new [`NetworkIdFiller`] with an optional network ID.
     ///
-    /// If a chain ID is provided, it will be used for filling. If a chain ID
-    /// is not provided, the filler will attempt to fetch the chain ID from the
+    /// If a network ID is provided, it will be used for filling. If a network ID
+    /// is not provided, the filler will attempt to fetch the network ID from the
     /// provider the first time a transaction is prepared.
-    pub fn new(chain_id: Option<u64>) -> Self {
+    pub fn new(network_id: Option<u64>) -> Self {
         let lock = OnceLock::new();
-        if let Some(chain_id) = chain_id {
-            lock.set(chain_id).expect("brand new");
+        if let Some(network_id) = network_id {
+            lock.set(network_id).expect("brand new");
         }
         Self(Arc::new(lock))
     }
 }
 
-impl<N: Network> TxFiller<N> for ChainIdFiller {
+impl<N: Network> TxFiller<N> for NetworkIdFiller {
     type Fillable = u64;
 
     fn status(&self, tx: &N::TransactionRequest) -> FillerControlFlow {
-        if tx.chain_id().is_some() {
+        if tx.network_id().is_some() {
             FillerControlFlow::Finished
         } else {
             FillerControlFlow::Ready
@@ -73,11 +73,11 @@ impl<N: Network> TxFiller<N> for ChainIdFiller {
         T: alloy_transport::Transport + Clone,
     {
         match self.0.get().copied() {
-            Some(chain_id) => Ok(chain_id),
+            Some(network_id) => Ok(network_id),
             None => {
-                let chain_id = provider.get_chain_id().await?;
-                let chain_id = *self.0.get_or_init(|| chain_id);
-                Ok(chain_id)
+                let network_id = provider.get_network_id().await?;
+                let network_id = *self.0.get_or_init(|| network_id);
+                Ok(network_id)
             }
         }
     }
@@ -88,8 +88,8 @@ impl<N: Network> TxFiller<N> for ChainIdFiller {
         mut tx: SendableTx<N>,
     ) -> TransportResult<SendableTx<N>> {
         if let Some(builder) = tx.as_mut_builder() {
-            if builder.chain_id().is_none() {
-                builder.set_chain_id(fillable)
+            if builder.network_id().is_none() {
+                builder.set_network_id(fillable)
             }
         };
         Ok(tx)

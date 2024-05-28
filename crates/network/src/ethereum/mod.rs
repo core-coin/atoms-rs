@@ -5,13 +5,13 @@ mod builder;
 mod signer;
 pub use signer::EthereumSigner;
 
-/// Types for a mainnet-like Ethereum network.
+/// Types for a mainnet-like Core network.
 #[derive(Clone, Copy, Debug)]
-pub struct Ethereum {
+pub struct Core {
     _private: (),
 }
 
-impl Network for Ethereum {
+impl Network for Core {
     type TxType = alloy_consensus::TxType;
 
     type TxEnvelope = alloy_consensus::TxEnvelope;
@@ -32,7 +32,7 @@ impl Network for Ethereum {
 }
 
 impl ReceiptResponse for alloy_rpc_types::TransactionReceipt {
-    fn contract_address(&self) -> Option<alloy_primitives::Address> {
+    fn contract_address(&self) -> Option<alloy_primitives::IcanAddress> {
         self.contract_address
     }
 }

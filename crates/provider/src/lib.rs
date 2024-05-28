@@ -20,7 +20,7 @@
 /// reqwest client.
 ///
 /// [`Http`]: alloy_transport_http::Http
-pub type ReqwestProvider<N = alloy_network::Ethereum> =
+pub type ReqwestProvider<N = alloy_network::Core> =
     crate::RootProvider<alloy_transport_http::Http<reqwest::Client>, N>;
 
 #[cfg(feature = "hyper")]
@@ -28,7 +28,7 @@ pub type ReqwestProvider<N = alloy_network::Ethereum> =
 /// client.
 ///
 /// [`Http`]: alloy_transport_http::Http
-pub type HyperProvider<N = alloy_network::Ethereum> =
+pub type HyperProvider<N = alloy_network::Core> =
     crate::RootProvider<alloy_transport_http::Http<alloy_transport_http::HyperClient>, N>;
 
 #[macro_use]
@@ -49,7 +49,7 @@ pub use heart::{PendingTransaction, PendingTransactionBuilder, PendingTransactio
 
 mod provider;
 pub use provider::{
-    EthCall, FilterPollerBuilder, Provider, RootProvider, SendableTx, WalletProvider,
+    FilterPollerBuilder, Provider, RootProvider, SendableTx, WalletProvider, XcbCall,
 };
 
 pub mod utils;

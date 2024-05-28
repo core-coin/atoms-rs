@@ -4,7 +4,7 @@ use crate::{
     Provider,
 };
 use alloy_network::{Network, TransactionBuilder};
-use alloy_primitives::Address;
+use alloy_primitives::IcanAddress;
 use alloy_transport::{Transport, TransportResult};
 use dashmap::DashMap;
 use std::sync::Arc;
@@ -42,7 +42,7 @@ use tokio::sync::Mutex;
 /// ```
 #[derive(Clone, Debug, Default)]
 pub struct NonceFiller {
-    nonces: DashMap<Address, Arc<Mutex<Option<u64>>>>,
+    nonces: DashMap<IcanAddress, Arc<Mutex<Option<u64>>>>,
 }
 
 impl<N: Network> TxFiller<N> for NonceFiller {
@@ -85,7 +85,7 @@ impl<N: Network> TxFiller<N> for NonceFiller {
 
 impl NonceFiller {
     /// Get the next nonce for the given account.
-    async fn get_next_nonce<P, T, N>(&self, provider: &P, from: Address) -> TransportResult<u64>
+    async fn get_next_nonce<P, T, N>(&self, provider: &P, from: IcanAddress) -> TransportResult<u64>
     where
         P: Provider<T, N>,
         N: Network,
@@ -116,7 +116,7 @@ impl NonceFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_primitives::{address, U256};
+    use alloy_primitives::{cAddress, U256};
     use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]
@@ -125,8 +125,8 @@ mod tests {
 
         let tx = TransactionRequest {
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            gas_price: Some(20e9 as u128),
+            to: Some(cAddress!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            energy_price: Some(20e9 as u128),
             gas: Some(21000),
             ..Default::default()
         };
@@ -143,9 +143,9 @@ mod tests {
         let tx = TransactionRequest {
             from: Some(from),
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            gas_price: Some(20e9 as u128),
-            gas: Some(21000),
+            to: Some(cAddress!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            energy_price: Some(20e9 as u128),
+            energy: Some(21000),
             ..Default::default()
         };
 

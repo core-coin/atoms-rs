@@ -1,6 +1,6 @@
 use crate::{Network, TransactionBuilder};
 use alloy_consensus::SignableTransaction;
-use alloy_primitives::Address;
+use alloy_primitives::IcanAddress;
 use async_trait::async_trait;
 use futures_utils_wasm::impl_future;
 
@@ -20,19 +20,19 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
     /// Get the default signer address. This address should be used
     /// in [`NetworkSigner::sign_transaction_from`] when no specific signer is
     /// specified.
-    fn default_signer_address(&self) -> Address;
+    fn default_signer_address(&self) -> IcanAddress;
 
     /// Return true if the signer contains a credential for the given address.
-    fn has_signer_for(&self, address: &Address) -> bool;
+    fn has_signer_for(&self, address: &IcanAddress) -> bool;
 
     /// Return an iterator of all signer addresses.
-    fn signer_addresses(&self) -> impl Iterator<Item = Address>;
+    fn signer_addresses(&self) -> impl Iterator<Item = IcanAddress>;
 
     /// Asynchronously sign an unsigned transaction, with a specified
     /// credential.
     async fn sign_transaction_from(
         &self,
-        sender: Address,
+        sender: IcanAddress,
         tx: N::UnsignedTx,
     ) -> alloy_signer::Result<N::TxEnvelope>;
 
@@ -74,7 +74,7 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait TxSigner<Signature> {
     /// Get the address of the signer.
-    fn address(&self) -> Address;
+    fn address(&self) -> IcanAddress;
 
     /// Asynchronously sign an unsigned transaction.
     async fn sign_transaction(
@@ -100,7 +100,7 @@ pub trait TxSigner<Signature> {
 /// [`ChainId`]: alloy_primitives::ChainId
 pub trait TxSignerSync<Signature> {
     /// Get the address of the signer.
-    fn address(&self) -> Address;
+    fn address(&self) -> IcanAddress;
 
     /// Synchronously sign an unsigned transaction.
     fn sign_transaction_sync(
