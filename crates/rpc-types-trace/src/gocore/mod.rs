@@ -1,6 +1,6 @@
 //! Geth tracing types.
 
-use crate::geth::mux::{MuxConfig, MuxFrame};
+use crate::gocore::mux::{MuxConfig, MuxFrame};
 use alloy_primitives::{Bytes, B256, U256};
 use alloy_rpc_types::{state::StateOverride, BlockOverrides};
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Serialize, Serializer};
@@ -24,7 +24,7 @@ pub mod noop;
 pub mod pre_state;
 
 /// Result type for geth style transaction trace
-pub type TraceResult = crate::common::TraceResult<GethTrace, String>;
+pub type TraceResult = crate::common::TraceResult<GocoreTrace, String>;
 
 /// blockTraceResult represents the results of tracing a single block when an entire chain is being
 /// traced. ref <https://github.com/ethereum/go-ethereum/blob/ee530c0d5aa70d2c00ab5691a89ab431b73f8165/eth/tracers/api.go#L218-L222>
@@ -46,8 +46,8 @@ pub struct BlockTraceResult {
 pub struct DefaultFrame {
     /// Whether the transaction failed
     pub failed: bool,
-    /// How much gas was used.
-    pub gas: u64,
+    /// How much energy was used.
+    pub energy: u64,
     /// Output of the transaction
     #[serde(serialize_with = "alloy_serde::serialize_hex_string_no_prefix")]
     pub return_value: Bytes,
@@ -64,8 +64,8 @@ pub struct StructLog {
     pub pc: u64,
     /// opcode to be executed
     pub op: String,
-    /// remaining gas
-    pub gas: u64,
+    /// remaining energy
+    pub energy: u64,
     /// cost for executing op
     #[serde(rename = "gasCost")]
     pub gas_cost: u64,
@@ -103,10 +103,10 @@ pub struct StructLog {
 ///
 /// Note: This deserializes untagged, so it's possible that a custom javascript tracer response
 /// matches another variant, for example a js tracer that returns `{}` would be deserialized as
-/// [GethTrace::NoopTracer]
+/// [GocoreTrace::NoopTracer]
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum GethTrace {
+pub enum GocoreTrace {
     /// The response for the default struct log tracer
     Default(DefaultFrame),
     /// The response for call tracer
@@ -123,39 +123,39 @@ pub enum GethTrace {
     JS(serde_json::Value),
 }
 
-impl From<DefaultFrame> for GethTrace {
+impl From<DefaultFrame> for GocoreTrace {
     fn from(value: DefaultFrame) -> Self {
-        GethTrace::Default(value)
+        GocoreTrace::Default(value)
     }
 }
 
-impl From<FourByteFrame> for GethTrace {
+impl From<FourByteFrame> for GocoreTrace {
     fn from(value: FourByteFrame) -> Self {
-        GethTrace::FourByteTracer(value)
+        GocoreTrace::FourByteTracer(value)
     }
 }
 
-impl From<CallFrame> for GethTrace {
+impl From<CallFrame> for GocoreTrace {
     fn from(value: CallFrame) -> Self {
-        GethTrace::CallTracer(value)
+        GocoreTrace::CallTracer(value)
     }
 }
 
-impl From<PreStateFrame> for GethTrace {
+impl From<PreStateFrame> for GocoreTrace {
     fn from(value: PreStateFrame) -> Self {
-        GethTrace::PreStateTracer(value)
+        GocoreTrace::PreStateTracer(value)
     }
 }
 
-impl From<NoopFrame> for GethTrace {
+impl From<NoopFrame> for GocoreTrace {
     fn from(value: NoopFrame) -> Self {
-        GethTrace::NoopTracer(value)
+        GocoreTrace::NoopTracer(value)
     }
 }
 
-impl From<MuxFrame> for GethTrace {
+impl From<MuxFrame> for GocoreTrace {
     fn from(value: MuxFrame) -> Self {
-        GethTrace::MuxTracer(value)
+        GocoreTrace::MuxTracer(value)
     }
 }
 
@@ -163,7 +163,7 @@ impl From<MuxFrame> for GethTrace {
 ///
 /// See <https://geth.ethereum.org/docs/developers/evm-tracing/built-in-tracers>
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum GethDebugBuiltInTracerType {
+pub enum GocoreDebugBuiltInTracerType {
     /// The 4byteTracer collects the function selectors of every function executed in the lifetime
     /// of a transaction, along with the size of the supplied call data. The result is a
     /// [FourByteFrame] where the keys are SELECTOR-CALLDATASIZE and the values are number of
@@ -198,16 +198,16 @@ pub enum GethDebugBuiltInTracerType {
 /// See <https://geth.ethereum.org/docs/developers/evm-tracing/built-in-tracers> and <https://geth.ethereum.org/docs/developers/evm-tracing/custom-tracer>
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum GethDebugTracerType {
+pub enum GocoreDebugTracerType {
     /// built-in tracer
-    BuiltInTracer(GethDebugBuiltInTracerType),
+    BuiltInTracer(GocoreDebugBuiltInTracerType),
     /// custom JS tracer
     JsTracer(String),
 }
 
-impl From<GethDebugBuiltInTracerType> for GethDebugTracerType {
-    fn from(value: GethDebugBuiltInTracerType) -> Self {
-        GethDebugTracerType::BuiltInTracer(value)
+impl From<GocoreDebugBuiltInTracerType> for GocoreDebugTracerType {
+    fn from(value: GocoreDebugBuiltInTracerType) -> Self {
+        GocoreDebugTracerType::BuiltInTracer(value)
     }
 }
 
@@ -217,11 +217,11 @@ impl From<GethDebugBuiltInTracerType> for GethDebugTracerType {
 /// with helpers for deserializing tracer configs.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct GethDebugTracerConfig(pub serde_json::Value);
+pub struct GocoreDebugTracerConfig(pub serde_json::Value);
 
-// === impl GethDebugTracerConfig ===
+// === impl GocoreDebugTracerConfig ===
 
-impl GethDebugTracerConfig {
+impl GocoreDebugTracerConfig {
     /// Returns if this is a null object
     pub fn is_null(&self) -> bool {
         self.0.is_null()
@@ -262,9 +262,9 @@ impl GethDebugTracerConfig {
     }
 }
 
-impl From<serde_json::Value> for GethDebugTracerConfig {
+impl From<serde_json::Value> for GocoreDebugTracerConfig {
     fn from(value: serde_json::Value) -> Self {
-        GethDebugTracerConfig(value)
+        GocoreDebugTracerConfig(value)
     }
 }
 
@@ -273,34 +273,34 @@ impl From<serde_json::Value> for GethDebugTracerConfig {
 /// See <https://geth.ethereum.org/docs/rpc/ns-debug#debug_tracetransaction>
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GethDebugTracingOptions {
+pub struct GocoreDebugTracingOptions {
     /// The common tracing options
     #[serde(default, flatten)]
-    pub config: GethDefaultTracingOptions,
+    pub config: GocoreDefaultTracingOptions,
     /// The custom tracer to use.
     ///
     /// If `None` then the default structlog tracer is used.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub tracer: Option<GethDebugTracerType>,
+    pub tracer: Option<GocoreDebugTracerType>,
     /// Config specific to given `tracer`.
     ///
     /// Note default struct logger config are historically embedded in main object.
     ///
-    /// tracerConfig is slated for Geth v1.11.0
+    /// tracerConfig is slated for Gocore v1.11.0
     /// See <https://github.com/ethereum/go-ethereum/issues/26513>
     ///
     /// This could be [CallConfig] or [PreStateConfig] depending on the tracer.
-    #[serde(default, skip_serializing_if = "GethDebugTracerConfig::is_null")]
-    pub tracer_config: GethDebugTracerConfig,
+    #[serde(default, skip_serializing_if = "GocoreDebugTracerConfig::is_null")]
+    pub tracer_config: GocoreDebugTracerConfig,
     /// A string of decimal integers that overrides the JavaScript-based tracing calls default
     /// timeout of 5 seconds.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timeout: Option<String>,
 }
 
-impl GethDebugTracingOptions {
+impl GocoreDebugTracingOptions {
     /// Sets the tracer to use
-    pub fn with_tracer(mut self, tracer: GethDebugTracerType) -> Self {
+    pub fn with_tracer(mut self, tracer: GocoreDebugTracerType) -> Self {
         self.tracer = Some(tracer);
         self
     }
@@ -314,14 +314,14 @@ impl GethDebugTracingOptions {
     /// Configures a [CallConfig]
     pub fn call_config(mut self, config: CallConfig) -> Self {
         self.tracer_config =
-            GethDebugTracerConfig(serde_json::to_value(config).expect("is serializable"));
+            GocoreDebugTracerConfig(serde_json::to_value(config).expect("is serializable"));
         self
     }
 
     /// Configures a [PreStateConfig]
     pub fn prestate_config(mut self, config: PreStateConfig) -> Self {
         self.tracer_config =
-            GethDebugTracerConfig(serde_json::to_value(config).expect("is serializable"));
+            GocoreDebugTracerConfig(serde_json::to_value(config).expect("is serializable"));
         self
     }
 }
@@ -333,7 +333,7 @@ impl GethDebugTracingOptions {
 /// `debug_trace{Transaction,Block}` calls.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GethDefaultTracingOptions {
+pub struct GocoreDefaultTracingOptions {
     /// enable memory capture
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub enable_memory: Option<bool>,
@@ -341,7 +341,7 @@ pub struct GethDefaultTracingOptions {
     ///
     /// This is the opposite of `enable_memory`.
     ///
-    /// Note: memory capture used to be enabled by default on geth, but has since been flipped <https://github.com/ethereum/go-ethereum/pull/23558> and is now disabled by default.
+    /// Note: memory capture used to be enabled by default on gocore, but has since been flipped <https://github.com/ethereum/go-ethereum/pull/23558> and is now disabled by default.
     /// However, at the time of writing this, erigon still defaults to enabled and supports the
     /// `disableMemory` option. So we keep this option for compatibility, but if it's missing
     /// OR `enableMemory` is present `enableMemory` takes precedence.
@@ -374,7 +374,7 @@ pub struct GethDefaultTracingOptions {
     pub limit: Option<u64>,
 }
 
-impl GethDefaultTracingOptions {
+impl GocoreDefaultTracingOptions {
     /// Enables memory capture.
     pub const fn enable_memory(self) -> Self {
         self.with_enable_memory(true)
@@ -485,10 +485,10 @@ impl GethDefaultTracingOptions {
 /// See <https://geth.ethereum.org/docs/rpc/ns-debug#debug_tracecall>
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GethDebugTracingCallOptions {
+pub struct GocoreDebugTracingCallOptions {
     /// All the options
     #[serde(flatten)]
-    pub tracing_options: GethDebugTracingOptions,
+    pub tracing_options: GocoreDebugTracingOptions,
     /// The state overrides to apply
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub state_overrides: Option<StateOverride>,
@@ -497,7 +497,7 @@ pub struct GethDebugTracingCallOptions {
     pub block_overrides: Option<BlockOverrides>,
 }
 
-impl GethDebugTracingCallOptions {
+impl GocoreDebugTracingCallOptions {
     /// Enables state overrides
     pub fn with_state_overrides(mut self, overrides: StateOverride) -> Self {
         self.state_overrides = Some(overrides);
@@ -511,7 +511,7 @@ impl GethDebugTracingCallOptions {
     }
 
     /// Sets the tracing options
-    pub fn with_tracing_options(mut self, options: GethDebugTracingOptions) -> Self {
+    pub fn with_tracing_options(mut self, options: GocoreDebugTracingOptions) -> Self {
         self.tracing_options = options;
         self
     }
@@ -544,10 +544,10 @@ mod tests {
     #[test]
     fn test_tracer_config() {
         let s = "{\"tracer\": \"callTracer\"}";
-        let opts = serde_json::from_str::<GethDebugTracingOptions>(s).unwrap();
+        let opts = serde_json::from_str::<GocoreDebugTracingOptions>(s).unwrap();
         assert_eq!(
             opts.tracer,
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::CallTracer))
+            Some(GocoreDebugTracerType::BuiltInTracer(GocoreDebugBuiltInTracerType::CallTracer))
         );
         let _call_config = opts.tracer_config.clone().into_call_config().unwrap();
         let _prestate_config = opts.tracer_config.into_pre_state_config().unwrap();
@@ -555,7 +555,7 @@ mod tests {
 
     #[test]
     fn test_memory_capture() {
-        let mut config = GethDefaultTracingOptions::default();
+        let mut config = GocoreDefaultTracingOptions::default();
 
         // by default false
         assert!(!config.is_memory_enabled());
@@ -571,7 +571,7 @@ mod tests {
 
     #[test]
     fn test_return_data_capture() {
-        let mut config = GethDefaultTracingOptions::default();
+        let mut config = GocoreDefaultTracingOptions::default();
 
         // by default false
         assert!(!config.is_return_data_enabled());

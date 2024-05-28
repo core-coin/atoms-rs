@@ -1,22 +1,22 @@
 //! Geth `muxTracer` types.
 
-use crate::geth::{GethDebugBuiltInTracerType, GethDebugTracerConfig, GethTrace};
+use crate::gocore::{GocoreDebugBuiltInTracerType, GocoreDebugTracerConfig, GocoreTrace};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// A `muxTracer` config that contains the configuration for running multiple tracers in one go.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MuxConfig(pub HashMap<GethDebugBuiltInTracerType, Option<GethDebugTracerConfig>>);
+pub struct MuxConfig(pub HashMap<GocoreDebugBuiltInTracerType, Option<GocoreDebugTracerConfig>>);
 
 /// A `muxTracer` frame response that contains the results of multiple tracers
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MuxFrame(pub HashMap<GethDebugBuiltInTracerType, GethTrace>);
+pub struct MuxFrame(pub HashMap<GocoreDebugBuiltInTracerType, GocoreTrace>);
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geth::*;
+    use crate::gocore::*;
 
     const FOUR_BYTE_FRAME: &str = r#"{
         "0x27dc297e-128": 1,
@@ -54,22 +54,22 @@ mod tests {
 
     #[test]
     fn test_serialize_mux_tracer_config() {
-        let mut opts = GethDebugTracingCallOptions::default();
+        let mut opts = GocoreDebugTracingCallOptions::default();
         opts.tracing_options.tracer =
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::MuxTracer));
+            Some(GocoreDebugTracerType::BuiltInTracer(GocoreDebugBuiltInTracerType::MuxTracer));
 
         let call_config = CallConfig { only_top_call: Some(true), with_log: Some(true) };
         let prestate_config = PreStateConfig { diff_mode: Some(true) };
 
         opts.tracing_options.tracer_config = serde_json::to_value(MuxConfig(HashMap::from([
-            (GethDebugBuiltInTracerType::FourByteTracer, None),
+            (GocoreDebugBuiltInTracerType::FourByteTracer, None),
             (
-                GethDebugBuiltInTracerType::CallTracer,
-                Some(GethDebugTracerConfig(serde_json::to_value(call_config).unwrap())),
+                GocoreDebugBuiltInTracerType::CallTracer,
+                Some(GocoreDebugTracerConfig(serde_json::to_value(call_config).unwrap())),
             ),
             (
-                GethDebugBuiltInTracerType::PreStateTracer,
-                Some(GethDebugTracerConfig(serde_json::to_value(prestate_config).unwrap())),
+                GocoreDebugBuiltInTracerType::PreStateTracer,
+                Some(GocoreDebugTracerConfig(serde_json::to_value(prestate_config).unwrap())),
             ),
         ])))
         .unwrap()
@@ -85,16 +85,16 @@ mod tests {
     fn test_deserialize_mux_frame() {
         let expected = HashMap::from([
             (
-                GethDebugBuiltInTracerType::FourByteTracer,
-                GethTrace::FourByteTracer(serde_json::from_str(FOUR_BYTE_FRAME).unwrap()),
+                GocoreDebugBuiltInTracerType::FourByteTracer,
+                GocoreTrace::FourByteTracer(serde_json::from_str(FOUR_BYTE_FRAME).unwrap()),
             ),
             (
-                GethDebugBuiltInTracerType::CallTracer,
-                GethTrace::CallTracer(serde_json::from_str(CALL_FRAME_WITH_LOG).unwrap()),
+                GocoreDebugBuiltInTracerType::CallTracer,
+                GocoreTrace::CallTracer(serde_json::from_str(CALL_FRAME_WITH_LOG).unwrap()),
             ),
             (
-                GethDebugBuiltInTracerType::PreStateTracer,
-                GethTrace::PreStateTracer(serde_json::from_str(PRESTATE_FRAME).unwrap()),
+                GocoreDebugBuiltInTracerType::PreStateTracer,
+                GocoreTrace::PreStateTracer(serde_json::from_str(PRESTATE_FRAME).unwrap()),
             ),
         ]);
 
@@ -102,16 +102,16 @@ mod tests {
         let trace: MuxFrame = serde_json::from_str(&raw_frame).unwrap();
 
         assert_eq!(
-            trace.0[&GethDebugBuiltInTracerType::FourByteTracer],
-            expected[&GethDebugBuiltInTracerType::FourByteTracer]
+            trace.0[&GocoreDebugBuiltInTracerType::FourByteTracer],
+            expected[&GocoreDebugBuiltInTracerType::FourByteTracer]
         );
         assert_eq!(
-            trace.0[&GethDebugBuiltInTracerType::CallTracer],
-            expected[&GethDebugBuiltInTracerType::CallTracer]
+            trace.0[&GocoreDebugBuiltInTracerType::CallTracer],
+            expected[&GocoreDebugBuiltInTracerType::CallTracer]
         );
         assert_eq!(
-            trace.0[&GethDebugBuiltInTracerType::PreStateTracer],
-            expected[&GethDebugBuiltInTracerType::PreStateTracer]
+            trace.0[&GocoreDebugBuiltInTracerType::PreStateTracer],
+            expected[&GocoreDebugBuiltInTracerType::PreStateTracer]
         );
     }
 }

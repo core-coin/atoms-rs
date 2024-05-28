@@ -3,39 +3,39 @@
 use alloy_primitives::B256;
 use serde::{Deserialize, Serialize};
 
-/// Opcode gas usage for a transaction.
+/// Opcode energy usage for a transaction.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BlockOpcodeGas {
+pub struct BlockOpcodeEnergy {
     /// The block hash
     pub block_hash: B256,
     /// The block number
     pub block_number: u64,
     /// All executed transactions in the block in the order they were executed, with their opcode
-    /// gas usage.
-    pub transactions: Vec<TransactionOpcodeGas>,
+    /// energy usage.
+    pub transactions: Vec<TransactionOpcodeEnergy>,
 }
 
-/// Opcode gas usage for a transaction.
+/// Opcode energy usage for a transaction.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TransactionOpcodeGas {
+pub struct TransactionOpcodeEnergy {
     /// The transaction hash
     pub transaction_hash: B256,
-    /// The gas used by each opcode in the transaction
-    pub opcode_gas: Vec<OpcodeGas>,
+    /// The energy used by each opcode in the transaction
+    pub opcode_energy: Vec<OpcodeEnergy>,
 }
 
-/// Gas information for a single opcode.
+/// Energy information for a single opcode.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OpcodeGas {
+pub struct OpcodeEnergy {
     /// The name of the opcode
     pub opcode: String,
     /// How many times the opcode was executed
     pub count: u64,
-    /// Combined gas used by all instances of the opcode
+    /// Combined energy used by all instances of the opcode
     ///
-    /// For opcodes with constant gas costs, this is the constant opcode gas cost times the count.
-    pub gas_used: u64,
+    /// For opcodes with constant energy costs, this is the constant opcode energy cost times the count.
+    pub energy_used: u64,
 }

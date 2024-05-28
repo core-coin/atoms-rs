@@ -12,7 +12,7 @@ pub struct FourByteFrame(pub BTreeMap<String, u64>);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geth::*;
+    use crate::gocore::*;
 
     const DEFAULT: &str = r#"{
         "0x27dc297e-128": 1,
@@ -24,9 +24,10 @@ mod tests {
 
     #[test]
     fn test_serialize_four_byte_trace() {
-        let mut opts = GethDebugTracingCallOptions::default();
-        opts.tracing_options.tracer =
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::FourByteTracer));
+        let mut opts = GocoreDebugTracingCallOptions::default();
+        opts.tracing_options.tracer = Some(GocoreDebugTracerType::BuiltInTracer(
+            GocoreDebugBuiltInTracerType::FourByteTracer,
+        ));
 
         assert_eq!(serde_json::to_string(&opts).unwrap(), r#"{"tracer":"4byteTracer"}"#);
     }
