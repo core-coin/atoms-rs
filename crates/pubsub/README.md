@@ -1,6 +1,6 @@
 # alloy-pubsub
 
-Ethereum JSON-RPC [publish-subscribe] tower service and type definitions.
+Core Blockchain JSON-RPC [publish-subscribe] tower service and type definitions.
 
 [publish-subscribe]: https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
 
@@ -87,7 +87,7 @@ unsubscribing during or immediately after a reconnection.
 
 The **service** uses the `is_subscription()` method in the request to determine
 whether a given RPC request is a subscription. In general, subscription requests
-use the `eth_subscribe` method. However, other methods may also be used to
+use the `xcb_subscribe` method. However, other methods may also be used to
 create subscriptions, such as `admin_peerEvents`. To allow custom subscriptions
 on unknown methods, the `Request`, `SerializedRequest` and `RpcCall` expose
 `set_is_subscription()`, which can be used to mark any given request as a

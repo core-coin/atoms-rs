@@ -131,7 +131,7 @@ impl<T: PubSubConnect> PubSubService<T> {
 
     /// Service an unsubscribe instruction.
     fn service_unsubscribe(&mut self, local_id: U256) -> TransportResult<()> {
-        let req = Request::new("eth_unsubscribe", Id::None, [local_id]);
+        let req = Request::new("xcb_unsubscribe", Id::None, [local_id]);
         let brv = req.serialize().expect("no ser error").take_request();
 
         self.dispatch_request(brv)?;
