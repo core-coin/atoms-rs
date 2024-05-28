@@ -9,8 +9,8 @@ Crates used in Core or that are used by other crates
 - [x] network - in work (Misha)
 - [x] node-bindings - in work (Misha)
 - [ ] provider - in work (Misha)
-- [ ] pubsub
-- [ ] rpc-client
+- [ ] pubsub - in work (Misha)
+- [x] rpc-client - in work (Misha)
 - [ ] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine

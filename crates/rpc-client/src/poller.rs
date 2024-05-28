@@ -36,7 +36,7 @@ const MAX_RETRIES: usize = 3;
 ///
 /// # Examples
 ///
-/// Poll `eth_blockNumber` every 5 seconds:
+/// Poll `xcb_blockNumber` every 5 seconds:
 ///
 /// ```no_run
 /// # async fn example<T: alloy_transport::Transport + Clone>(client: alloy_rpc_client::RpcClient<T>) -> Result<(), Box<dyn std::error::Error>> {
@@ -45,7 +45,7 @@ const MAX_RETRIES: usize = 3;
 /// use futures_util::StreamExt;
 ///
 /// let poller: PollerBuilder<_, (), U64> = client
-///     .prepare_static_poller("eth_blockNumber", ())
+///     .prepare_static_poller("xcb_blockNumber", ())
 ///     .with_poll_interval(std::time::Duration::from_secs(5));
 /// let mut stream = poller.into_stream();
 /// while let Some(block_number) = stream.next().await {
