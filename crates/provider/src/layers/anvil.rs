@@ -1,4 +1,4 @@
-use alloy_network::Ethereum;
+use alloy_network::Core;
 use alloy_node_bindings::{Anvil, AnvilInstance};
 use alloy_transport::Transport;
 use reqwest::Url;
@@ -42,7 +42,7 @@ impl From<Anvil> for AnvilLayer {
     }
 }
 
-impl<P, T> ProviderLayer<P, T, Ethereum> for AnvilLayer
+impl<P, T> ProviderLayer<P, T, Core> for AnvilLayer
 where
     P: Provider<T>,
     T: Transport + Clone,

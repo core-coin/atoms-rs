@@ -5,13 +5,13 @@ Crates used in Core or that are used by other crates
 - [ ] consensus
 - [ ] eips
 - [x] genesis - in work (Misha)
-- [ ] json-rpc - in work (Misha)
-- [ ] network - in work (Misha)
-- [ ] node-bindings
-- [ ] provider
-- [ ] pubsub
-- [ ] rpc-client
-- [ ] rpc-types
+- [x] json-rpc - in work (Misha)
+- [x] network - in work (Misha)
+- [x] node-bindings - in work (Misha)
+- [x] provider - in work (Misha)
+- [ ] pubsub - in work (Misha)
+- [x] rpc-client - in work (Misha)
+- [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
 - [ ] rpc-types-trace

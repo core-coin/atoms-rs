@@ -7,12 +7,12 @@ use alloy_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
 use crate::{any::AnyNetwork, BuildResult, Network, TransactionBuilder, TransactionBuilderError};
 
 impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
-    fn chain_id(&self) -> Option<alloy_primitives::ChainId> {
-        self.deref().chain_id()
+    fn network_id(&self) -> Option<alloy_primitives::ChainId> {
+        self.deref().network_id()
     }
 
-    fn set_chain_id(&mut self, chain_id: alloy_primitives::ChainId) {
-        self.deref_mut().set_chain_id(chain_id)
+    fn set_network_id(&mut self, chain_id: alloy_primitives::ChainId) {
+        self.deref_mut().set_network_id(chain_id)
     }
 
     fn nonce(&self) -> Option<u64> {
@@ -31,11 +31,11 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_input(input);
     }
 
-    fn from(&self) -> Option<alloy_primitives::Address> {
+    fn from(&self) -> Option<alloy_primitives::IcanAddress> {
         self.deref().from()
     }
 
-    fn set_from(&mut self, from: alloy_primitives::Address) {
+    fn set_from(&mut self, from: alloy_primitives::IcanAddress) {
         self.deref_mut().set_from(from);
     }
 
@@ -59,12 +59,20 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_value(value)
     }
 
-    fn gas_price(&self) -> Option<u128> {
-        self.deref().gas_price()
+    fn signature(&self) -> Option<alloy_primitives::B1368> {
+        self.deref().signature()
     }
 
-    fn set_gas_price(&mut self, gas_price: u128) {
-        self.deref_mut().set_gas_price(gas_price);
+    fn set_signature(&mut self, signature: alloy_primitives::B1368) {
+        self.deref_mut().set_signature(signature)
+    }
+
+    fn energy_limit(&self) -> Option<u128> {
+        self.deref().energy_limit()
+    }
+
+    fn set_energy_limit(&mut self, energy_limit: u128) {
+        self.deref_mut().set_energy_limit(energy_limit);
     }
 
     fn max_fee_per_gas(&self) -> Option<u128> {
@@ -91,12 +99,12 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_max_fee_per_blob_gas(max_fee_per_blob_gas)
     }
 
-    fn gas_limit(&self) -> Option<u128> {
-        self.deref().gas_limit()
+    fn energy_price(&self) -> Option<u128> {
+        self.deref().energy_price()
     }
 
-    fn set_gas_limit(&mut self, gas_limit: u128) {
-        self.deref_mut().set_gas_limit(gas_limit);
+    fn set_energy_price(&mut self, gas_price: u128) {
+        self.deref_mut().set_energy_price(gas_price);
     }
 
     /// Get the EIP-2930 access list for the transaction.

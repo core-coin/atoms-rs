@@ -1,23 +1,24 @@
 use crate::{
     fillers::{
-        ChainIdFiller, FillerControlFlow, GasFiller, JoinFill, NonceFiller, SignerFiller, TxFiller,
+        EnergyFiller, FillerControlFlow, JoinFill, NetworkIdFiller, NonceFiller, SignerFiller,
+        TxFiller,
     },
     provider::SendableTx,
     Provider, RootProvider,
 };
-use alloy_network::{Ethereum, Network};
+use alloy_network::{Core, Network};
 use alloy_rpc_client::{BuiltInConnectionString, ClientBuilder, RpcClient};
 use alloy_transport::{BoxTransport, Transport, TransportError, TransportResult};
 use std::marker::PhantomData;
 
 /// The recommended filler.
 type RecommendFiller =
-    JoinFill<JoinFill<JoinFill<Identity, GasFiller>, NonceFiller>, ChainIdFiller>;
+    JoinFill<JoinFill<JoinFill<Identity, EnergyFiller>, NonceFiller>, NetworkIdFiller>;
 
 /// A layering abstraction in the vein of [`tower::Layer`]
 ///
 /// [`tower::Layer`]: https://docs.rs/tower/latest/tower/trait.Layer.html
-pub trait ProviderLayer<P: Provider<T, N>, T: Transport + Clone, N: Network = Ethereum> {
+pub trait ProviderLayer<P: Provider<T, N>, T: Transport + Clone, N: Network = Core> {
     /// The provider constructed by this layer.
     type Provider: Provider<T, N>;
 
@@ -107,13 +108,13 @@ where
 ///
 /// [`tower::ServiceBuilder`]: https://docs.rs/tower/latest/tower/struct.ServiceBuilder.html
 #[derive(Debug)]
-pub struct ProviderBuilder<L, F, N = Ethereum> {
+pub struct ProviderBuilder<L, F, N = Core> {
     layer: L,
     filler: F,
     network: PhantomData<fn() -> N>,
 }
 
-impl ProviderBuilder<Identity, Identity, Ethereum> {
+impl ProviderBuilder<Identity, Identity, Core> {
     /// Create a new [`ProviderBuilder`].
     pub const fn new() -> Self {
         Self { layer: Identity, filler: Identity, network: PhantomData }
@@ -127,17 +128,17 @@ impl<N> Default for ProviderBuilder<Identity, Identity, N> {
 }
 
 impl<L, N> ProviderBuilder<L, Identity, N> {
-    /// Add preconfigured set of layers handling gas estimation, nonce
-    /// management, and chain-id fetching.
+    /// Add preconfigured set of layers handling energy estimation, nonce
+    /// management, and network-id fetching.
     pub fn with_recommended_fillers(self) -> ProviderBuilder<L, RecommendFiller, N> {
-        self.filler(GasFiller).filler(NonceFiller::default()).filler(ChainIdFiller::default())
+        self.filler(EnergyFiller).filler(NonceFiller::default()).filler(NetworkIdFiller::default())
     }
 
-    /// Add gas estimation to the stack being built.
+    /// Add energy estimation to the stack being built.
     ///
-    /// See [`GasFiller`]
-    pub fn with_gas_estimation(self) -> ProviderBuilder<L, JoinFill<Identity, GasFiller>, N> {
-        self.filler(GasFiller)
+    /// See [`EnergyFiller`]
+    pub fn with_energy_estimation(self) -> ProviderBuilder<L, JoinFill<Identity, EnergyFiller>, N> {
+        self.filler(EnergyFiller)
     }
 
     /// Add nonce management to the stack being built.
@@ -147,22 +148,22 @@ impl<L, N> ProviderBuilder<L, Identity, N> {
         self.filler(NonceFiller::default())
     }
 
-    /// Add a chain ID filler to the stack being built. The filler will attempt
-    /// to fetch the chain ID from the provider using
-    /// [`Provider::get_chain_id`]. the first time a transaction is prepared,
+    /// Add a network ID filler to the stack being built. The filler will attempt
+    /// to fetch the network ID from the provider using
+    /// [`Provider::fetch_network_id`]. the first time a transaction is prepared,
     /// and will cache it for future transactions.
-    pub fn fetch_chain_id(self) -> ProviderBuilder<L, JoinFill<Identity, ChainIdFiller>, N> {
-        self.filler(ChainIdFiller::default())
+    pub fn fetch_network_id(self) -> ProviderBuilder<L, JoinFill<Identity, NetworkIdFiller>, N> {
+        self.filler(NetworkIdFiller::default())
     }
 
-    /// Add a specific chain ID to the stack being built. The filler will
-    /// fill transactions with the provided chain ID, regardless of the chain ID
-    /// that the provider reports via [`Provider::get_chain_id`].
-    pub fn with_chain_id(
+    /// Add a specific network ID to the stack being built. The filler will
+    /// fill transactions with the provided network ID, regardless of the network ID
+    /// that the provider reports via [`Provider::get_network_id`].
+    pub fn with_network_id(
         self,
-        chain_id: u64,
-    ) -> ProviderBuilder<L, JoinFill<Identity, ChainIdFiller>, N> {
-        self.filler(ChainIdFiller::new(Some(chain_id)))
+        network_id: u64,
+    ) -> ProviderBuilder<L, JoinFill<Identity, NetworkIdFiller>, N> {
+        self.filler(NetworkIdFiller::new(Some(network_id)))
     }
 }
 
@@ -206,7 +207,7 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
 
     /// Change the network.
     ///
-    /// By default, the network is `Ethereum`. This method must be called to configure a different
+    /// By default, the network is `Core`. This method must be called to configure a different
     /// network.
     ///
     /// ```ignore
@@ -336,12 +337,12 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
 // Enabled when the `anvil` feature is enabled, or when both in test and the
 // `reqwest` feature is enabled.
 #[cfg(any(test, feature = "anvil"))]
-impl<L, F> ProviderBuilder<L, F, Ethereum> {
+impl<L, F> ProviderBuilder<L, F, Core> {
     /// Build this provider with anvil, using an Reqwest HTTP transport.
     pub fn on_anvil(self) -> F::Provider
     where
-        F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+        F: TxFiller<Core>
+            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Core>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
                 crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
@@ -363,8 +364,8 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
         alloy_transport_http::Http<reqwest::Client>,
     >>::Provider
     where
-        F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+        F: TxFiller<Core>
+            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Core>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
                 crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
@@ -383,8 +384,8 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
         f: impl FnOnce(alloy_node_bindings::Anvil) -> alloy_node_bindings::Anvil,
     ) -> F::Provider
     where
-        F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+        F: TxFiller<Core>
+            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Core>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
                 crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
@@ -411,8 +412,8 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
         alloy_transport_http::Http<reqwest::Client>,
     >>::Provider
     where
-        F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+        F: TxFiller<Core>
+            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Core>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
                 crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,

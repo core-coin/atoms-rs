@@ -72,35 +72,35 @@ mod test {
     use crate::ProviderBuilder;
 
     use super::*;
-    use alloy_node_bindings::Geth;
+    use alloy_node_bindings::Gocore;
     use tempfile::TempDir;
 
     #[tokio::test]
     async fn node_info() {
-        let temp_dir = TempDir::with_prefix("geth-test-").unwrap();
-        let geth = Geth::new().disable_discovery().data_dir(temp_dir.path()).spawn();
-        let provider = ProviderBuilder::new().on_http(geth.endpoint_url());
+        let temp_dir = TempDir::with_prefix("gocore-test-").unwrap();
+        let gocore = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
+        let provider = ProviderBuilder::new().on_http(gocore.endpoint_url());
         let node_info = provider.node_info().await.unwrap();
         assert!(node_info.enode.starts_with("enode://"));
     }
 
     #[tokio::test]
     async fn admin_peers() {
-        let temp_dir = TempDir::with_prefix("geth-test-1").unwrap();
-        let temp_dir_2 = TempDir::with_prefix("geth-test-2").unwrap();
-        let geth1 = Geth::new().disable_discovery().data_dir(temp_dir.path()).spawn();
-        let mut geth2 =
-            Geth::new().disable_discovery().port(0u16).data_dir(temp_dir_2.path()).spawn();
+        let temp_dir = TempDir::with_prefix("gocore-test-1").unwrap();
+        let temp_dir_2 = TempDir::with_prefix("gocore-test-2").unwrap();
+        let gocore1 = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
+        let mut gocore2 =
+            Gocore::new().disable_discovery().port(0u16).data_dir(temp_dir_2.path()).spawn();
 
-        let provider1 = ProviderBuilder::new().on_http(geth1.endpoint_url());
-        let provider2 = ProviderBuilder::new().on_http(geth2.endpoint_url());
+        let provider1 = ProviderBuilder::new().on_http(gocore1.endpoint_url());
+        let provider2 = ProviderBuilder::new().on_http(gocore2.endpoint_url());
         let node1_info = provider1.node_info().await.unwrap();
         let node1_id = node1_info.id;
         let node1_enode = node1_info.enode;
 
         let added = provider2.add_peer(&node1_enode).await.unwrap();
         assert!(added);
-        geth2.wait_to_add_peer(node1_id).unwrap();
+        gocore2.wait_to_add_peer(node1_id).unwrap();
         let peers = provider2.peers().await.unwrap();
         assert_eq!(peers[0].enode, node1_enode);
     }

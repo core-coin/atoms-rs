@@ -171,7 +171,7 @@ impl<'a, T: Transport + Clone, N: Network> PendingTransactionBuilder<'a, T, N> {
     /// Waits for the transaction to confirm with the given number of confirmations, and
     /// then fetches its receipt.
     ///
-    /// Note that this method will call `eth_getTransactionReceipt` on the [**root
+    /// Note that this method will call `xcb_getTransactionReceipt` on the [**root
     /// provider**](RootProvider), and not on a specific network provider. This means that any
     /// overrides or customizations made to the network provider will not be used.
     ///

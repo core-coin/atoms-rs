@@ -73,7 +73,7 @@ pub struct TransactionRequest {
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u64_opt_via_ruint"
     )]
-    pub network_id: ChainId,
+    pub network_id: Option<ChainId>,
     /// An EIP-2930 access list, which lowers cost for accessing accounts and storages in the list. See [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) for more information.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub access_list: Option<AccessList>,
@@ -232,7 +232,7 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_1559.");
 
         TxEip1559 {
-            chain_id: self.chain_id.unwrap_or(1),
+            chain_id: self.network_id.unwrap_or(1),
             nonce: self.nonce.expect("checked in invalid_common_fields"),
             max_priority_fee_per_gas: self
                 .max_priority_fee_per_gas
@@ -256,7 +256,7 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_2930.");
 
         TxEip2930 {
-            chain_id: self.chain_id.unwrap_or(1),
+            chain_id: self.network_id.unwrap_or(1),
             nonce: self.nonce.expect("checked in complete_2930"),
             gas_price: self.energy_price.expect("checked in complete_2930"),
             gas_limit: self.energy.expect("checked in complete_2930"),
@@ -285,7 +285,7 @@ impl TransactionRequest {
         TxEip4844WithSidecar {
             sidecar: self.sidecar.expect("checked in complete_4844"),
             tx: TxEip4844 {
-                chain_id: self.chain_id.unwrap_or(1),
+                chain_id: self.network_id.unwrap_or(1),
                 nonce: self.nonce.expect("checked in complete_4844"),
                 gas_limit: self.energy.expect("checked in complete_4844"),
                 max_fee_per_gas: self.max_fee_per_gas.expect("checked in complete_4844"),
@@ -847,11 +847,11 @@ mod tests {
 
         let chain_id_as_num = format!(r#"{{"chainId": {} }}"#, chain_id);
         let req1 = serde_json::from_str::<TransactionRequest>(&chain_id_as_num).unwrap();
-        assert_eq!(req1.chain_id.unwrap(), chain_id);
+        assert_eq!(req1.network_id.unwrap(), chain_id);
 
         let chain_id_as_hex = format!(r#"{{"chainId": "0x{:x}" }}"#, chain_id);
         let req2 = serde_json::from_str::<TransactionRequest>(&chain_id_as_hex).unwrap();
-        assert_eq!(req2.chain_id.unwrap(), chain_id);
+        assert_eq!(req2.network_id.unwrap(), chain_id);
     }
 
     #[test]

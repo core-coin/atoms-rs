@@ -59,14 +59,14 @@ impl RequestPacket {
         match self {
             RequestPacket::Single(single) => {
                 let mut hs = HashSet::with_capacity(1);
-                if single.method() == "eth_subscribe" {
+                if single.method() == "xcb_subscribe" {
                     hs.insert(single.id());
                 }
                 hs
             }
             RequestPacket::Batch(batch) => batch
                 .iter()
-                .filter(|req| req.method() == "eth_subscribe")
+                .filter(|req| req.method() == "xcb_subscribe")
                 .map(|req| req.id())
                 .collect(),
         }

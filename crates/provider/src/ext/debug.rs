@@ -3,8 +3,8 @@ use crate::Provider;
 use alloy_network::Network;
 use alloy_primitives::{TxHash, B256};
 use alloy_rpc_types::{BlockNumberOrTag, TransactionRequest};
-use alloy_rpc_types_trace::geth::{
-    GethDebugTracingCallOptions, GethDebugTracingOptions, GethTrace, TraceResult,
+use alloy_rpc_types_trace::gocore::{
+    GocoreDebugTracingCallOptions, GocoreDebugTracingOptions, GocoreTrace, TraceResult,
 };
 use alloy_transport::{Transport, TransportResult};
 
@@ -17,7 +17,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     /// It will replay any prior transactions to achieve the same state the transaction was executed
     /// in.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -25,15 +25,15 @@ pub trait DebugApi<N, T>: Send + Sync {
     async fn debug_trace_transaction(
         &self,
         hash: TxHash,
-        trace_options: GethDebugTracingOptions,
-    ) -> TransportResult<GethTrace>;
+        trace_options: GocoreDebugTracingOptions,
+    ) -> TransportResult<GocoreTrace>;
 
     /// Return a full stack trace of all invoked opcodes of all transaction that were included in
     /// this block.
     ///
     /// The parent of the block must be present or it will fail.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -41,12 +41,12 @@ pub trait DebugApi<N, T>: Send + Sync {
     async fn debug_trace_block_by_hash(
         &self,
         block: B256,
-        trace_options: GethDebugTracingOptions,
+        trace_options: GocoreDebugTracingOptions,
     ) -> TransportResult<Vec<TraceResult>>;
 
     /// Same as `debug_trace_block_by_hash` but block is specified by number.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -54,7 +54,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     async fn debug_trace_block_by_number(
         &self,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingOptions,
+        trace_options: GocoreDebugTracingOptions,
     ) -> TransportResult<Vec<TraceResult>>;
 
     /// Executes the given transaction without publishing it like `eth_call` and returns the trace
@@ -63,7 +63,7 @@ pub trait DebugApi<N, T>: Send + Sync {
     /// The transaction will be executed in the context of the given block number or tag.
     /// The state its run on is the state of the previous block.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -73,12 +73,12 @@ pub trait DebugApi<N, T>: Send + Sync {
         &self,
         tx: TransactionRequest,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingCallOptions,
-    ) -> TransportResult<GethTrace>;
+        trace_options: GocoreDebugTracingCallOptions,
+    ) -> TransportResult<GocoreTrace>;
 
     /// Same as `debug_trace_call` but it used to run and trace multiple transactions at once.
     ///
-    /// [GethDebugTracingOptions] can be used to specify the trace options.
+    /// [GocoreDebugTracingOptions] can be used to specify the trace options.
     ///
     /// # Note
     ///
@@ -87,8 +87,8 @@ pub trait DebugApi<N, T>: Send + Sync {
         &self,
         txs: Vec<TransactionRequest>,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingCallOptions,
-    ) -> TransportResult<Vec<GethTrace>>;
+        trace_options: GocoreDebugTracingCallOptions,
+    ) -> TransportResult<Vec<GocoreTrace>>;
 }
 
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
@@ -102,15 +102,15 @@ where
     async fn debug_trace_transaction(
         &self,
         hash: TxHash,
-        trace_options: GethDebugTracingOptions,
-    ) -> TransportResult<GethTrace> {
+        trace_options: GocoreDebugTracingOptions,
+    ) -> TransportResult<GocoreTrace> {
         self.client().request("debug_traceTransaction", (hash, trace_options)).await
     }
 
     async fn debug_trace_block_by_hash(
         &self,
         block: B256,
-        trace_options: GethDebugTracingOptions,
+        trace_options: GocoreDebugTracingOptions,
     ) -> TransportResult<Vec<TraceResult>> {
         self.client().request("debug_traceBlockByHash", (block, trace_options)).await
     }
@@ -118,7 +118,7 @@ where
     async fn debug_trace_block_by_number(
         &self,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingOptions,
+        trace_options: GocoreDebugTracingOptions,
     ) -> TransportResult<Vec<TraceResult>> {
         self.client().request("debug_traceBlockByNumber", (block, trace_options)).await
     }
@@ -127,8 +127,8 @@ where
         &self,
         tx: TransactionRequest,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingCallOptions,
-    ) -> TransportResult<GethTrace> {
+        trace_options: GocoreDebugTracingCallOptions,
+    ) -> TransportResult<GocoreTrace> {
         self.client().request("debug_traceCall", (tx, block, trace_options)).await
     }
 
@@ -136,8 +136,8 @@ where
         &self,
         txs: Vec<TransactionRequest>,
         block: BlockNumberOrTag,
-        trace_options: GethDebugTracingCallOptions,
-    ) -> TransportResult<Vec<GethTrace>> {
+        trace_options: GocoreDebugTracingCallOptions,
+    ) -> TransportResult<Vec<GocoreTrace>> {
         self.client().request("debug_traceCallMany", (txs, block, trace_options)).await
     }
 }
@@ -148,7 +148,7 @@ mod test {
 
     use super::*;
     use alloy_network::TransactionBuilder;
-    use alloy_primitives::{address, U256};
+    use alloy_primitives::{cAddress, U256};
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt::try_init();
@@ -160,23 +160,23 @@ mod test {
         let provider = ProviderBuilder::new().with_recommended_fillers().on_anvil_with_signer();
         let from = provider.default_signer_address();
 
-        let gas_price = provider.get_gas_price().await.unwrap();
+        let energy_price = provider.get_energy_price().await.unwrap();
         let tx = TransactionRequest::default()
             .from(from)
-            .to(address!("deadbeef00000000deadbeef00000000deadbeef"))
+            .to(cAddress!("0000deadbeef00000000deadbeef00000000deadbeef"))
             .value(U256::from(100))
-            .max_fee_per_gas(gas_price + 1)
-            .max_priority_fee_per_gas(gas_price + 1);
+            .max_fee_per_gas(energy_price + 1)
+            .max_priority_fee_per_gas(energy_price + 1);
         let pending = provider.send_transaction(tx).await.unwrap();
         let receipt = pending.get_receipt().await.unwrap();
 
         let hash = receipt.transaction_hash;
-        let trace_options = GethDebugTracingOptions::default();
+        let trace_options = GocoreDebugTracingOptions::default();
 
         let trace = provider.debug_trace_transaction(hash, trace_options).await.unwrap();
 
-        if let GethTrace::Default(trace) = trace {
-            assert_eq!(trace.gas, 21000)
+        if let GocoreTrace::Default(trace) = trace {
+            assert_eq!(trace.energy, 21000)
         }
     }
 
@@ -185,19 +185,23 @@ mod test {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil_with_signer();
         let from = provider.default_signer_address();
-        let gas_price = provider.get_gas_price().await.unwrap();
+        let energy_price = provider.get_energy_price().await.unwrap();
         let tx = TransactionRequest::default()
             .from(from)
             .with_input("0xdeadbeef")
-            .max_fee_per_gas(gas_price + 1)
-            .max_priority_fee_per_gas(gas_price + 1);
+            .max_fee_per_gas(energy_price + 1)
+            .max_priority_fee_per_gas(energy_price + 1);
 
         let trace = provider
-            .debug_trace_call(tx, BlockNumberOrTag::Latest, GethDebugTracingCallOptions::default())
+            .debug_trace_call(
+                tx,
+                BlockNumberOrTag::Latest,
+                GocoreDebugTracingCallOptions::default(),
+            )
             .await
             .unwrap();
 
-        if let GethTrace::Default(trace) = trace {
+        if let GocoreTrace::Default(trace) = trace {
             assert!(!trace.struct_logs.is_empty());
         }
     }

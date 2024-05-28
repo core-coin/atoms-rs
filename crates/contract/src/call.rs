@@ -1,7 +1,7 @@
 use crate::{CallDecoder, Error, EthCall, Result};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt};
 use alloy_json_abi::Function;
-use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
+use alloy_network::{Core, Network, ReceiptResponse, TransactionBuilder};
 use alloy_primitives::{Address, Bytes, ChainId, TxKind, U256};
 use alloy_provider::{PendingTransactionBuilder, Provider};
 use alloy_rpc_types::{state::StateOverride, AccessList, BlobTransactionSidecar, BlockId};
@@ -15,13 +15,13 @@ use std::{
 
 /// [`CallBuilder`] using a [`SolCall`] type as the call decoder.
 // NOTE: please avoid changing this type due to its use in the `sol!` macro.
-pub type SolCallBuilder<T, P, C, N = Ethereum> = CallBuilder<T, P, PhantomData<C>, N>;
+pub type SolCallBuilder<T, P, C, N = Core> = CallBuilder<T, P, PhantomData<C>, N>;
 
 /// [`CallBuilder`] using a [`Function`] as the call decoder.
-pub type DynCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, Function, N>;
+pub type DynCallBuilder<T, P, N = Core> = CallBuilder<T, P, Function, N>;
 
 /// [`CallBuilder`] that does not have a call decoder.
-pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
+pub type RawCallBuilder<T, P, N = Core> = CallBuilder<T, P, (), N>;
 
 /// A builder for sending a transaction via `eth_sendTransaction`, or calling a contract via
 /// `eth_call`.
@@ -120,7 +120,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// [sol]: alloy_sol_types::sol
 #[derive(Clone)]
 #[must_use = "call builders do nothing unless you `.call`, `.send`, or `.await` them"]
-pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
+pub struct CallBuilder<T, P, D, N: Network = Core> {
     request: N::TransactionRequest,
     block: BlockId,
     state: Option<StateOverride>,
@@ -291,7 +291,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
 
     /// Sets the `chain_id` field in the transaction to the provided value
     pub fn chain_id(mut self, chain_id: ChainId) -> Self {
-        self.request.set_chain_id(chain_id);
+        self.request.set_network_id(chain_id);
         self
     }
 
@@ -326,7 +326,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
 
     /// Sets the `gas` field in the transaction to the provided value
     pub fn gas(mut self, gas: u128) -> Self {
-        self.request.set_gas_limit(gas);
+        self.request.set_energy_limit(gas);
         self
     }
 
@@ -334,7 +334,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
     /// If the internal transaction is an EIP-1559 one, then it sets both
     /// `max_fee_per_gas` and `max_priority_fee_per_gas` to the same value
     pub fn gas_price(mut self, gas_price: u128) -> Self {
-        self.request.set_gas_price(gas_price);
+        self.request.set_energy_price(gas_price);
         self
     }
 
@@ -538,7 +538,7 @@ impl<T, P, D: CallDecoder, N: Network> std::fmt::Debug for CallBuilder<T, P, D, 
 #[allow(unused_imports)]
 mod tests {
     use super::*;
-    use alloy_network::Ethereum;
+    use alloy_network::Core;
     use alloy_node_bindings::{Anvil, AnvilInstance};
     use alloy_primitives::{address, b256, bytes, hex, utils::parse_units, B256};
     use alloy_provider::{
@@ -612,7 +612,7 @@ mod tests {
     fn change_chain_id() {
         let call_builder = build_call_builder().chain_id(1337);
         assert_eq!(
-            call_builder.request.chain_id.expect("chain_id should be set"),
+            call_builder.request.network_id.expect("chain_id should be set"),
             1337,
             "chain_id of request should be '1337'"
         );

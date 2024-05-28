@@ -92,7 +92,7 @@ pub struct Transaction {
     pub signature: Option<Signature>,
     /// The network id of the transaction.
     #[serde(default, with = "alloy_serde::u64_opt_via_ruint")]
-    pub network_id: u64,
+    pub network_id: Option<u64>,
     /// Contains the blob hashes for eip-4844 transactions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blob_versioned_hashes: Option<Vec<B256>>,
