@@ -34,7 +34,7 @@ pub struct TxLegacy {
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
     pub energy_price: u128,
     /// A scalar value equal to the maximum
-    /// amount of enerhy that should be used in executing
+    /// amount of energy that should be used in executing
     /// this transaction. This is paid up-front, before any
     /// computation is done and may not be increased
     /// later; formally Tg.
