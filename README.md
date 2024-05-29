@@ -9,13 +9,13 @@ Crates used in Core or that are used by other crates
 - [x] network - in work (Misha)
 - [x] node-bindings - in work (Misha)
 - [x] provider - in work (Misha)
-- [ ] pubsub - in work (Misha)
+- [x] pubsub - in work (Misha)
 - [x] rpc-client - in work (Misha)
 - [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
 - [ ] rpc-types-trace
-- [ ] serde
+- [ ] serde - in work (Misha)
 - [ ] signer
 - [ ] signer-wallet
 - [ ] transport
