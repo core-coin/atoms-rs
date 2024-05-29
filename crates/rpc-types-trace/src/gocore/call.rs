@@ -1,6 +1,6 @@
 //! Geth call tracer types.
 
-use alloy_primitives::{Address, Bytes, B256, U256};
+use alloy_primitives::{Bytes, IcanAddress, B256, U256};
 use serde::{Deserialize, Serialize};
 
 /// The response object for `debug_traceTransaction` with `"tracer": "callTracer"`.
@@ -9,16 +9,16 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CallFrame {
     /// The address of that initiated the call.
-    pub from: Address,
-    /// How much gas was left before the call.
+    pub from: IcanAddress,
+    /// How much energy was left before the call.
     #[serde(default)]
-    pub gas: U256,
-    /// How much gas was used by the call.
-    #[serde(default, rename = "gasUsed")]
-    pub gas_used: U256,
+    pub energy: U256,
+    /// How much energy was used by the call.
+    #[serde(default, rename = "energyUsed")]
+    pub energy_used: U256,
     /// The address of the contract that was called.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub to: Option<Address>,
+    pub to: Option<IcanAddress>,
     /// Calldata input.
     pub input: Bytes,
     /// Output of the call, if any.
@@ -49,7 +49,7 @@ pub struct CallFrame {
 pub struct CallLogFrame {
     /// The address of the contract that was called.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub address: Option<Address>,
+    pub address: Option<IcanAddress>,
     /// The topics of the log.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub topics: Option<Vec<B256>>,
@@ -88,7 +88,7 @@ impl CallConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geth::*;
+    use crate::gocore::*;
 
     // See <https://github.com/ethereum/go-ethereum/tree/master/eth/tracers/internal/tracetest/testdata>
     const DEFAULT: &str = include_str!("../../test_data/call_tracer/default.json");
@@ -98,10 +98,10 @@ mod tests {
 
     #[test]
     fn test_serialize_call_trace() {
-        let mut opts = GethDebugTracingCallOptions::default();
+        let mut opts = GocoreDebugTracingCallOptions::default();
         opts.tracing_options.config.disable_storage = Some(false);
         opts.tracing_options.tracer =
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::CallTracer));
+            Some(GocoreDebugTracerType::BuiltInTracer(GocoreDebugBuiltInTracerType::CallTracer));
         opts.tracing_options.tracer_config =
             serde_json::to_value(CallConfig { only_top_call: Some(true), with_log: Some(true) })
                 .unwrap()

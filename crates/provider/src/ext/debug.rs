@@ -193,11 +193,7 @@ mod test {
             .max_priority_fee_per_gas(energy_price + 1);
 
         let trace = provider
-            .debug_trace_call(
-                tx,
-                BlockNumberOrTag::Latest,
-                GocoreDebugTracingCallOptions::default(),
-            )
+            .debug_trace_call(tx, BlockNumberOrTag::Latest, GocoreDebugTracingCallOptions::default())
             .await
             .unwrap();
 

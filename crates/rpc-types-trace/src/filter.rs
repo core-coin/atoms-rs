@@ -1,5 +1,5 @@
 //! `trace_filter` types and support
-use alloy_primitives::Address;
+use alloy_primitives::IcanAddress;
 use alloy_serde::num::u64_opt_via_ruint;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -17,10 +17,10 @@ pub struct TraceFilter {
     pub to_block: Option<u64>,
     /// From address
     #[serde(default)]
-    pub from_address: Vec<Address>,
+    pub from_address: Vec<IcanAddress>,
     /// To address
     #[serde(default)]
-    pub to_address: Vec<Address>,
+    pub to_address: Vec<IcanAddress>,
     /// How to apply `from_address` and `to_address` filters.
     #[serde(default)]
     pub mode: TraceFilterMode,
@@ -46,13 +46,13 @@ impl TraceFilter {
     }
 
     /// Sets the `from_address` field of the struct
-    pub fn from_address(mut self, addresses: Vec<Address>) -> Self {
+    pub fn from_address(mut self, addresses: Vec<IcanAddress>) -> Self {
         self.from_address = addresses;
         self
     }
 
     /// Sets the `to_address` field of the struct
-    pub fn to_address(mut self, addresses: Vec<Address>) -> Self {
+    pub fn to_address(mut self, addresses: Vec<IcanAddress>) -> Self {
         self.to_address = addresses;
         self
     }
@@ -98,13 +98,13 @@ pub enum TraceFilterMode {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TraceFilterMatcher {
     mode: TraceFilterMode,
-    from_addresses: HashSet<Address>,
-    to_addresses: HashSet<Address>,
+    from_addresses: HashSet<IcanAddress>,
+    to_addresses: HashSet<IcanAddress>,
 }
 
 impl TraceFilterMatcher {
     /// Returns `true` if the given `from` and `to` addresses match this filter.
-    pub fn matches(&self, from: Address, to: Option<Address>) -> bool {
+    pub fn matches(&self, from: IcanAddress, to: Option<IcanAddress>) -> bool {
         match (self.from_addresses.is_empty(), self.to_addresses.is_empty()) {
             (true, true) => true,
             (false, true) => self.from_addresses.contains(&from),

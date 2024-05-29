@@ -1,6 +1,6 @@
 //! Pre-state Geth tracer types.
 
-use alloy_primitives::{Address, Bytes, B256, U256};
+use alloy_primitives::{IcanAddress, Bytes, B256, U256};
 use serde::{Deserialize, Serialize};
 use std::collections::{btree_map, BTreeMap};
 
@@ -56,7 +56,7 @@ impl PreStateFrame {
 ///
 /// The [AccountState]'s storage will include all touched slots of an account.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PreStateMode(pub BTreeMap<Address, AccountState>);
+pub struct PreStateMode(pub BTreeMap<IcanAddress, AccountState>);
 
 /// Represents the account states before and after the transaction is executed.
 ///
@@ -68,9 +68,9 @@ pub struct PreStateMode(pub BTreeMap<Address, AccountState>);
 #[serde(deny_unknown_fields)]
 pub struct DiffMode {
     /// The account states after the transaction is executed.
-    pub post: BTreeMap<Address, AccountState>,
+    pub post: BTreeMap<IcanAddress, AccountState>,
     /// The account states before the transaction is executed.
-    pub pre: BTreeMap<Address, AccountState>,
+    pub pre: BTreeMap<IcanAddress, AccountState>,
 }
 
 // === impl DiffMode ===
@@ -230,7 +230,7 @@ impl PreStateConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geth::*;
+    use crate::gocore::*;
 
     // See <https://github.com/ethereum/go-ethereum/tree/master/eth/tracers/internal/tracetest/testdata>
     const DEFAULT: &str = include_str!("../../test_data/pre_state_tracer/default.json");
@@ -239,10 +239,10 @@ mod tests {
 
     #[test]
     fn test_serialize_pre_state_trace() {
-        let mut opts = GethDebugTracingCallOptions::default();
+        let mut opts = GocoreDebugTracingCallOptions::default();
         opts.tracing_options.config.disable_storage = Some(false);
         opts.tracing_options.tracer =
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::PreStateTracer));
+            Some(GocoreDebugTracerType::BuiltInTracer(GocoreDebugBuiltInTracerType::PreStateTracer));
         opts.tracing_options.tracer_config =
             serde_json::to_value(PreStateConfig { diff_mode: Some(true) }).unwrap().into();
 

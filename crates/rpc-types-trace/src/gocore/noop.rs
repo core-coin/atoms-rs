@@ -12,15 +12,15 @@ pub struct NoopFrame(BTreeMap<(), ()>);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::geth::*;
+    use crate::gocore::*;
 
     const DEFAULT: &str = r"{}";
 
     #[test]
     fn test_serialize_noop_trace() {
-        let mut opts = GethDebugTracingCallOptions::default();
+        let mut opts = GocoreDebugTracingCallOptions::default();
         opts.tracing_options.tracer =
-            Some(GethDebugTracerType::BuiltInTracer(GethDebugBuiltInTracerType::NoopTracer));
+            Some(GocoreDebugTracerType::BuiltInTracer(GocoreDebugBuiltInTracerType::NoopTracer));
 
         assert_eq!(serde_json::to_string(&opts).unwrap(), r#"{"tracer":"noopTracer"}"#);
     }

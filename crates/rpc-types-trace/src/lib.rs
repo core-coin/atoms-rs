@@ -17,7 +17,7 @@
 
 pub mod common;
 pub mod filter;
-pub mod geth;
+pub mod gocore;
 pub mod opcode;
 pub mod otterscan;
 pub mod parity;

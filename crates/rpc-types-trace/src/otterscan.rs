@@ -5,7 +5,7 @@
 
 #![allow(missing_docs)]
 
-use alloy_primitives::{Address, Bloom, Bytes, U256};
+use alloy_primitives::{Bloom, Bytes, IcanAddress, U256};
 use alloy_rpc_types::{Block, Rich, Transaction, TransactionReceipt};
 use serde::{Deserialize, Serialize};
 
@@ -27,8 +27,8 @@ pub enum OperationType {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InternalOperation {
     pub r#type: OperationType,
-    pub from: Address,
-    pub to: Address,
+    pub from: IcanAddress,
+    pub to: IcanAddress,
     pub value: U256,
 }
 
@@ -37,8 +37,8 @@ pub struct InternalOperation {
 pub struct TraceEntry {
     pub r#type: String,
     pub depth: u32,
-    pub from: Address,
-    pub to: Address,
+    pub from: IcanAddress,
+    pub to: IcanAddress,
     pub value: U256,
     pub input: Bytes,
 }
@@ -109,9 +109,9 @@ pub struct OtsReceipt {
     /// This is the `statusCode`
     #[serde(with = "alloy_serde::quantity_bool")]
     pub status: bool,
-    /// Gas used
+    /// Energy used
     #[serde(with = "alloy_serde::u64_via_ruint")]
-    pub cumulative_gas_used: u64,
+    pub cumulative_energy_used: u64,
     /// Log send from contracts.
     ///
     /// Note: this is set to null,
