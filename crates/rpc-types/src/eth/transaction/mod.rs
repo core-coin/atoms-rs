@@ -5,7 +5,7 @@ use alloy_consensus::{
     SignableTransaction, Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEnvelope,
     TxLegacy, TxType,
 };
-use alloy_primitives::{Address, Bytes, TxKind, B256, U256};
+use alloy_primitives::{Address, Bytes, IcanAddress, Signature, TxKind, B1368, B256, U256};
 use serde::{Deserialize, Serialize};
 
 pub use alloy_consensus::BlobTransactionSidecar;
@@ -27,9 +27,6 @@ pub use receipt::{AnyTransactionReceipt, TransactionReceipt};
 pub mod request;
 pub use request::{TransactionInput, TransactionRequest};
 
-mod signature;
-pub use signature::{Parity, Signature};
-
 /// Transaction object used in RPC
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(any(test, feature = "arbitrary"), derive(arbitrary::Arbitrary))]
@@ -50,21 +47,21 @@ pub struct Transaction {
     #[serde(default, with = "alloy_serde::num::u64_opt_via_ruint")]
     pub transaction_index: Option<u64>,
     /// Sender
-    pub from: Address,
+    pub from: IcanAddress,
     /// Recipient
-    pub to: Option<Address>,
+    pub to: Option<IcanAddress>,
     /// Transferred value
     pub value: U256,
-    /// Gas Price
+    /// Energy Price
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u128_opt_via_ruint"
     )]
-    pub gas_price: Option<u128>,
-    /// Gas amount
+    pub energy_price: Option<u128>,
+    /// Energy amount
     #[serde(with = "alloy_serde::num::u128_via_ruint")]
-    pub gas: u128,
+    pub energy: u128,
     /// Max BaseFeePerGas the user is willing to pay.
     #[serde(
         default,
@@ -93,13 +90,9 @@ pub struct Transaction {
     /// Note: this is an option so special transaction types without a signature (e.g. <https://github.com/ethereum-optimism/optimism/blob/0bf643c4147b43cd6f25a759d331ef3a2a61a2a3/specs/deposits.md#the-deposited-transaction-type>) can be supported.
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub signature: Option<Signature>,
-    /// The chain id of the transaction, if any.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::u64_opt_via_ruint"
-    )]
-    pub chain_id: Option<u64>,
+    /// The network id of the transaction.
+    #[serde(default, with = "alloy_serde::u64_opt_via_ruint")]
+    pub network_id: Option<u64>,
     /// Contains the blob hashes for eip-4844 transactions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blob_versioned_hashes: Option<Vec<B256>>,
@@ -130,8 +123,8 @@ pub struct Transaction {
 
 impl Transaction {
     /// Returns true if the transaction is a legacy or 2930 transaction.
-    pub const fn is_legacy_gas(&self) -> bool {
-        self.gas_price.is_none()
+    pub const fn is_legacy_energy(&self) -> bool {
+        self.energy_price.is_none()
     }
 
     /// Converts [Transaction] into [TransactionRequest].
@@ -139,8 +132,8 @@ impl Transaction {
     /// During this conversion data for [TransactionRequest::sidecar] is not populated as it is not
     /// part of [Transaction].
     pub fn into_request(self) -> TransactionRequest {
-        let gas_price = match (self.gas_price, self.max_fee_per_gas) {
-            (Some(gas_price), None) => Some(gas_price),
+        let energy_price = match (self.energy_price, self.max_fee_per_gas) {
+            (Some(energy_price), None) => Some(energy_price),
             // EIP-1559 transactions include deprecated `gasPrice` field displaying gas used by
             // transaction.
             // Setting this field for resulted tx request will result in it being invalid
@@ -154,12 +147,12 @@ impl Transaction {
         TransactionRequest {
             from: Some(self.from),
             to,
-            gas: Some(self.gas),
-            energy_price: gas_price,
+            energy: Some(self.energy),
+            energy_price,
             value: Some(self.value),
             input: self.input.into(),
             nonce: Some(self.nonce),
-            network_id: self.chain_id,
+            network_id: self.network_id,
             access_list: self.access_list,
             transaction_type: self.transaction_type,
             max_fee_per_gas: self.max_fee_per_gas,
@@ -178,10 +171,10 @@ impl TryFrom<Transaction> for Signed<TxLegacy> {
         let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
 
         let tx = TxLegacy {
-            chain_id: tx.chain_id,
+            network_id: tx.network_id,
             nonce: tx.nonce,
-            gas_price: tx.gas_price.ok_or(ConversionError::MissingGasPrice)?,
-            gas_limit: tx.gas,
+            energy_price: tx.energy_price.ok_or(ConversionError::MissingGasPrice)?,
+            energy_limit: tx.energy,
             to: tx.to.into(),
             value: tx.value,
             input: tx.input,
@@ -197,13 +190,13 @@ impl TryFrom<Transaction> for Signed<TxEip1559> {
         let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
 
         let tx = TxEip1559 {
-            chain_id: tx.chain_id.ok_or(ConversionError::MissingChainId)?,
+            chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
             nonce: tx.nonce,
             max_fee_per_gas: tx.max_fee_per_gas.ok_or(ConversionError::MissingMaxFeePerGas)?,
             max_priority_fee_per_gas: tx
                 .max_priority_fee_per_gas
                 .ok_or(ConversionError::MissingMaxPriorityFeePerGas)?,
-            gas_limit: tx.gas,
+            gas_limit: tx.energy,
             to: tx.to.into(),
             value: tx.value,
             input: tx.input,
@@ -220,10 +213,10 @@ impl TryFrom<Transaction> for Signed<TxEip2930> {
         let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
 
         let tx = TxEip2930 {
-            chain_id: tx.chain_id.ok_or(ConversionError::MissingChainId)?,
+            chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
             nonce: tx.nonce,
-            gas_price: tx.gas_price.ok_or(ConversionError::MissingGasPrice)?,
-            gas_limit: tx.gas,
+            gas_price: tx.energy_price.ok_or(ConversionError::MissingGasPrice)?,
+            gas_limit: tx.energy,
             to: tx.to.into(),
             value: tx.value,
             input: tx.input,
@@ -239,13 +232,13 @@ impl TryFrom<Transaction> for Signed<TxEip4844> {
     fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
         let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
         let tx = TxEip4844 {
-            chain_id: tx.chain_id.ok_or(ConversionError::MissingChainId)?,
+            chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
             nonce: tx.nonce,
             max_fee_per_gas: tx.max_fee_per_gas.ok_or(ConversionError::MissingMaxFeePerGas)?,
             max_priority_fee_per_gas: tx
                 .max_priority_fee_per_gas
                 .ok_or(ConversionError::MissingMaxPriorityFeePerGas)?,
-            gas_limit: tx.gas,
+            gas_limit: tx.energy,
             to: tx.to.ok_or(ConversionError::MissingTo)?,
             value: tx.value,
             input: tx.input,
@@ -311,16 +304,11 @@ mod tests {
             from: Address::with_last_byte(6),
             to: Some(Address::with_last_byte(7)),
             value: U256::from(8),
-            gas_price: Some(9),
-            gas: 10,
+            energy_price: Some(9),
+            energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature {
-                v: U256::from(14),
-                r: U256::from(14),
-                s: U256::from(14),
-                y_parity: None,
-            }),
-            chain_id: Some(17),
+            signature: Some(Signature::from("0x")),
+            network_id: Some(17),
             blob_versioned_hashes: None,
             access_list: None,
             transaction_type: Some(20),
@@ -349,16 +337,11 @@ mod tests {
             from: Address::with_last_byte(6),
             to: Some(Address::with_last_byte(7)),
             value: U256::from(8),
-            gas_price: Some(9),
-            gas: 10,
+            energy_price: Some(9),
+            energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature {
-                v: U256::from(14),
-                r: U256::from(14),
-                s: U256::from(14),
-                y_parity: Some(Parity(true)),
-            }),
-            chain_id: Some(17),
+            signature: Some(Signature::from("0x")),
+            network_id: Some(17),
             blob_versioned_hashes: None,
             access_list: None,
             transaction_type: Some(20),
@@ -383,7 +366,7 @@ mod tests {
             nonce: 2,
             from: Address::with_last_byte(6),
             value: U256::from(8),
-            gas: 10,
+            energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
             ..Default::default()
         };

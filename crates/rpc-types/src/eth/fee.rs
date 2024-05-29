@@ -2,20 +2,20 @@ use serde::{Deserialize, Serialize};
 
 /// Internal struct to calculate reward percentiles
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct TxGasAndReward {
-    /// Gas used by the transaction
-    pub gas_used: u64,
-    /// The effective gas tip by the transaction
+pub struct TxEnergyAndReward {
+    /// Energy used by the transaction
+    pub energy_used: u64,
+    /// The effective energy tip by the transaction
     pub reward: u128,
 }
 
-impl PartialOrd for TxGasAndReward {
+impl PartialOrd for TxEnergyAndReward {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for TxGasAndReward {
+impl Ord for TxEnergyAndReward {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         // compare only the reward
         // see:

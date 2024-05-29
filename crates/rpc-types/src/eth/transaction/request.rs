@@ -15,7 +15,7 @@ use std::hash::Hash;
 pub struct TransactionRequest {
     /// The address of the transaction author.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub from: Option<Address>,
+    pub from: Option<IcanAddress>,
     /// The destination address of the transaction.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub to: Option<TxKind>,
@@ -53,7 +53,7 @@ pub struct TransactionRequest {
         skip_serializing_if = "Option::is_none",
         with = "alloy_serde::num::u128_opt_via_ruint"
     )]
-    pub gas: Option<u128>,
+    pub energy: Option<u128>,
     /// The value transferred in the transaction, in wei.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub value: Option<U256>,
@@ -107,9 +107,9 @@ impl TransactionRequest {
         self
     }
 
-    /// Sets the gas limit for the transaction.
-    pub const fn gas_limit(mut self, gas_limit: u128) -> Self {
-        self.gas = Some(gas_limit);
+    /// Sets the energy limit for the transaction.
+    pub const fn energy_limit(mut self, energy_limit: u128) -> Self {
+        self.energy = Some(energy_limit);
         self
     }
 
@@ -133,7 +133,7 @@ impl TransactionRequest {
 
     /// Sets the recipient address for the transaction.
     #[inline]
-    pub const fn to(mut self, to: Address) -> Self {
+    pub const fn to(mut self, to: IcanAddress) -> Self {
         self.to = Some(TxKind::Call(to));
         self
     }
@@ -180,8 +180,8 @@ impl TransactionRequest {
             errors.push("nonce");
         }
 
-        if self.gas.is_none() {
-            errors.push("gas_limit");
+        if self.energy.is_none() {
+            errors.push("energy_limit");
         }
 
         errors
@@ -212,10 +212,10 @@ impl TransactionRequest {
         let checked_to = self.to.expect("checked in complete_legacy.");
 
         TxLegacy {
-            chain_id: self.network_id,
+            network_id: self.network_id,
             nonce: self.nonce.expect("checked in complete_legacy"),
-            gas_price: self.energy_price.expect("checked in complete_legacy"),
-            gas_limit: self.gas.expect("checked in complete_legacy"),
+            energy_price: self.energy_price.expect("checked in complete_legacy"),
+            energy_limit: self.energy.expect("checked in complete_legacy"),
             to: checked_to,
             value: self.value.unwrap_or_default(),
             input: self.input.into_input().unwrap_or_default(),
@@ -238,7 +238,7 @@ impl TransactionRequest {
                 .max_priority_fee_per_gas
                 .expect("checked in invalid_1559_fields"),
             max_fee_per_gas: self.max_fee_per_gas.expect("checked in invalid_1559_fields"),
-            gas_limit: self.gas.expect("checked in invalid_common_fields"),
+            gas_limit: self.energy.expect("checked in invalid_common_fields"),
             to: checked_to,
             value: self.value.unwrap_or_default(),
             input: self.input.into_input().unwrap_or_default(),
@@ -259,7 +259,7 @@ impl TransactionRequest {
             chain_id: self.network_id.unwrap_or(1),
             nonce: self.nonce.expect("checked in complete_2930"),
             gas_price: self.energy_price.expect("checked in complete_2930"),
-            gas_limit: self.gas.expect("checked in complete_2930"),
+            gas_limit: self.energy.expect("checked in complete_2930"),
             to: checked_to,
             value: self.value.unwrap_or_default(),
             input: self.input.into_input().unwrap_or_default(),
@@ -287,7 +287,7 @@ impl TransactionRequest {
             tx: TxEip4844 {
                 chain_id: self.network_id.unwrap_or(1),
                 nonce: self.nonce.expect("checked in complete_4844"),
-                gas_limit: self.gas.expect("checked in complete_4844"),
+                gas_limit: self.energy.expect("checked in complete_4844"),
                 max_fee_per_gas: self.max_fee_per_gas.expect("checked in complete_4844"),
                 max_priority_fee_per_gas: self
                     .max_priority_fee_per_gas
@@ -309,8 +309,8 @@ impl TransactionRequest {
         if self.nonce.is_none() {
             missing.push("nonce");
         }
-        if self.gas.is_none() {
-            missing.push("gas_limit");
+        if self.energy.is_none() {
+            missing.push("energy_limit");
         }
         if self.to.is_none() {
             missing.push("to");
@@ -320,7 +320,7 @@ impl TransactionRequest {
 
     fn check_legacy_fields(&self, missing: &mut Vec<&'static str>) {
         if self.energy_price.is_none() {
-            missing.push("gas_price");
+            missing.push("energy_price");
         }
     }
 
@@ -600,12 +600,12 @@ impl From<TxLegacy> for TransactionRequest {
     fn from(tx: TxLegacy) -> Self {
         Self {
             to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
-            energy_price: Some(tx.gas_price),
-            gas: Some(tx.gas_limit),
+            energy_price: Some(tx.energy_price),
+            energy: Some(tx.energy_limit),
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
-            network_id: tx.chain_id,
+            network_id: tx.network_id,
             transaction_type: Some(0),
             ..Default::default()
         }
@@ -617,7 +617,7 @@ impl From<TxEip2930> for TransactionRequest {
         Self {
             to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
             energy_price: Some(tx.gas_price),
-            gas: Some(tx.gas_limit),
+            energy: Some(tx.gas_limit),
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
@@ -635,7 +635,7 @@ impl From<TxEip1559> for TransactionRequest {
             to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
             max_fee_per_gas: Some(tx.max_fee_per_gas),
             max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
-            gas: Some(tx.gas_limit),
+            energy: Some(tx.gas_limit),
             value: Some(tx.value),
             input: tx.input.into(),
             nonce: Some(tx.nonce),
@@ -652,7 +652,7 @@ impl From<TxEip4844> for TransactionRequest {
         Self {
             to: Some(tx.to.into()),
             max_fee_per_blob_gas: Some(tx.max_fee_per_blob_gas),
-            gas: Some(tx.gas_limit),
+            energy: Some(tx.gas_limit),
             max_fee_per_gas: Some(tx.max_fee_per_gas),
             max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
             value: Some(tx.value),
@@ -674,7 +674,7 @@ impl From<TxEip4844WithSidecar> for TransactionRequest {
         Self {
             to: Some(tx.to.into()),
             max_fee_per_blob_gas: Some(tx.max_fee_per_blob_gas),
-            gas: Some(tx.gas_limit),
+            energy: Some(tx.gas_limit),
             max_fee_per_gas: Some(tx.max_fee_per_gas),
             max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
             value: Some(tx.value),

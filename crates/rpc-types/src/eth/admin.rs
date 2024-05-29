@@ -44,26 +44,26 @@ pub struct Ports {
 /// This contains protocol information reported by the connected RPC node.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProtocolInfo {
-    /// Details about the node's supported eth protocol. `None` if unsupported
+    /// Details about the node's supported xcb protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub eth: Option<EthProtocolInfo>,
+    pub xcb: Option<XcbProtocolInfo>,
     /// Details about the node's supported snap protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snap: Option<SnapProtocolInfo>,
 }
 
-/// Represents a short summary of the `eth` sub-protocol metadata known about the host peer.
+/// Represents a short summary of the `xcb` sub-protocol metadata known about the host peer.
 ///
 /// See [geth's `NodeInfo`
 /// struct](https://github.com/ethereum/go-ethereum/blob/c2e0abce2eedc1ba2a1b32c46fd07ef18a25354a/eth/protocols/eth/handler.go#L129)
 /// for how these fields are determined.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EthProtocolInfo {
+pub struct XcbProtocolInfo {
     /// The eth network version.
     pub network: u64,
     /// The total difficulty of the host's blockchain.
     pub difficulty: U256,
-    /// The Keccak hash of the host's genesis block.
+    /// The SHA3 hash of the host's genesis block.
     pub genesis: B256,
     /// The chain configuration for the host's fork rules.
     pub config: ChainConfig,
@@ -87,7 +87,7 @@ pub struct SnapProtocolInfo {}
 pub struct PeerProtocolInfo {
     /// Details about the peer's supported eth protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub eth: Option<EthPeerInfo>,
+    pub xcb: Option<XcbPeerInfo>,
     /// Details about the peer's supported snap protocol. `None` if unsupported
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snap: Option<SnapPeerInfo>,
@@ -101,22 +101,22 @@ pub struct PeerProtocolInfo {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 #[allow(missing_copy_implementations)]
-pub enum EthPeerInfo {
+pub enum XcbPeerInfo {
     /// The `eth` sub-protocol metadata known about the host peer.
-    Info(EthInfo),
+    Info(XcbInfo),
     /// The string "handshake" if the peer is still completing the handshake for the protocol.
     #[serde(with = "handshake")]
     Handshake,
 }
 
-/// Represents a short summary of the `eth` sub-protocol metadata known about a connected peer
+/// Represents a short summary of the `xcb` sub-protocol metadata known about a connected peer
 ///
 /// See [geth's `ethPeerInfo`
 /// struct](https://github.com/ethereum/go-ethereum/blob/94579932b18931115f28aa7f87f02450bda084c9/eth/peer.go#L26)
 /// for how these fields are determined.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
-pub struct EthInfo {
+pub struct XcbInfo {
     /// The negotiated eth version.
     pub version: u64,
 }
@@ -260,7 +260,7 @@ mod tests {
         }"#;
 
         let info: PeerInfo = serde_json::from_str(response).unwrap();
-        assert_eq!(info.protocols.eth, Some(EthPeerInfo::Handshake));
+        assert_eq!(info.protocols.xcb, Some(XcbPeerInfo::Handshake));
         assert_eq!(info.protocols.snap, Some(SnapPeerInfo::Handshake));
     }
 
@@ -282,7 +282,7 @@ mod tests {
         }"#;
 
         let info: PeerInfo = serde_json::from_str(response).unwrap();
-        assert_eq!(info.protocols.eth, Some(EthPeerInfo::Info(EthInfo { version: 68 })));
+        assert_eq!(info.protocols.xcb, Some(XcbPeerInfo::Info(XcbInfo { version: 68 })));
         assert_eq!(info.protocols.snap, Some(SnapPeerInfo::Info(SnapInfo { version: 1 })));
     }
 

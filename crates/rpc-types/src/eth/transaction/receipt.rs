@@ -2,7 +2,7 @@
 
 use crate::{Log, WithOtherFields};
 use alloy_consensus::{AnyReceiptEnvelope, ReceiptEnvelope, TxType};
-use alloy_primitives::{Address, B256};
+use alloy_primitives::{Address, IcanAddress, B256};
 use serde::{Deserialize, Serialize};
 
 /// Transaction receipt
@@ -32,7 +32,7 @@ pub struct TransactionReceipt<T = ReceiptEnvelope<Log>> {
     pub block_number: Option<u64>,
     /// Gas used by this transaction alone.
     #[serde(with = "alloy_serde::u128_via_ruint")]
-    pub gas_used: u128,
+    pub energy_used: u128,
     /// The price paid post-execution by the transaction (i.e. base fee + priority fee). Both
     /// fields in 1559-style transactions are maximums (max fee + max priority fee), the amount
     /// that's actually paid by users can only be determined post-execution
@@ -55,11 +55,11 @@ pub struct TransactionReceipt<T = ReceiptEnvelope<Log>> {
     )]
     pub blob_gas_price: Option<u128>,
     /// Address of the sender
-    pub from: Address,
+    pub from: IcanAddress,
     /// Address of the receiver. None when its a contract creation transaction.
-    pub to: Option<Address>,
+    pub to: Option<IcanAddress>,
     /// Contract address created, or None if not a deployment.
-    pub contract_address: Option<Address>,
+    pub contract_address: Option<IcanAddress>,
     /// The post-transaction stateroot (pre Byzantium)
     ///
     /// EIP98 makes this optional field, if it's missing then skip serializing it
@@ -114,7 +114,7 @@ impl<T> TransactionReceipt<T> {
             transaction_index: self.transaction_index,
             block_hash: self.block_hash,
             block_number: self.block_number,
-            gas_used: self.gas_used,
+            energy_used: self.energy_used,
             effective_gas_price: self.effective_gas_price,
             blob_gas_used: self.blob_gas_used,
             blob_gas_price: self.blob_gas_price,

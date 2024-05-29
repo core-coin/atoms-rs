@@ -11,7 +11,7 @@ Crates used in Core or that are used by other crates
 - [x] provider - in work (Misha)
 - [ ] pubsub - in work (Misha)
 - [x] rpc-client - in work (Misha)
-- [ ] rpc-types - in work (Misha)
+- [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
 - [ ] rpc-types-trace

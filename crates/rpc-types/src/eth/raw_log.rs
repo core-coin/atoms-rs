@@ -1,13 +1,13 @@
 //! Ethereum log object.
 
-use alloy_primitives::{Address, Bloom, Bytes, B256};
+use alloy_primitives::{Bloom, Bytes, IcanAddress, B256};
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 /// Ethereum Log
 #[derive(Clone, Debug, Default, PartialEq, Eq, RlpDecodable, RlpEncodable)]
 pub struct Log {
     /// Contract that emitted this log.
-    pub address: Address,
+    pub address: IcanAddress,
     /// Topics of the log. The number of logs depend on what `LOG` opcode is used.
     pub topics: Vec<B256>,
     /// Arbitrary length data.

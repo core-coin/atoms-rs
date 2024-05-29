@@ -4,9 +4,10 @@ use crate::{
 use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
+use alloy_signer::Signature;
 
 impl TransactionBuilder<Core> for TransactionRequest {
-    fn network_id(&self) -> Option<ChainId> {
+    fn network_id(&self) -> ChainId {
         self.network_id
     }
 
@@ -58,11 +59,11 @@ impl TransactionBuilder<Core> for TransactionRequest {
         self.value = Some(value)
     }
 
-    fn signature(&self) -> Option<B1368> {
+    fn signature(&self) -> Option<Signature> {
         self.signature
     }
 
-    fn set_signature(&mut self, signature: B1368) {
+    fn set_signature(&mut self, signature: Signature) {
         self.signature = Some(signature)
     }
 
@@ -99,11 +100,11 @@ impl TransactionBuilder<Core> for TransactionRequest {
     }
 
     fn energy_limit(&self) -> Option<u128> {
-        self.gas
+        self.energy
     }
 
     fn set_energy_limit(&mut self, energy_limit: u128) {
-        self.gas = Some(energy_limit);
+        self.energy = Some(energy_limit);
     }
 
     fn access_list(&self) -> Option<&AccessList> {
@@ -144,8 +145,8 @@ impl TransactionBuilder<Core> for TransactionRequest {
         // values.
 
         // chain_id and from may be none.
-        let common = self.gas.is_some() && self.nonce.is_some();
-        let legacy = self.gas_price.is_some();
+        let common = self.energy.is_some() && self.nonce.is_some();
+        let legacy = self.energy_price.is_some();
         let eip2930 = legacy && self.access_list().is_some();
 
         let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();

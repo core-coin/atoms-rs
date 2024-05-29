@@ -1,4 +1,4 @@
-use alloy_primitives::{B512, U256, U64};
+use alloy_primitives::{PublicKey, U256, U64};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::BTreeMap;
 
@@ -69,17 +69,17 @@ pub struct PeerNetworkInfo {
 /// Peer protocols information
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PeerProtocolsInfo {
-    /// Ethereum protocol information
-    pub eth: Option<PeerEthProtocolInfo>,
+    /// Core protocol information
+    pub xcb: Option<PeerXcbProtocolInfo>,
     /// PIP protocol information.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pip: Option<PipProtocolInfo>,
 }
 
-/// Peer Ethereum protocol information
+/// Peer Core protocol information
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PeerEthProtocolInfo {
-    /// Negotiated ethereum protocol version
+pub struct PeerXcbProtocolInfo {
+    /// Negotiated core protocol version
     pub version: u32,
     /// Peer total difficulty if known
     pub difficulty: Option<U256>,
@@ -115,7 +115,7 @@ impl<'de> Deserialize<'de> for SyncStatus {
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum Syncing {
-            /// When client is synced to the highest block, eth_syncing with return "false"
+            /// When client is synced to the highest block, xcb_syncing with return "false"
             None(bool),
             IsSyncing(SyncInfo),
         }
@@ -123,7 +123,7 @@ impl<'de> Deserialize<'de> for SyncStatus {
         match Syncing::deserialize(deserializer)? {
             Syncing::None(false) => Ok(SyncStatus::None),
             Syncing::None(true) => Err(serde::de::Error::custom(
-                "eth_syncing returned `true` that is undefined value.",
+                "xcb_syncing returned `true` that is undefined value.",
             )),
             Syncing::IsSyncing(sync) => Ok(SyncStatus::Info(sync)),
         }
@@ -149,7 +149,7 @@ pub struct TransactionStats {
     /// Block no this transaction was first seen.
     pub first_seen: u64,
     /// Peers this transaction was propagated to with count.
-    pub propagated_to: BTreeMap<B512, usize>,
+    pub propagated_to: BTreeMap<PublicKey, usize>,
 }
 
 /// Chain status.
