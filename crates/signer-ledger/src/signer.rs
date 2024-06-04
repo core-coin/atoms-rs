@@ -3,7 +3,7 @@
 use crate::types::{DerivationType, LedgerError, INS, P1, P1_FIRST, P2};
 use alloy_consensus::SignableTransaction;
 use alloy_primitives::{hex, Address, ChainId, B256};
-use alloy_signer::{sign_transaction_with_chain_id, Result, Signature, Signer};
+use alloy_signer::{sign_transaction_with_network_id, Result, Signature, Signer};
 use async_trait::async_trait;
 use coins_ledger::{
     common::{APDUCommand, APDUData},
@@ -42,7 +42,11 @@ impl alloy_network::TxSigner<Signature> for LedgerSigner {
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
     ) -> Result<Signature> {
-        sign_transaction_with_chain_id!(self, tx, self.sign_tx_rlp(&tx.encoded_for_signing()).await)
+        sign_transaction_with_network_id!(
+            self,
+            tx,
+            self.sign_tx_rlp(&tx.encoded_for_signing()).await
+        )
     }
 }
 
@@ -92,12 +96,12 @@ impl Signer for LedgerSigner {
     }
 
     #[inline]
-    fn chain_id(&self) -> Option<ChainId> {
+    fn network_id(&self) -> Option<ChainId> {
         self.chain_id
     }
 
     #[inline]
-    fn set_chain_id(&mut self, chain_id: Option<ChainId>) {
+    fn set_network_id(&mut self, chain_id: Option<ChainId>) {
         self.chain_id = chain_id;
     }
 }

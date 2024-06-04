@@ -1,24 +1,18 @@
 //! Utility functions for working with Ethereum signatures.
 
-use alloy_primitives::{keccak256, Address};
-use elliptic_curve::sec1::ToEncodedPoint;
-use k256::{
-    ecdsa::{SigningKey, VerifyingKey},
-    AffinePoint,
-};
+use alloy_primitives::{IcanAddress};
+use libgoldilocks::{SigningKey, VerifyingKey};
 
 /// Converts an ECDSA private key to its corresponding Ethereum Address.
 #[inline]
-pub fn secret_key_to_address(secret_key: &SigningKey) -> Address {
-    public_key_to_address(secret_key.verifying_key())
+pub fn secret_key_to_address(secret_key: &SigningKey, network_id: u64) -> IcanAddress {
+    IcanAddress::from_private_key(secret_key, network_id)
 }
 
 /// Converts an ECDSA public key to its corresponding Ethereum address.
 #[inline]
-pub fn public_key_to_address(pubkey: &VerifyingKey) -> Address {
-    let affine: &AffinePoint = pubkey.as_ref();
-    let encoded = affine.to_encoded_point(false);
-    raw_public_key_to_address(&encoded.as_bytes()[1..])
+pub fn public_key_to_address(pubkey: &VerifyingKey, network_id: u64) -> IcanAddress {
+    IcanAddress::from_public_key(pubkey, network_id)
 }
 
 /// Convert a raw, uncompressed public key to its corresponding Ethereum address.
@@ -34,10 +28,8 @@ pub fn public_key_to_address(pubkey: &VerifyingKey) -> Address {
 /// This function panics if the input is not **exactly** 64 bytes.
 #[inline]
 #[track_caller]
-pub fn raw_public_key_to_address(pubkey: &[u8]) -> Address {
-    assert_eq!(pubkey.len(), 64, "raw public key must be 64 bytes");
-    let digest = keccak256(pubkey);
-    Address::from_slice(&digest[12..])
+pub fn raw_public_key_to_address(pubkey: &[u8], network_id: u64) -> IcanAddress {
+    IcanAddress::from_raw_public_key(pubkey, network_id)
 }
 
 #[cfg(test)]
@@ -48,33 +40,28 @@ mod tests {
     // Only tests for correctness, no edge cases. Uses examples from https://docs.ethers.org/v5/api/utils/address/#utils-computeAddress
     #[test]
     fn test_public_key_to_address() {
-        let addr = "0Ac1dF02185025F65202660F8167210A80dD5086".parse::<Address>().unwrap();
+        let addr = "cb82a5fd22b9bee8b8ab877c86e0a2c21765e1d5bfc5".parse::<IcanAddress>().unwrap();
 
-        // Compressed
-        let pubkey = VerifyingKey::from_sec1_bytes(
-            &hex::decode("0376698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762")
+        let pubkey = VerifyingKey::from(
+            &hex::decode("315484db568379ce94f9c894e3e6e4c7ee216676b713ca892d9b26746ae902a772e217a6a8bb493ce2bb313cf0cb66e76765d4c45ec6b68600")
                 .unwrap(),
         )
         .unwrap();
-        assert_eq!(public_key_to_address(&pubkey), addr);
-
-        // Uncompressed
-        let pubkey= VerifyingKey::from_sec1_bytes(&hex::decode("0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3").unwrap()).unwrap();
-        assert_eq!(public_key_to_address(&pubkey), addr);
+        assert_eq!(public_key_to_address(&pubkey, 1), addr);
     }
 
     #[test]
     fn test_raw_public_key_to_address() {
-        let addr = "0Ac1dF02185025F65202660F8167210A80dD5086".parse::<Address>().unwrap();
+        let addr = "cb82a5fd22b9bee8b8ab877c86e0a2c21765e1d5bfc5".parse::<IcanAddress>().unwrap();
 
-        let pubkey_bytes = hex::decode("76698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3").unwrap();
+        let pubkey_bytes = hex::decode("315484db568379ce94f9c894e3e6e4c7ee216676b713ca892d9b26746ae902a772e217a6a8bb493ce2bb313cf0cb66e76765d4c45ec6b68600").unwrap();
 
-        assert_eq!(raw_public_key_to_address(&pubkey_bytes), addr);
+        assert_eq!(raw_public_key_to_address(&pubkey_bytes, 1), addr);
     }
 
     #[test]
     #[should_panic]
     fn test_raw_public_key_to_address_panics() {
-        raw_public_key_to_address(&[]);
+        raw_public_key_to_address(&[], 1);
     }
 }

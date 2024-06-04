@@ -2,7 +2,8 @@
 
 use crate::unused_port;
 use alloy_genesis::{CliqueConfig, Genesis};
-use alloy_primitives::{hex, IcanAddress, PrivateKey, B256};
+use alloy_primitives::{hex, IcanAddress, B256};
+use libgoldilocks::SigningKey;
 use std::{
     borrow::Cow,
     fs::{create_dir, File},
@@ -52,7 +53,7 @@ pub struct GocoreInstance {
     data_dir: Option<PathBuf>,
     p2p_port: Option<u16>,
     genesis: Option<Genesis>,
-    clique_private_key: Option<PrivateKey>,
+    clique_private_key: Option<SigningKey>,
 }
 
 impl GocoreInstance {
@@ -107,7 +108,7 @@ impl GocoreInstance {
 
     /// Returns the private key used to configure clique on this instance
     #[deprecated = "clique support was removed in gocore >=1.14"]
-    pub fn clique_private_key(&self) -> &Option<PrivateKey> {
+    pub fn clique_private_key(&self) -> &Option<SigningKey> {
         &self.clique_private_key
     }
 
@@ -255,7 +256,7 @@ pub struct Gocore {
     insecure_unlock: bool,
     genesis: Option<Genesis>,
     mode: GocoreMode,
-    clique_private_key: Option<PrivateKey>,
+    clique_private_key: Option<SigningKey>,
 }
 
 impl Gocore {
@@ -289,7 +290,9 @@ impl Gocore {
 
     /// Calculates the address of the Clique consensus address.
     pub fn clique_address(&self) -> Option<IcanAddress> {
-        self.clique_private_key.as_ref().map(|pk| IcanAddress::from_public_key(pk.public_key()))
+        self.clique_private_key
+            .as_ref()
+            .map(|pk| IcanAddress::from_public_key(pk.verifying_key(), self.network_id.unwrap()))
     }
 
     /// Sets the `path` to the `gocore` executable
@@ -307,7 +310,7 @@ impl Gocore {
     /// The address derived from this private key will be used to set the `miner.etherbase` field
     /// on the node.
     #[deprecated = "clique support was removed in gocore >=1.14"]
-    pub fn set_clique_private_key<T: Into<PrivateKey>>(mut self, private_key: T) -> Self {
+    pub fn set_clique_private_key<T: Into<SigningKey>>(mut self, private_key: T) -> Self {
         self.clique_private_key = Some(private_key.into());
         self
     }
@@ -727,7 +730,7 @@ mod tests {
     fn explicit_p2p_port() {
         run_with_tempdir(|temp_dir_path| {
             // if a p2p port is explicitly set, it should be used
-            let gocore = gocore::new().p2p_port(1234).data_dir(temp_dir_path).spawn();
+            let gocore = Gocore::new().p2p_port(1234).data_dir(temp_dir_path).spawn();
             let p2p_port = gocore.p2p_port();
             assert_eq!(p2p_port, Some(1234));
         });
@@ -748,7 +751,7 @@ mod tests {
     #[allow(deprecated)]
     fn clique_correctly_configured() {
         run_with_tempdir(|temp_dir_path| {
-            let private_key = PrivateKey::generate();
+            let private_key = SigningKey::random(&mut rand::thread_rng());
             let gocore = Gocore::new()
                 .set_clique_private_key(private_key)
                 .network_id(1337u64)

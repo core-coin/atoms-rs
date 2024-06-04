@@ -14,11 +14,11 @@ Crates used in Core or that are used by other crates
 - [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
-- [ ] rpc-types-trace
-- [ ] serde - in work (Misha)
-- [ ] signer
-- [ ] signer-wallet
-- [ ] transport
+- [x] rpc-types-trace
+- [x] serde - in work (Misha)
+- [x] signer - in work (Misha)
+- [x] signer-wallet - in work (Misha)
+- [ ] transport - in work (Misha)
 - [ ] transport-http
 - [ ] transport-ipc
 - [ ] transport-ws

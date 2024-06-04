@@ -1,13 +1,9 @@
 use alloy_primitives::hex;
-use k256::ecdsa;
 use thiserror::Error;
 
 /// Error thrown by [`Wallet`](crate::Wallet).
 #[derive(Debug, Error)]
 pub enum WalletError {
-    /// [`ecdsa`] error.
-    #[error(transparent)]
-    EcdsaError(#[from] ecdsa::Error),
     /// [`hex`](mod@hex) error.
     #[error(transparent)]
     HexError(#[from] hex::FromHexError),
@@ -28,8 +24,8 @@ pub enum WalletError {
     #[cfg(feature = "mnemonic")]
     MnemonicBuilderError(#[from] super::mnemonic::MnemonicBuilderError),
 
-    /// [`eth_keystore`] error.
+    /// [`xcb_keystore`] error.
     #[cfg(feature = "keystore")]
     #[error(transparent)]
-    EthKeystoreError(#[from] eth_keystore::KeystoreError),
+    EthKeystoreError(#[from] xcb_keystore::KeystoreError),
 }

@@ -17,10 +17,10 @@
 
 use alloy_consensus::SignableTransaction;
 use alloy_network::{TxSigner, TxSignerSync};
-use alloy_primitives::{Address, ChainId, Signature, B256};
-use alloy_signer::{sign_transaction_with_chain_id, Result, Signer, SignerSync};
+use alloy_primitives::{Address, ChainId, IcanAddress, Signature, B256};
+use alloy_signer::{sign_transaction_with_network_id, Result, Signer, SignerSync};
 use async_trait::async_trait;
-use k256::ecdsa::{self, signature::hazmat::PrehashSigner, RecoveryId};
+use libgoldilocks::SigningKey;
 use std::fmt;
 
 mod error;
@@ -43,7 +43,7 @@ pub use yubihsm;
 pub use coins_bip39;
 
 /// A wallet instantiated with a locally stored private key
-pub type LocalWallet = Wallet<k256::ecdsa::SigningKey>;
+pub type LocalWallet = Wallet<SigningKey>;
 
 /// A wallet instantiated with a YubiHSM
 #[cfg(feature = "yubihsm")]
@@ -67,7 +67,7 @@ pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
 ///
 /// // Optionally, the wallet's chain id can be set, in order to use EIP-155
 /// // replay protection with different chains
-/// let wallet = wallet.with_chain_id(Some(1337));
+/// let wallet = wallet.with_network_id(Some(1337));
 ///
 /// // The wallet can be used to sign messages
 /// let message = b"hello";
@@ -85,32 +85,32 @@ pub struct Wallet<D> {
     /// The wallet's private key.
     pub(crate) signer: D,
     /// The wallet's address.
-    pub(crate) address: Address,
-    /// The wallet's chain ID (for EIP-155).
-    pub(crate) chain_id: Option<ChainId>,
+    pub(crate) address: IcanAddress,
+    /// The wallet's network ID.
+    pub(crate) network_id: ChainId,
 }
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)> + Send + Sync> Signer for Wallet<D> {
+impl<D: PrehashSigner<(Signature, RecoveryId)> + Send + Sync> Signer for Wallet<D> {
     #[inline]
     async fn sign_hash(&self, hash: &B256) -> Result<Signature> {
         self.sign_hash_sync(hash)
     }
 
     #[inline]
-    fn address(&self) -> Address {
+    fn address(&self) -> IcanAddress {
         self.address
     }
 
     #[inline]
-    fn chain_id(&self) -> Option<ChainId> {
-        self.chain_id
+    fn network_id(&self) -> ChainId {
+        self.network_id
     }
 
     #[inline]
-    fn set_chain_id(&mut self, chain_id: Option<ChainId>) {
-        self.chain_id = chain_id;
+    fn set_network_id(&mut self, network_id: ChainId) {
+        self.network_id = network_id;
     }
 }
 
@@ -119,23 +119,23 @@ impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)>> SignerSync for Wallet<D> 
     fn sign_hash_sync(&self, hash: &B256) -> Result<Signature> {
         let (recoverable_sig, recovery_id) = self.signer.sign_prehash(hash.as_ref())?;
         let mut sig = Signature::from_signature_and_parity(recoverable_sig, recovery_id)?;
-        if let Some(chain_id) = self.chain_id {
+        if let Some(chain_id) = self.network_id {
             sig = sig.with_chain_id(chain_id);
         }
         Ok(sig)
     }
 
     #[inline]
-    fn chain_id_sync(&self) -> Option<ChainId> {
-        self.chain_id
+    fn network_id_sync(&self) -> ChainId {
+        self.network_id
     }
 }
 
 impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)>> Wallet<D> {
     /// Construct a new wallet with an external [`PrehashSigner`].
     #[inline]
-    pub const fn new_with_signer(signer: D, address: Address, chain_id: Option<ChainId>) -> Self {
-        Wallet { signer, address, chain_id }
+    pub const fn new_with_signer(signer: D, address: Address, network_id: ChainId) -> Self {
+        Wallet { signer, address, network_id }
     }
 
     /// Returns this wallet's signer.
@@ -158,8 +158,8 @@ impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)>> Wallet<D> {
 
     /// Returns this wallet's chain ID.
     #[inline]
-    pub const fn chain_id(&self) -> Option<ChainId> {
-        self.chain_id
+    pub const fn chain_id(&self) -> ChainId {
+        self.network_id
     }
 }
 
@@ -168,7 +168,7 @@ impl<D: PrehashSigner<(ecdsa::Signature, RecoveryId)>> fmt::Debug for Wallet<D> 
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Wallet")
             .field("address", &self.address)
-            .field("chain_id", &self.chain_id)
+            .field("chain_id", &self.network_id)
             .finish()
     }
 }
@@ -187,7 +187,7 @@ where
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
     ) -> alloy_signer::Result<Signature> {
-        sign_transaction_with_chain_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
+        sign_transaction_with_network_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
     }
 }
 
@@ -203,7 +203,7 @@ where
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
     ) -> alloy_signer::Result<Signature> {
-        sign_transaction_with_chain_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
+        sign_transaction_with_network_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
     }
 }
 
@@ -232,7 +232,7 @@ mod test {
         ) -> Result<Signature> {
             let mut wallet: LocalWallet =
                 "4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318".parse().unwrap();
-            wallet.set_chain_id(chain_id);
+            wallet.set_network_id(chain_id);
 
             let sig = wallet.sign_transaction_sync(tx)?;
             let sighash = tx.signature_hash();
@@ -284,7 +284,7 @@ mod test {
         // Errors on mismatch.
         tx.network_id = Some(2);
         let error = sign_tx_test(&mut tx, Some(1)).await.unwrap_err();
-        let expected_error = alloy_signer::Error::TransactionChainIdMismatch { signer: 1, tx: 2 };
+        let expected_error = alloy_signer::Error::TransactionNetworkIdMismatch { signer: 1, tx: 2 };
         assert_eq!(error.to_string(), expected_error.to_string());
     }
 }
