@@ -50,7 +50,7 @@ test-utils = { version = "0.1.0", default-features = false, path = "crates/inter
 alloy-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false }
 alloy-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
 alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
-alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, rev = "f78ed43520046d34a8cb4829a14e759609ac5e39"}
+alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
 alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
 
 alloy-rlp = { git = "https://github.com/core-coin/rlp.git", default-features = false }
