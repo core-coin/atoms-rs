@@ -1,7 +1,7 @@
 //! Utilities for launching an Anvil instance.
 
-use alloy_primitives::{hex, Address};
-use k256::{ecdsa::SigningKey, SecretKey as K256SecretKey};
+use alloy_primitives::{hex, Address, IcanAddress};
+use libgoldilocks::SecretKey;
 use std::{
     io::{BufRead, BufReader},
     net::SocketAddr,
@@ -22,8 +22,8 @@ const ANVIL_STARTUP_TIMEOUT_MILLIS: u64 = 10_000;
 #[derive(Debug)]
 pub struct AnvilInstance {
     child: Child,
-    private_keys: Vec<K256SecretKey>,
-    addresses: Vec<Address>,
+    private_keys: Vec<SecretKey>,
+    addresses: Vec<IcanAddress>,
     port: u16,
     chain_id: Option<u64>,
 }
@@ -40,12 +40,12 @@ impl AnvilInstance {
     }
 
     /// Returns the private keys used to instantiate this instance
-    pub fn keys(&self) -> &[K256SecretKey] {
+    pub fn keys(&self) -> &[SecretKey] {
         &self.private_keys
     }
 
     /// Returns the addresses used to instantiate this instance
-    pub fn addresses(&self) -> &[Address] {
+    pub fn addresses(&self) -> &[IcanAddress] {
         &self.addresses
     }
 
@@ -348,15 +348,15 @@ impl Anvil {
                 is_private_key = true;
             }
 
-            if is_private_key && line.starts_with('(') {
-                let key_str =
-                    line.split("0x").last().ok_or(AnvilError::ParsePrivateKeyError)?.trim();
-                let key_hex = hex::decode(key_str).map_err(AnvilError::FromHexError)?;
-                let key = K256SecretKey::from_bytes((&key_hex[..]).into())
-                    .map_err(|_| AnvilError::DeserializePrivateKeyError)?;
-                addresses.push(Address::from_public_key(SigningKey::from(&key).verifying_key()));
-                private_keys.push(key);
-            }
+            // if is_private_key && line.starts_with('(') {
+            //     let key_str =
+            //         line.split("0x").last().ok_or(AnvilError::ParsePrivateKeyError)?.trim();
+            //     let key_hex = hex::decode(key_str).map_err(AnvilError::FromHexError)?;
+            //     let key = K256SecretKey::from_bytes((&key_hex[..]).into())
+            //         .map_err(|_| AnvilError::DeserializePrivateKeyError)?;
+            //     addresses.push(Address::from_public_key(SigningKey::from(&key).verifying_key()));
+            //     private_keys.push(key);
+            // }
 
             if let Some(start_chain_id) = line.find("Chain ID:") {
                 let rest = &line[start_chain_id + "Chain ID:".len()..];

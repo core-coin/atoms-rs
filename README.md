@@ -14,14 +14,14 @@ Crates used in Core or that are used by other crates
 - [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
 - [ ] rpc-types-engine
-- [ ] rpc-types-trace
-- [ ] serde - in work (Misha)
-- [ ] signer
-- [ ] signer-wallet
-- [ ] transport
-- [ ] transport-http
-- [ ] transport-ipc
-- [ ] transport-ws
+- [x] rpc-types-trace
+- [x] serde - in work (Misha)
+- [x] signer - in work (Misha)
+- [x] signer-wallet - in work (Misha)
+- [x] transport - in work (Misha)
+- [x] transport-http - in work (Misha)
+- [x] transport-ipc - in work (Misha)
+- [x] transport-ws - in work (Misha)
 
 Alloy connects applications to blockchains.
 

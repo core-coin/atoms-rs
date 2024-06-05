@@ -1,5 +1,4 @@
 use alloy_primitives::hex;
-use k256::ecdsa;
 use std::fmt;
 use thiserror::Error;
 
@@ -12,21 +11,18 @@ pub enum Error {
     /// This operation is not supported by the signer.
     #[error("operation `{0}` is not supported by the signer")]
     UnsupportedOperation(UnsupportedSignerOperation),
-    /// Mismatch between provided transaction chain ID and signer chain ID.
-    #[error("transaction-provided chain ID ({tx}) does not match the signer's ({signer})")]
-    TransactionChainIdMismatch {
-        /// The signer's chain ID.
+    /// Mismatch between provided transaction chain ID and signer network ID.
+    #[error("transaction-provided network ID ({tx}) does not match the signer's ({signer})")]
+    TransactionNetworkIdMismatch {
+        /// The signer's network ID.
         signer: u64,
-        /// The chain ID provided by the transaction.
+        /// The network ID provided by the transaction.
         tx: u64,
     },
     /// [`alloy_dyn_abi`] error.
     #[error(transparent)]
     #[cfg(feature = "eip712")]
     DynAbiError(#[from] alloy_dyn_abi::Error),
-    /// [`ecdsa`] error.
-    #[error(transparent)]
-    Ecdsa(#[from] ecdsa::Error),
     /// [`hex`](mod@hex) error.
     #[error(transparent)]
     HexError(#[from] hex::FromHexError),

@@ -3,12 +3,9 @@
 use super::{Wallet, WalletError};
 use alloy_primitives::{hex, B256};
 use alloy_signer::utils::secret_key_to_address;
-use k256::{
-    ecdsa::{self, SigningKey},
-    FieldBytes, NonZeroScalar, SecretKey as K256SecretKey,
-};
+use libgoldilocks::{SecretKey, SigningKey};
 use rand::{CryptoRng, Rng};
-use std::str::FromStr;
+use std::{error, str::FromStr};
 
 #[cfg(feature = "keystore")]
 use {elliptic_curve::rand_core, std::path::Path};
@@ -16,74 +13,74 @@ use {elliptic_curve::rand_core, std::path::Path};
 impl Wallet<SigningKey> {
     /// Creates a new Wallet instance from a [`SigningKey`].
     ///
-    /// This can also be used to create a Wallet from a [`SecretKey`](K256SecretKey).
+    /// This can also be used to create a Wallet from a [`SecretKey`](SecretKey).
     /// See also the `From` implementations.
     #[doc(alias = "from_private_key")]
     #[doc(alias = "new_private_key")]
     #[doc(alias = "new_pk")]
     #[inline]
-    pub fn from_signing_key(signer: SigningKey) -> Self {
-        let address = secret_key_to_address(&signer);
-        Self::new_with_signer(signer, address, None)
+    pub fn from_signing_key(signer: SigningKey, network_id: u64) -> Self {
+        let address = secret_key_to_address(&signer, network_id);
+        Self::new_with_signer(signer, address, network_id)
     }
 
-    /// Creates a new Wallet instance from a raw scalar serialized as a [`B256`] byte array.
-    ///
-    /// This is identical to [`from_field_bytes`](Self::from_field_bytes).
-    #[inline]
-    pub fn from_bytes(bytes: &B256) -> Result<Self, ecdsa::Error> {
-        Self::from_field_bytes((&bytes.0).into())
-    }
+    // /// Creates a new Wallet instance from a raw scalar serialized as a [`B256`] byte array.
+    // ///
+    // /// This is identical to [`from_field_bytes`](Self::from_field_bytes).
+    // #[inline]
+    // pub fn from_bytes(bytes: &B256, network_id: u64) -> Result<Self, ecdsa::Error> {
+    //     Self::from_field_bytes((&bytes.0).into(), network_id)
+    // }
 
-    /// Creates a new Wallet instance from a raw scalar serialized as a [`FieldBytes`] byte array.
-    #[inline]
-    pub fn from_field_bytes(bytes: &FieldBytes) -> Result<Self, ecdsa::Error> {
-        SigningKey::from_bytes(bytes).map(Self::from_signing_key)
-    }
+    // /// Creates a new Wallet instance from a raw scalar serialized as a [`FieldBytes`] byte array.
+    // #[inline]
+    // pub fn from_field_bytes(bytes: &FieldBytes, network_id: u64) -> Result<Self, error::Error> {
+    //     PrivateKey::from_bytes(bytes).map(|pk| Self::from_signing_key(pk, network_id))
+    // }
 
     /// Creates a new Wallet instance from a raw scalar serialized as a byte slice.
     ///
     /// Byte slices shorter than the field size (32 bytes) are handled by zero padding the input.
     #[inline]
-    pub fn from_slice(bytes: &[u8]) -> Result<Self, ecdsa::Error> {
-        SigningKey::from_slice(bytes).map(Self::from_signing_key)
+    pub fn from_slice(bytes: &[u8], network_id: u64) -> Result<Self, error::Error> {
+        SigningKey::from_bytes(bytes).map(|pk| Self::from_signing_key(pk, network_id))
     }
 
     /// Creates a new random keypair seeded with [`rand::thread_rng()`].
     #[inline]
-    pub fn random() -> Self {
-        Self::random_with(&mut rand::thread_rng())
+    pub fn random(network_id: u64) -> Self {
+        Self::random_with(&mut rand::thread_rng(), network_id)
     }
 
     /// Creates a new random keypair seeded with the provided RNG.
     #[inline]
-    pub fn random_with<R: Rng + CryptoRng>(rng: &mut R) -> Self {
-        Self::from_signing_key(SigningKey::random(rng))
+    pub fn random_with<R: Rng + CryptoRng>(rng: &mut R, network_id: u64) -> Self {
+        Self::from_signing_key(SigningKey::random(rng), network_id)
     }
 
-    /// Borrow the secret [`NonZeroScalar`] value for this key.
-    ///
-    /// # ⚠️ Warning
-    ///
-    /// This value is key material.
-    ///
-    /// Please treat it with the care it deserves!
-    #[inline]
-    pub fn as_nonzero_scalar(&self) -> &NonZeroScalar {
-        self.signer.as_nonzero_scalar()
-    }
+    // /// Borrow the secret [`NonZeroScalar`] value for this key.
+    // ///
+    // /// # ⚠️ Warning
+    // ///
+    // /// This value is key material.
+    // ///
+    // /// Please treat it with the care it deserves!
+    // #[inline]
+    // pub fn as_nonzero_scalar(&self) -> &NonZeroScalar {
+    //     self.signer.as_nonzero_scalar()
+    // }
 
-    /// Serialize this [`Wallet`]'s [`SigningKey`] as a [`B256`] byte array.
-    #[inline]
-    pub fn to_bytes(&self) -> B256 {
-        B256::new(<[u8; 32]>::from(self.to_field_bytes()))
-    }
+    // /// Serialize this [`Wallet`]'s [`SigningKey`] as a [`B256`] byte array.
+    // #[inline]
+    // pub fn to_bytes(&self) -> B256 {
+    //     B256::new(<[u8; 32]>::from(self.to_field_bytes()))
+    // }
 
-    /// Serialize this [`Wallet`]'s [`SigningKey`] as a [`FieldBytes`] byte array.
-    #[inline]
-    pub fn to_field_bytes(&self) -> FieldBytes {
-        self.signer.to_bytes()
-    }
+    // /// Serialize this [`Wallet`]'s [`SigningKey`] as a [`FieldBytes`] byte array.
+    // #[inline]
+    // pub fn to_field_bytes(&self) -> FieldBytes {
+    //     self.signer.to_bytes()
+    // }
 }
 
 #[cfg(feature = "keystore")]
@@ -104,7 +101,7 @@ impl Wallet<SigningKey> {
         R: Rng + CryptoRng + rand_core::CryptoRng,
         S: AsRef<[u8]>,
     {
-        let (secret, uuid) = eth_keystore::new(dir, rng, password, name)?;
+        let (secret, uuid) = xcb_keystore::new(dir, rng, password, name)?;
         Ok((Self::from_slice(&secret)?, uuid))
     }
 
@@ -115,7 +112,7 @@ impl Wallet<SigningKey> {
         P: AsRef<Path>,
         S: AsRef<[u8]>,
     {
-        let secret = eth_keystore::decrypt_key(keypath, password)?;
+        let secret = xcb_keystore::decrypt_key(keypath, password)?;
         Ok(Self::from_slice(&secret)?)
     }
 
@@ -138,7 +135,7 @@ impl Wallet<SigningKey> {
         S: AsRef<[u8]>,
     {
         let pk = pk.as_ref();
-        let uuid = eth_keystore::encrypt_key(keypath, rng, pk, password, name)?;
+        let uuid = xcb_keystore::encrypt_key(keypath, rng, pk, password, name)?;
         Ok((Self::from_slice(pk)?, uuid))
     }
 }
@@ -147,30 +144,30 @@ impl PartialEq for Wallet<SigningKey> {
     fn eq(&self, other: &Self) -> bool {
         self.signer.to_bytes().eq(&other.signer.to_bytes())
             && self.address == other.address
-            && self.chain_id == other.chain_id
+            && self.network_id == other.network_id
     }
 }
 
-impl From<SigningKey> for Wallet<SigningKey> {
-    fn from(value: SigningKey) -> Self {
-        Self::from_signing_key(value)
-    }
-}
+// impl From<SigningKey> for Wallet<SigningKey> {
+//     fn from(value: SigningKey) -> Self {
+//         Self::from_signing_key(value)
+//     }
+// }
 
-impl From<K256SecretKey> for Wallet<SigningKey> {
-    fn from(value: K256SecretKey) -> Self {
-        Self::from_signing_key(value.into())
-    }
-}
+// impl From<SecretKey> for Wallet<SigningKey> {
+//     fn from(value: SecretKey) -> Self {
+//         Self::from_signing_key(value.into())
+//     }
+// }
 
-impl FromStr for Wallet<SigningKey> {
-    type Err = WalletError;
+// impl FromStr for Wallet<SigningKey> {
+//     type Err = WalletError;
 
-    fn from_str(src: &str) -> Result<Self, Self::Err> {
-        let array = hex::decode_to_array::<_, 32>(src)?;
-        Ok(Self::from_slice(&array)?)
-    }
-}
+//     fn from_str(src: &str) -> Result<Self, Self::Err> {
+//         let array = hex::decode_to_array::<_, 57>(src)?;
+//         Ok(Self::from_slice(&array)?)
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
@@ -249,7 +246,7 @@ mod tests {
     fn signs_msg() {
         let message = "Some data";
         let hash = alloy_primitives::utils::eip191_hash_message(message);
-        let key = Wallet::<SigningKey>::random_with(&mut rand::thread_rng());
+        let key = Wallet::<SigningKey>::random_with(&mut rand::thread_rng(), 1);
         let address = key.address;
 
         // sign a message
@@ -335,28 +332,28 @@ mod tests {
 
         let wallet_b256: Wallet<SigningKey> = LocalWallet::from_bytes(&key).unwrap();
         assert_eq!(wallet_b256.address, address!("7E5F4552091A69125d5DfCb7b8C2659029395Bdf"));
-        assert_eq!(wallet_b256.chain_id, None);
+        assert_eq!(wallet_b256.network_id, None);
         assert_eq!(wallet_b256.signer, SigningKey::from_bytes((&key.0).into()).unwrap());
 
         let wallet_str =
             Wallet::from_str("0000000000000000000000000000000000000000000000000000000000000001")
                 .unwrap();
         assert_eq!(wallet_str.address, wallet_b256.address);
-        assert_eq!(wallet_str.chain_id, wallet_b256.chain_id);
+        assert_eq!(wallet_str.network_id, wallet_b256.network_id);
         assert_eq!(wallet_str.signer, wallet_b256.signer);
         assert_eq!(wallet_str.to_bytes(), key);
         assert_eq!(wallet_str.to_field_bytes(), key.0.into());
 
-        let wallet_slice = Wallet::from_slice(&key[..]).unwrap();
+        let wallet_slice = Wallet::from_slice(&key[..], 1).unwrap();
         assert_eq!(wallet_slice.address, wallet_b256.address);
-        assert_eq!(wallet_slice.chain_id, wallet_b256.chain_id);
+        assert_eq!(wallet_slice.network_id, wallet_b256.network_id);
         assert_eq!(wallet_slice.signer, wallet_b256.signer);
         assert_eq!(wallet_slice.to_bytes(), key);
         assert_eq!(wallet_slice.to_field_bytes(), key.0.into());
 
         let wallet_field_bytes = Wallet::from_field_bytes((&key.0).into()).unwrap();
         assert_eq!(wallet_field_bytes.address, wallet_b256.address);
-        assert_eq!(wallet_field_bytes.chain_id, wallet_b256.chain_id);
+        assert_eq!(wallet_field_bytes.network_id, wallet_b256.network_id);
         assert_eq!(wallet_field_bytes.signer, wallet_b256.signer);
         assert_eq!(wallet_field_bytes.to_bytes(), key);
         assert_eq!(wallet_field_bytes.to_field_bytes(), key.0.into());
@@ -371,7 +368,7 @@ mod tests {
         let wallet_0x: Wallet<SigningKey> =
             "0x0000000000000000000000000000000000000000000000000000000000000001".parse().unwrap();
         assert_eq!(wallet.address, wallet_0x.address);
-        assert_eq!(wallet.chain_id, wallet_0x.chain_id);
+        assert_eq!(wallet.network_id, wallet_0x.network_id);
         assert_eq!(wallet.signer, wallet_0x.signer);
 
         // Must fail because of `0z`

@@ -61,26 +61,26 @@ pub trait Signer<Sig = Signature> {
     /// Returns the signer's Ethereum Address.
     fn address(&self) -> Address;
 
-    /// Returns the signer's chain ID.
-    fn chain_id(&self) -> Option<ChainId>;
+    /// Returns the signer's network ID.
+    fn network_id(&self) -> Option<ChainId>;
 
-    /// Sets the signer's chain ID.
-    fn set_chain_id(&mut self, chain_id: Option<ChainId>);
+    /// Sets the signer's network ID.
+    fn set_network_id(&mut self, network_id: Option<ChainId>);
 
-    /// Sets the signer's chain ID and returns `self`.
+    /// Sets the signer's network ID and returns `self`.
     #[inline]
     #[must_use]
     #[auto_impl(keep_default_for(&mut, Box))]
-    fn with_chain_id(mut self, chain_id: Option<ChainId>) -> Self
+    fn with_network_id(mut self, network_id: Option<ChainId>) -> Self
     where
         Self: Sized,
     {
-        self.set_chain_id(chain_id);
+        self.set_network_id(network_id);
         self
     }
 }
 
-/// Synchronous Ethereum signer.
+/// Synchronous Core Blockchain signer.
 ///
 /// All provided implementations rely on [`sign_hash_sync`](SignerSync::sign_hash_sync). A signer
 /// may not always be able to implement this method, in which case it should return
@@ -128,8 +128,8 @@ pub trait SignerSync<Sig = Signature> {
         self.sign_hash_sync(&hash)
     }
 
-    /// Returns the signer's chain ID.
-    fn chain_id_sync(&self) -> Option<ChainId>;
+    /// Returns the signer's network ID.
+    fn network_id_sync(&self) -> Option<ChainId>;
 }
 
 #[cfg(test)]
@@ -184,7 +184,7 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             );
 
-            assert_eq!(s.chain_id(), None);
+            assert_eq!(s.network_id(), None);
         }
 
         fn test_unsized_unimplemented_signer_sync<S: SignerSync + ?Sized>(s: &S) {
@@ -207,7 +207,7 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             );
 
-            assert_eq!(s.chain_id_sync(), None);
+            assert_eq!(s.network_id_sync(), None);
         }
 
         struct UnimplementedSigner;
@@ -223,11 +223,11 @@ mod tests {
                 Address::ZERO
             }
 
-            fn chain_id(&self) -> Option<ChainId> {
+            fn network_id(&self) -> Option<ChainId> {
                 None
             }
 
-            fn set_chain_id(&mut self, _chain_id: Option<ChainId>) {}
+            fn set_network_id(&mut self, _network_id: Option<ChainId>) {}
         }
 
         impl SignerSync for UnimplementedSigner {
@@ -235,7 +235,7 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             }
 
-            fn chain_id_sync(&self) -> Option<ChainId> {
+            fn network_id_sync(&self) -> Option<ChainId> {
                 None
             }
         }
