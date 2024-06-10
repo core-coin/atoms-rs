@@ -672,8 +672,10 @@ impl Decodable for BlockHashOrNumber {
             // strip the first byte, parsing the rest of the string.
             // If the rest of the string fails to decode into 32 bytes, we'll bubble up the
             // decoding error.
-            let hash = B256::decode(buf)?;
-            Ok(Self::Hash(hash))
+            // let hash = B256::decode(buf)?;
+            // Ok(Self::Hash(hash))
+            // todo:error2215 fix this if we need eip
+            Err(RlpError::Custom("BlockHashOrNumber::Hash not supported"))
         } else {
             // a block number when encoded as bytes ranges from 0 to any number of bytes - we're
             // going to accept numbers which fit in less than 64 bytes.

@@ -146,14 +146,15 @@ impl BlobTransactionSidecar {
     #[inline]
     pub(crate) fn encode_inner(&self, out: &mut dyn BufMut) {
         // Encode the blobs, commitments, and proofs
-        self.blobs.encode(out);
-        self.commitments.encode(out);
-        self.proofs.encode(out);
+        // self.blobs.encode(out);
+        // self.commitments.encode(out);
+        // self.proofs.encode(out);
     }
 
     /// Outputs the RLP length of the [BlobTransactionSidecar] fields, without a RLP header.
     pub fn fields_len(&self) -> usize {
-        self.blobs.length() + self.commitments.length() + self.proofs.length()
+        // self.blobs.length() + self.commitments.length() + self.proofs.length()
+        0
     }
 
     /// Calculates a size heuristic for the in-memory size of the [BlobTransactionSidecar].
@@ -179,11 +180,12 @@ impl Encodable for BlobTransactionSidecar {
 impl Decodable for BlobTransactionSidecar {
     /// Decodes the inner [BlobTransactionSidecar] fields from RLP bytes, without a RLP header.
     fn decode(buf: &mut &[u8]) -> alloy_rlp::Result<Self> {
-        Ok(Self {
-            blobs: Decodable::decode(buf)?,
-            commitments: Decodable::decode(buf)?,
-            proofs: Decodable::decode(buf)?,
-        })
+        // Ok(Self {
+        //     blobs: Decodable::decode(buf)?,
+        //     commitments: Decodable::decode(buf)?,
+        //     proofs: Decodable::decode(buf)?,
+        // })
+        Err(alloy_rlp::Error::Custom("BlobTransactionSidecar::decode not implemented"))
     }
 }
 

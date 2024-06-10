@@ -5,13 +5,12 @@
 #![allow(unknown_lints, non_local_definitions)]
 
 use alloy_primitives::{Address, U256};
-use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 /// Multiplier for converting gwei to wei.
 pub const GWEI_TO_WEI: u64 = 1_000_000_000;
 
 /// Withdrawal represents a validator withdrawal from the consensus layer.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, RlpEncodable, RlpDecodable)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(
     any(test, feature = "arbitrary"),
     derive(proptest_derive::Arbitrary, arbitrary::Arbitrary)

@@ -3,7 +3,6 @@
 //! See also [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): Execution layer triggerable withdrawals
 
 use alloy_primitives::{address, bytes, Address, Bytes, FixedBytes};
-use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 /// The caller to be used when calling the EIP-7002 withdrawal requests contract at the end of the
 /// block.
@@ -22,7 +21,7 @@ pub const WITHDRAWAL_REQUEST_TYPE: u8 = 0x01;
 /// Represents an execution layer triggerable withdrawal request.
 ///
 /// See [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, RlpEncodable, RlpDecodable)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 #[cfg_attr(
