@@ -8,12 +8,11 @@
 use alloc::vec::Vec;
 
 use alloy_primitives::{Address, B256, U256};
-use alloy_rlp::{RlpDecodable, RlpDecodableWrapper, RlpEncodable, RlpEncodableWrapper};
 use core::{mem, ops::Deref};
 
 /// A list of addresses and storage keys that the transaction plans to access.
 /// Accesses outside the list are possible, but become more expensive.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, RlpDecodable, RlpEncodable)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(
     any(test, feature = "arbitrary"),
     derive(proptest_derive::Arbitrary, arbitrary::Arbitrary)
@@ -42,19 +41,19 @@ impl AccessListItem {
 }
 
 /// AccessList as defined in EIP-2930
-#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, RlpDecodableWrapper, RlpEncodableWrapper)]
-#[cfg_attr(
-    any(test, feature = "arbitrary"),
-    derive(proptest_derive::Arbitrary, arbitrary::Arbitrary)
-)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+// #[cfg_attr(
+//     any(test, feature = "arbitrary"),
+//     derive(proptest_derive::Arbitrary, arbitrary::Arbitrary)
+// )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AccessList(
-    #[cfg_attr(
-        any(test, feature = "arbitrary"),
-        proptest(
-            strategy = "proptest::collection::vec(proptest::arbitrary::any::<AccessListItem>(), 0..=20)"
-        )
-    )]
+    // #[cfg_attr(
+    // any(test, feature = "arbitrary"),
+    // proptest(
+    //     strategy = "proptest::collection::vec(proptest::arbitrary::any::<AccessListItem>(), 0..=20)"
+    // )
+    // )]
     pub Vec<AccessListItem>,
 );
 

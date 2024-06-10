@@ -5,7 +5,7 @@
 #[cfg(not(feature = "std"))]
 use crate::alloc::{vec, vec::Vec};
 
-use alloy_primitives::{keccak256, Sealed, B256};
+use alloy_primitives::{sha3, Sealed, B256};
 use alloy_rlp::{Buf, BufMut, Header, EMPTY_STRING_CODE};
 use core::{
     fmt,
@@ -159,7 +159,7 @@ pub trait Encodable2718: Sized + Send + Sync + 'static {
 
     /// Compute the hash as committed to in the MPT trie.
     fn trie_hash(&self) -> B256 {
-        keccak256(self.encoded_2718())
+        sha3(self.encoded_2718())
     }
 
     /// Seal the encodable, by encoding and hashing it.
