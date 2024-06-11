@@ -57,7 +57,8 @@ impl<T: SignableTransaction<Signature>> Signed<T, Signature> {
     pub fn recover_signer(
         &self,
     ) -> Result<alloy_primitives::Address, alloy_primitives::SignatureError> {
-        let sighash = self.tx.signature_hash();
-        self.signature.recover_address_from_prehash(&sighash)
+        todo!();
+        // let sighash = self.tx.signature_hash();
+        // self.signature.recover_address_from_prehash(&sighash)
     }
 }

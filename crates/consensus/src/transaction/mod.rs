@@ -1,5 +1,5 @@
 use crate::Signed;
-use alloy_primitives::{keccak256, ChainId, TxKind, B256, U256};
+use alloy_primitives::{sha3, ChainId, TxKind, B256, U256};
 use core::any;
 
 #[cfg(not(feature = "std"))]
@@ -98,7 +98,7 @@ pub trait SignableTransaction<Signature>: Transaction {
 
     /// Calculate the signing hash for the transaction.
     fn signature_hash(&self) -> B256 {
-        keccak256(self.encoded_for_signing())
+        sha3(self.encoded_for_signing())
     }
 
     /// Convert to a signed transaction by adding a signature and computing the

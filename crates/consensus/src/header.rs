@@ -3,7 +3,7 @@ use alloy_eips::{
     eip1559::{calc_next_block_base_fee, BaseFeeParams},
     eip4844::{calc_blob_gasprice, calc_excess_blob_gas},
 };
-use alloy_primitives::{b256, keccak256, Address, BlockNumber, Bloom, Bytes, B256, B64, U256};
+use alloy_primitives::{b256, sha3, Address, BlockNumber, Bloom, Bytes, B256, B64, U256};
 use alloy_rlp::{
     length_of_length, Buf, BufMut, Decodable, Encodable, EMPTY_LIST_CODE, EMPTY_STRING_CODE,
 };
@@ -147,7 +147,7 @@ impl Header {
     pub fn hash_slow(&self) -> B256 {
         let mut out = Vec::<u8>::new();
         self.encode(&mut out);
-        keccak256(&out)
+        sha3(&out)
     }
 
     /// Checks if the header is empty - has no transactions and no ommers

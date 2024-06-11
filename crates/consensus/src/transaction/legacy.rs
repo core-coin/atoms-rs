@@ -1,5 +1,5 @@
 use crate::{SignableTransaction, Signed, Transaction};
-use alloy_primitives::{keccak256, Bytes, ChainId, Signature, TxKind, B1368, U256};
+use alloy_primitives::{sha3, Bytes, ChainId, Signature, TxKind, U256};
 use alloy_rlp::{length_of_length, BufMut, Decodable, Encodable, Header, Result};
 use core::mem;
 
@@ -107,17 +107,17 @@ impl TxLegacy {
         signature: &Signature,
         out: &mut dyn alloy_rlp::BufMut,
     ) {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         let header = Header { list: true, payload_length };
         header.encode(out);
         self.encode_fields(out);
-        signature.write_rlp_vrs(out);
+        signature.write_rlp(out);
     }
 
     /// Returns what the encoded length should be, if the transaction were RLP encoded with the
     /// given signature.
     pub(crate) fn encoded_len_with_signature(&self, signature: &Signature) -> usize {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         Header { list: true, payload_length }.length() + payload_length
     }
 
@@ -165,11 +165,10 @@ impl TxLegacy {
         let original_len = buf.len();
 
         let mut tx = Self::decode_fields(buf)?;
-        let signature = Signature::decode_rlp_vrs(buf)?;
+        let signature = Signature::decode_rlp_sig(buf)?;
 
         // extract chain id from signature
-        let v = signature.v();
-        tx.network_id = v.chain_id();
+        tx.network_id = None;
 
         let signed = tx.into_signed(signature);
         if buf.len() + header.payload_length != original_len {
@@ -248,7 +247,7 @@ impl SignableTransaction<Signature> for TxLegacy {
     fn into_signed(self, signature: Signature) -> Signed<Self> {
         let mut buf = Vec::with_capacity(self.encoded_len_with_signature(&signature));
         self.encode_with_signature_fields(&signature, &mut buf);
-        let hash = keccak256(&buf);
+        let hash = sha3(&buf);
         Signed::new_unchecked(self, signature, hash)
     }
 }
