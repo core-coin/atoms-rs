@@ -53,7 +53,7 @@ alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-fe
 alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
 alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
 
-alloy-rlp = { git = "https://github.com/core-coin/rlp.git", default-features = false }
+alloy-rlp = { version = "0.3", default-features = false }
 
 # ethereum
 ethereum_ssz_derive = "0.5"
