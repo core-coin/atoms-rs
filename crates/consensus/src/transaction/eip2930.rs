@@ -1,6 +1,6 @@
 use crate::{SignableTransaction, Signed, Transaction, TxType};
-use alloy_eips::eip2930::AccessList;
-use alloy_primitives::{keccak256, Bytes, ChainId, Signature, TxKind, U256};
+// use alloy_eips::eip2930::AccessList;
+use alloy_primitives::{sha3, Bytes, ChainId, Signature, TxKind, U256};
 use alloy_rlp::{length_of_length, BufMut, Decodable, Encodable, Header};
 use core::mem;
 
@@ -43,12 +43,12 @@ pub struct TxEip2930 {
     /// in the case of contract creation, as an endowment
     /// to the newly created account; formally Tv.
     pub value: U256,
-    /// The accessList specifies a list of addresses and storage keys;
-    /// these addresses and storage keys are added into the `accessed_addresses`
-    /// and `accessed_storage_keys` global sets (introduced in EIP-2929).
-    /// A gas cost is charged, though at a discount relative to the cost of
-    /// accessing outside the list.
-    pub access_list: AccessList,
+    // /// The accessList specifies a list of addresses and storage keys;
+    // /// these addresses and storage keys are added into the `accessed_addresses`
+    // /// and `accessed_storage_keys` global sets (introduced in EIP-2929).
+    // /// A gas cost is charged, though at a discount relative to the cost of
+    // /// accessing outside the list.
+    // pub access_list: AccessList,
     /// Input has two uses depending if transaction is Create or Call (if `to` field is None or
     /// Some). pub init: An unlimited size byte array specifying the
     /// EVM-code for the account initialisation procedure CREATE,
@@ -67,7 +67,7 @@ impl TxEip2930 {
         mem::size_of::<u64>() + // gas_limit
         self.to.size() + // to
         mem::size_of::<U256>() + // value
-        self.access_list.size() + // access_list
+        // self.access_list.size() + // access_list
         self.input.len() // input
     }
 
@@ -93,7 +93,7 @@ impl TxEip2930 {
             to: Decodable::decode(buf)?,
             value: Decodable::decode(buf)?,
             input: Decodable::decode(buf)?,
-            access_list: Decodable::decode(buf)?,
+            // access_list: Decodable::decode(buf)?,
         })
     }
 
@@ -108,7 +108,7 @@ impl TxEip2930 {
         len += self.to.length();
         len += self.value.length();
         len += self.input.0.length();
-        len += self.access_list.length();
+        // len += self.access_list.length();
         len
     }
 
@@ -121,7 +121,7 @@ impl TxEip2930 {
         self.to.encode(out);
         self.value.encode(out);
         self.input.0.encode(out);
-        self.access_list.encode(out);
+        // self.access_list.encode(out);
     }
 
     /// Returns what the encoded length should be, if the transaction were RLP encoded with the
@@ -135,7 +135,7 @@ impl TxEip2930 {
         with_header: bool,
     ) -> usize {
         // this counts the tx fields and signature fields
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
 
         // this counts:
         // * tx type byte
@@ -162,7 +162,7 @@ impl TxEip2930 {
         out: &mut dyn BufMut,
         with_header: bool,
     ) {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         if with_header {
             Header {
                 list: false,
@@ -179,11 +179,11 @@ impl TxEip2930 {
     ///
     /// This __does__ encode a list header and include a signature.
     pub(crate) fn encode_with_signature_fields(&self, signature: &Signature, out: &mut dyn BufMut) {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         let header = Header { list: true, payload_length };
         header.encode(out);
         self.encode_fields(out);
-        signature.write_rlp_vrs(out);
+        signature.write_rlp(out);
     }
 
     /// Decodes the transaction from RLP bytes, including the signature.
@@ -203,7 +203,7 @@ impl TxEip2930 {
         let original_len = buf.len();
 
         let tx = Self::decode_fields(buf)?;
-        let signature = Signature::decode_rlp_vrs(buf)?;
+        let signature = Signature::decode_rlp_sig(buf)?;
 
         let signed = tx.into_signed(signature);
         if buf.len() + header.payload_length != original_len {
@@ -272,12 +272,12 @@ impl SignableTransaction<Signature> for TxEip2930 {
     fn into_signed(self, signature: Signature) -> Signed<Self> {
         let mut buf = Vec::with_capacity(self.encoded_len_with_signature(&signature, false));
         self.encode_with_signature(&signature, &mut buf, false);
-        let hash = keccak256(&buf);
+        let hash = sha3(&buf);
 
         // Drop any v chain id value to ensure the signature format is correct at the time of
         // combination for an EIP-2930 transaction. V should indicate the y-parity of the
         // signature.
-        Signed::new_unchecked(self, signature.with_parity_bool(), hash)
+        Signed::new_unchecked(self, signature, hash)
     }
 }
 
@@ -324,7 +324,7 @@ mod tests {
             to: TxKind::Create,
             value: U256::from(3_u64),
             input: Bytes::from(vec![1, 2]),
-            access_list: Default::default(),
+            // access_list: Default::default(),
         };
         let signature = Signature::test_signature();
 
@@ -345,7 +345,7 @@ mod tests {
             to: Address::default().into(),
             value: U256::from(3_u64),
             input: Bytes::from(vec![1, 2]),
-            access_list: Default::default(),
+            // access_list: Default::default(),
         };
 
         let signature = Signature::test_signature();

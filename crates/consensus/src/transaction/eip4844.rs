@@ -5,8 +5,8 @@ pub mod utils;
 
 use crate::{SignableTransaction, Signed, Transaction, TxType};
 
-use alloy_eips::{eip2930::AccessList, eip4844::DATA_GAS_PER_BLOB};
-use alloy_primitives::{keccak256, Address, Bytes, ChainId, Signature, TxKind, B256, U256};
+use alloy_eips::{/*eip2930::AccessList, */ eip4844::DATA_GAS_PER_BLOB};
+use alloy_primitives::{sha3, Address, Bytes, ChainId, Signature, TxKind, B256, U256};
 use alloy_rlp::{length_of_length, BufMut, Decodable, Encodable, Header};
 use core::mem;
 
@@ -131,9 +131,9 @@ impl TxEip4844Variant {
         with_header: bool,
     ) {
         let payload_length = match self {
-            Self::TxEip4844(tx) => tx.fields_len() + signature.rlp_vrs_len(),
+            Self::TxEip4844(tx) => tx.fields_len() + signature.rlp_len(),
             Self::TxEip4844WithSidecar(tx) => {
-                let payload_length = tx.tx().fields_len() + signature.rlp_vrs_len();
+                let payload_length = tx.tx().fields_len() + signature.rlp_len();
                 let inner_header = Header { list: true, payload_length };
                 inner_header.length() + payload_length + tx.sidecar().fields_len()
             }
@@ -262,16 +262,16 @@ impl SignableTransaction<Signature> for TxEip4844Variant {
     }
 
     fn into_signed(self, signature: Signature) -> Signed<Self> {
-        let payload_length = 1 + self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = 1 + self.fields_len() + signature.rlp_len();
         let mut buf = Vec::with_capacity(payload_length);
         // we use the inner tx to encode the fields
         self.tx().encode_with_signature(&signature, &mut buf, false);
-        let hash = keccak256(&buf);
+        let hash = sha3(&buf);
 
         // Drop any v chain id value to ensure the signature format is correct at the time of
         // combination for an EIP-4844 transaction. V should indicate the y-parity of the
         // signature.
-        Signed::new_unchecked(self, signature.with_parity_bool(), hash)
+        Signed::new_unchecked(self, signature, hash)
     }
 
     fn encode_for_signing(&self, out: &mut dyn alloy_rlp::BufMut) {
@@ -333,13 +333,12 @@ pub struct TxEip4844 {
     /// in the case of contract creation, as an endowment
     /// to the newly created account; formally Tv.
     pub value: U256,
-    /// The accessList specifies a list of addresses and storage keys;
-    /// these addresses and storage keys are added into the `accessed_addresses`
-    /// and `accessed_storage_keys` global sets (introduced in EIP-2929).
-    /// A gas cost is charged, though at a discount relative to the cost of
-    /// accessing outside the list.
-    pub access_list: AccessList,
-
+    // /// The accessList specifies a list of addresses and storage keys;
+    // /// these addresses and storage keys are added into the `accessed_addresses`
+    // /// and `accessed_storage_keys` global sets (introduced in EIP-2929).
+    // /// A gas cost is charged, though at a discount relative to the cost of
+    // /// accessing outside the list.
+    // pub access_list: AccessList,
     /// It contains a vector of fixed size hash(32 bytes)
     pub blob_versioned_hashes: Vec<B256>,
 
@@ -431,7 +430,7 @@ impl TxEip4844 {
             to: Decodable::decode(buf)?,
             value: Decodable::decode(buf)?,
             input: Decodable::decode(buf)?,
-            access_list: Decodable::decode(buf)?,
+            // access_list: Decodable::decode(buf)?,
             max_fee_per_blob_gas: Decodable::decode(buf)?,
             blob_versioned_hashes: Decodable::decode(buf)?,
         })
@@ -448,7 +447,7 @@ impl TxEip4844 {
         len += self.max_priority_fee_per_gas.length();
         len += self.to.length();
         len += self.value.length();
-        len += self.access_list.length();
+        // len += self.access_list.length();
         len += self.blob_versioned_hashes.length();
         len += self.max_fee_per_blob_gas.length();
         len += self.input.0.length();
@@ -465,7 +464,7 @@ impl TxEip4844 {
         self.to.encode(out);
         self.value.encode(out);
         self.input.0.encode(out);
-        self.access_list.encode(out);
+        // self.access_list.encode(out);
         self.max_fee_per_blob_gas.encode(out);
         self.blob_versioned_hashes.encode(out);
     }
@@ -480,7 +479,7 @@ impl TxEip4844 {
         mem::size_of::<u128>() + // max_priority_fee_per_gas
         mem::size_of::<Address>() + // to
         mem::size_of::<U256>() + // value
-        self.access_list.size() + // access_list
+        // self.access_list.size() + // access_list
         self.input.len() +  // input
         self.blob_versioned_hashes.capacity() * mem::size_of::<B256>() + // blob hashes size
         mem::size_of::<u128>() // max_fee_per_data_gas
@@ -497,7 +496,7 @@ impl TxEip4844 {
         with_header: bool,
     ) -> usize {
         // this counts the tx fields and signature fields
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
 
         // this counts:
         // * tx type byte
@@ -524,7 +523,7 @@ impl TxEip4844 {
         out: &mut dyn BufMut,
         with_header: bool,
     ) {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         if with_header {
             Header {
                 list: false,
@@ -541,11 +540,11 @@ impl TxEip4844 {
     ///
     /// This __does__ encode a list header and include a signature.
     pub(crate) fn encode_with_signature_fields(&self, signature: &Signature, out: &mut dyn BufMut) {
-        let payload_length = self.fields_len() + signature.rlp_vrs_len();
+        let payload_length = self.fields_len() + signature.rlp_len();
         let header = Header { list: true, payload_length };
         header.encode(out);
         self.encode_fields(out);
-        signature.write_rlp_vrs(out);
+        signature.write_rlp(out);
     }
 
     /// Decodes the transaction from RLP bytes, including the signature.
@@ -565,7 +564,7 @@ impl TxEip4844 {
         let original_len = buf.len();
 
         let tx = Self::decode_fields(buf)?;
-        let signature = Signature::decode_rlp_vrs(buf)?;
+        let signature = Signature::decode_rlp_sig(buf)?;
 
         let signed = tx.into_signed(signature);
         if buf.len() + header.payload_length != original_len {
@@ -616,12 +615,12 @@ impl SignableTransaction<Signature> for TxEip4844 {
     fn into_signed(self, signature: Signature) -> Signed<Self> {
         let mut buf = Vec::with_capacity(self.encoded_len_with_signature(&signature, false));
         self.encode_with_signature(&signature, &mut buf, false);
-        let hash = keccak256(&buf);
+        let hash = sha3(&buf);
 
         // Drop any v chain id value to ensure the signature format is correct at the time of
         // combination for an EIP-4844 transaction. V should indicate the y-parity of the
         // signature.
-        Signed::new_unchecked(self, signature.with_parity_bool(), hash)
+        Signed::new_unchecked(self, signature, hash)
     }
 
     fn encode_for_signing(&self, out: &mut dyn alloy_rlp::BufMut) {
@@ -766,7 +765,7 @@ impl TxEip4844WithSidecar {
     /// where `tx_payload` is the RLP encoding of the [TxEip4844] transaction fields:
     /// `rlp([chain_id, nonce, max_priority_fee_per_gas, ..., v, r, s])`
     pub fn encode_with_signature_fields(&self, signature: &Signature, out: &mut dyn BufMut) {
-        let inner_payload_length = self.tx.fields_len() + signature.rlp_vrs_len();
+        let inner_payload_length = self.tx.fields_len() + signature.rlp_len();
         let inner_header = Header { list: true, payload_length: inner_payload_length };
 
         let outer_payload_length =
@@ -779,7 +778,7 @@ impl TxEip4844WithSidecar {
 
         // now write the fields
         self.tx.encode_fields(out);
-        signature.write_rlp_vrs(out);
+        signature.write_rlp(out);
         self.sidecar.encode(out);
     }
 
@@ -848,12 +847,12 @@ impl SignableTransaction<Signature> for TxEip4844WithSidecar {
         // Include the transaction fields, making sure to __not__ use the sidecar, and __not__
         // encode a header.
         self.tx.encode_with_signature(&signature, &mut buf, false);
-        let hash = keccak256(&buf);
+        let hash = sha3(&buf);
 
         // Drop any v chain id value to ensure the signature format is correct at the time of
         // combination for an EIP-4844 transaction. V should indicate the y-parity of the
         // signature.
-        Signed::new_unchecked(self, signature.with_parity_bool(), hash)
+        Signed::new_unchecked(self, signature, hash)
     }
 
     fn payload_len_for_signature(&self) -> usize {
@@ -916,7 +915,7 @@ mod tests {
             gas_limit: 1,
             to: Default::default(),
             value: U256::from(1),
-            access_list: Default::default(),
+            // access_list: Default::default(),
             blob_versioned_hashes: vec![Default::default()],
             max_fee_per_blob_gas: 1,
             input: Default::default(),
@@ -975,7 +974,7 @@ mod tests {
                 max_priority_fee_per_gas: 1000000000,
                 to: address!("a8cb082a5a689e0d594d7da1e2d72a3d63adc1bd"),
                 value: U256::ZERO,
-                access_list: AccessList::default(),
+                // access_list: AccessList::default(),
                 blob_versioned_hashes: vec![
                     b256!("01e5276d91ac1ddb3b1c2d61295211220036e9a04be24c00f76916cc2659d004"),
                     b256!("0128eb58aff09fd3a7957cd80aa86186d5849569997cdfcfa23772811b706cc2"),

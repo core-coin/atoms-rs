@@ -186,22 +186,22 @@ impl TxEnvelope {
     /// Return the length of the inner txn, __without a type byte__.
     pub fn inner_length(&self) -> usize {
         match self {
-            Self::Legacy(t) => t.tx().fields_len() + t.signature().rlp_vrs_len(),
+            Self::Legacy(t) => t.tx().fields_len() + t.signature().rlp_len(),
             Self::Eip2930(t) => {
-                let payload_length = t.tx().fields_len() + t.signature().rlp_vrs_len();
+                let payload_length = t.tx().fields_len() + t.signature().rlp_len();
                 Header { list: true, payload_length }.length() + payload_length
             }
             Self::Eip1559(t) => {
-                let payload_length = t.tx().fields_len() + t.signature().rlp_vrs_len();
+                let payload_length = t.tx().fields_len() + t.signature().rlp_len();
                 Header { list: true, payload_length }.length() + payload_length
             }
             Self::Eip4844(t) => match t.tx() {
                 TxEip4844Variant::TxEip4844(tx) => {
-                    let payload_length = tx.fields_len() + t.signature().rlp_vrs_len();
+                    let payload_length = tx.fields_len() + t.signature().rlp_len();
                     Header { list: true, payload_length }.length() + payload_length
                 }
                 TxEip4844Variant::TxEip4844WithSidecar(tx) => {
-                    let inner_payload_length = tx.tx().fields_len() + t.signature().rlp_vrs_len();
+                    let inner_payload_length = tx.tx().fields_len() + t.signature().rlp_len();
                     let inner_header = Header { list: true, payload_length: inner_payload_length };
 
                     let outer_payload_length =
@@ -217,7 +217,7 @@ impl TxEnvelope {
     /// Return the RLP payload length of the network-serialized wrapper
     fn rlp_payload_length(&self) -> usize {
         if let Self::Legacy(t) = self {
-            let payload_length = t.tx().fields_len() + t.signature().rlp_vrs_len();
+            let payload_length = t.tx().fields_len() + t.signature().rlp_len();
             return Header { list: true, payload_length }.length() + payload_length;
         }
         // length of inner tx body
@@ -417,7 +417,7 @@ mod tests {
             to: Address::left_padding_from(&[6]).into(),
             value: U256::from(7_u64),
             input: Bytes::from(vec![8]),
-            access_list: Default::default(),
+            // access_list: Default::default(),
         };
         test_encode_decode_roundtrip(tx);
     }
@@ -432,10 +432,10 @@ mod tests {
             to: Address::left_padding_from(&[5]).into(),
             value: U256::from(6_u64),
             input: Bytes::from(vec![7]),
-            access_list: AccessList(vec![AccessListItem {
-                address: Address::left_padding_from(&[8]),
-                storage_keys: vec![B256::left_padding_from(&[9])],
-            }]),
+            // access_list: AccessList(vec![AccessListItem {
+            //     address: Address::left_padding_from(&[8]),
+            //     storage_keys: vec![B256::left_padding_from(&[9])],
+            // }]),
         };
         test_encode_decode_roundtrip(tx);
     }
@@ -453,7 +453,7 @@ mod tests {
                 to: Address::left_padding_from(&[6]).into(),
                 value: U256::from(7_u64),
                 input: Bytes::from(vec![8]),
-                access_list: Default::default(),
+                // access_list: Default::default(),
             }
             .into_signed(signature),
         );
@@ -518,10 +518,10 @@ mod tests {
             to: TxKind::Create,
             value: U256::from(10e18),
             input: Bytes::new(),
-            access_list: AccessList(vec![AccessListItem {
-                address: Address::random(),
-                storage_keys: vec![B256::random()],
-            }]),
+            // access_list: AccessList(vec![AccessListItem {
+            //     address: Address::random(),
+            //     storage_keys: vec![B256::random()],
+            // }]),
         };
         test_serde_roundtrip(tx);
     }
@@ -537,7 +537,7 @@ mod tests {
             to: Address::random().into(),
             value: U256::MAX,
             input: Bytes::new(),
-            access_list: Default::default(),
+            // access_list: Default::default(),
         };
         test_serde_roundtrip(tx);
     }
@@ -556,10 +556,10 @@ mod tests {
             to: Address::random(),
             value: U256::from(10e18),
             input: Bytes::new(),
-            access_list: AccessList(vec![AccessListItem {
-                address: Address::random(),
-                storage_keys: vec![B256::random()],
-            }]),
+            // access_list: AccessList(vec![AccessListItem {
+            //     address: Address::random(),
+            //     storage_keys: vec![B256::random()],
+            // }]),
             blob_versioned_hashes: vec![B256::random()],
             max_fee_per_blob_gas: 0,
         });
@@ -575,10 +575,10 @@ mod tests {
                 to: Address::random(),
                 value: U256::from(10e18),
                 input: Bytes::new(),
-                access_list: AccessList(vec![AccessListItem {
-                    address: Address::random(),
-                    storage_keys: vec![B256::random()],
-                }]),
+                // access_list: AccessList(vec![AccessListItem {
+                //     address: Address::random(),
+                //     storage_keys: vec![B256::random()],
+                // }]),
                 blob_versioned_hashes: vec![B256::random()],
                 max_fee_per_blob_gas: 0,
             },
