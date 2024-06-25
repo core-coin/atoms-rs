@@ -308,9 +308,11 @@ impl Decodable for TxEip2930 {
 
 #[cfg(test)]
 mod tests {
+    use core::str::FromStr;
+
     use super::TxEip2930;
     use crate::{SignableTransaction, TxEnvelope};
-    use alloy_primitives::{Address, Bytes, Signature, TxKind, U256};
+    use alloy_primitives::{Address, Bytes, IcanAddress, TxKind, Signature, U256};
     use alloy_rlp::{Decodable, Encodable};
 
     #[test]
@@ -326,7 +328,7 @@ mod tests {
             input: Bytes::from(vec![1, 2]),
             // access_list: Default::default(),
         };
-        let signature = Signature::test_signature();
+        let signature = Signature::from_str("0x").unwrap();
 
         let mut encoded = Vec::new();
         tx.encode_with_signature_fields(&signature, &mut encoded);
@@ -342,13 +344,13 @@ mod tests {
             nonce: 0,
             gas_price: 1,
             gas_limit: 2,
-            to: Address::default().into(),
+            to: IcanAddress::default().into(),
             value: U256::from(3_u64),
             input: Bytes::from(vec![1, 2]),
             // access_list: Default::default(),
         };
 
-        let signature = Signature::test_signature();
+        let signature = Signature::from_str("0x").unwrap();
 
         let tx = request.into_signed(signature);
 

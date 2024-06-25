@@ -20,7 +20,7 @@
 /// reqwest client.
 ///
 /// [`Http`]: alloy_transport_http::Http
-pub type ReqwestProvider<N = alloy_network::Core> =
+pub type ReqwestProvider<N = alloy_network::Ethereum> =
     crate::RootProvider<alloy_transport_http::Http<reqwest::Client>, N>;
 
 #[cfg(feature = "hyper")]
@@ -28,7 +28,7 @@ pub type ReqwestProvider<N = alloy_network::Core> =
 /// client.
 ///
 /// [`Http`]: alloy_transport_http::Http
-pub type HyperProvider<N = alloy_network::Core> =
+pub type HyperProvider<N = alloy_network::Ethereum> =
     crate::RootProvider<alloy_transport_http::Http<alloy_transport_http::HyperClient>, N>;
 
 #[macro_use]

@@ -413,21 +413,21 @@ mod tests {
         pending_map_inner.insert(
             "124930".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("000000000000000000000000000000000000007E").unwrap()),
+                to: Some(IcanAddress::from_str("000000000000000000000000000000000000007E").unwrap()),
                 value: U256::from(0u128),
                 energy: 100187u128,
                 energy_price: 20000000000u128,
             },
         );
         pending_map.insert(
-            Address::from_str("0512261a7486b1e29704ac49a5eb355b6fd86872").unwrap(),
+            IcanAddress::from_str("0512261a7486b1e29704ac49a5eb355b6fd86872").unwrap(),
             pending_map_inner.clone(),
         );
         pending_map_inner.clear();
         pending_map_inner.insert(
             "252350".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
+                to: Some(IcanAddress::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
                 energy: 65792u128,
                 energy_price: 2000000000u128,
@@ -436,7 +436,7 @@ mod tests {
         pending_map_inner.insert(
             "252351".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
+                to: Some(IcanAddress::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
                 energy: 65792u128,
                 energy_price: 2000000000u128,
@@ -445,7 +445,7 @@ mod tests {
         pending_map_inner.insert(
             "252352".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
+                to: Some(IcanAddress::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
                 energy: 65780u128,
                 energy_price: 2000000000u128,
@@ -454,14 +454,14 @@ mod tests {
         pending_map_inner.insert(
             "252353".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
+                to: Some(IcanAddress::from_str("d10e3Be2bc8f959Bc8C41CF65F60dE721cF89ADF").unwrap()),
                 value: U256::from(0u128),
                 energy: 65780u128,
                 energy_price: 2000000000u128,
             },
         );
         pending_map.insert(
-            Address::from_str("201354729f8d0f8b64e9a0c353c672c6a66b3857").unwrap(),
+            IcanAddress::from_str("201354729f8d0f8b64e9a0c353c672c6a66b3857").unwrap(),
             pending_map_inner.clone(),
         );
         pending_map_inner.clear();
@@ -475,7 +475,7 @@ mod tests {
             },
         );
         pending_map.insert(
-            Address::from_str("00000000863B56a3C1f0F1be8BC4F8b7BD78F57a").unwrap(),
+            IcanAddress::from_str("00000000863B56a3C1f0F1be8BC4F8b7BD78F57a").unwrap(),
             pending_map_inner,
         );
         let mut queued_map = BTreeMap::new();
@@ -483,7 +483,7 @@ mod tests {
         queued_map_inner.insert(
             "7".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("3479BE69e07E838D9738a301Bb0c89e8EA2Bef4a").unwrap()),
+                to: Some(IcanAddress::from_str("3479BE69e07E838D9738a301Bb0c89e8EA2Bef4a").unwrap()),
                 value: U256::from(1000000000000000u128),
                 energy: 21000u128,
                 energy_price: 10000000000u128,
@@ -492,28 +492,28 @@ mod tests {
         queued_map_inner.insert(
             "8".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
+                to: Some(IcanAddress::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
                 value: U256::from(1000000000000000u128),
                 energy: 21000u128,
                 energy_price: 10000000000u128,
             },
         );
         queued_map.insert(
-            Address::from_str("0f87ffcd71859233eb259f42b236c8e9873444e3").unwrap(),
+            IcanAddress::from_str("0f87ffcd71859233eb259f42b236c8e9873444e3").unwrap(),
             queued_map_inner.clone(),
         );
         queued_map_inner.clear();
         queued_map_inner.insert(
             "3".to_string(),
             TxpoolInspectSummary {
-                to: Some(Address::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
+                to: Some(IcanAddress::from_str("73Aaf691bc33fe38f86260338EF88f9897eCaa4F").unwrap()),
                 value: U256::from(10000000000000000u128),
                 energy: 21000u128,
                 energy_price: 10000000000u128,
             },
         );
         queued_map.insert(
-            Address::from_str("307e8f249bcccfa5b245449256c5d7e6e079943e").unwrap(),
+            IcanAddress::from_str("307e8f249bcccfa5b245449256c5d7e6e079943e").unwrap(),
             queued_map_inner,
         );
 

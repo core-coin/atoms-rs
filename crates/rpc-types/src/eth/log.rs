@@ -147,7 +147,7 @@ impl<T> AsMut<T> for Log<T> {
 
 #[cfg(test)]
 mod tests {
-    use alloy_primitives::{Address, Bytes};
+    use alloy_primitives::{Address, Bytes, IcanAddress};
 
     use super::*;
     use arbitrary::Arbitrary;
@@ -165,7 +165,7 @@ mod tests {
     fn serde_log() {
         let mut log = Log {
             inner: alloy_primitives::Log {
-                address: Address::with_last_byte(0x69),
+                address: IcanAddress::with_last_byte(0x69),
                 data: alloy_primitives::LogData::new_unchecked(
                     vec![B256::with_last_byte(0x69)],
                     Bytes::from_static(&[0x69]),

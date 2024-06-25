@@ -33,7 +33,7 @@ pub struct AccountOverride {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_primitives::address;
+    use alloy_primitives::cAddress;
 
     #[test]
     #[should_panic(expected = "invalid type")]
@@ -58,7 +58,7 @@ mod tests {
 
         let state_override: StateOverride = serde_json::from_str(large_values_json).unwrap();
         let acc =
-            state_override.get(&address!("1234567890123456789012345678901234567890")).unwrap();
+            state_override.get(&cAddress!("00001234567890123456789012345678901234567890")).unwrap();
         assert_eq!(acc.balance, Some(U256::MAX));
         assert_eq!(acc.nonce, Some(U64::MAX));
     }
@@ -82,7 +82,7 @@ mod tests {
         }"#;
         let state_override: StateOverride = serde_json::from_str(s).unwrap();
         let acc =
-            state_override.get(&address!("0000000000000000000000000000000000000124")).unwrap();
+            state_override.get(&cAddress!("00000000000000000000000000000000000000000124")).unwrap();
         assert!(acc.code.is_some());
     }
     #[test]
@@ -100,7 +100,7 @@ mod tests {
             }"#;
         let state_override: StateOverride = serde_json::from_str(s).unwrap();
         let acc =
-            state_override.get(&address!("1b5212AF6b76113afD94cD2B5a78a73B7d7A8222")).unwrap();
+            state_override.get(&cAddress!("00001b5212AF6b76113afD94cD2B5a78a73B7d7A8222")).unwrap();
         assert!(acc.state_diff.is_some());
     }
 }

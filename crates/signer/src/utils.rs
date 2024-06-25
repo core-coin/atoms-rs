@@ -1,6 +1,6 @@
 //! Utility functions for working with Ethereum signatures.
 
-use alloy_primitives::{IcanAddress};
+use alloy_primitives::IcanAddress;
 use libgoldilocks::{SigningKey, VerifyingKey};
 
 /// Converts an ECDSA private key to its corresponding Ethereum Address.
@@ -42,11 +42,8 @@ mod tests {
     fn test_public_key_to_address() {
         let addr = "cb82a5fd22b9bee8b8ab877c86e0a2c21765e1d5bfc5".parse::<IcanAddress>().unwrap();
 
-        let pubkey = VerifyingKey::from(
-            &hex::decode("315484db568379ce94f9c894e3e6e4c7ee216676b713ca892d9b26746ae902a772e217a6a8bb493ce2bb313cf0cb66e76765d4c45ec6b68600")
-                .unwrap(),
-        )
-        .unwrap();
+        let pubkey = VerifyingKey::from_str(
+            "315484db568379ce94f9c894e3e6e4c7ee216676b713ca892d9b26746ae902a772e217a6a8bb493ce2bb313cf0cb66e76765d4c45ec6b68600");
         assert_eq!(public_key_to_address(&pubkey, 1), addr);
     }
 

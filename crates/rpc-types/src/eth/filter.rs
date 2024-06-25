@@ -1,5 +1,5 @@
 use crate::{eth::log::Log as RpcLog, BlockNumberOrTag, Transaction};
-use alloy_primitives::{sha3, Address, Bloom, BloomInput, B256, U256, U64};
+use alloy_primitives::{sha3, Bloom, BloomInput, IcanAddress, B256, U256, U64};
 use itertools::{EitherOrBoth::*, Itertools};
 use serde::{
     de::{DeserializeOwned, MapAccess, Visitor},
@@ -377,11 +377,11 @@ impl Filter {
     /// Match only a specific address `("0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF")`
     ///
     /// ```rust
-    /// # use alloy_primitives::Address;
+    /// # use alloy_primitives::IcanAddress;
     /// # use alloy_rpc_types::Filter;
     /// # fn main() {
     /// let filter = Filter::new()
-    ///     .address("0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<Address>().unwrap());
+    ///     .address("0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap());
     /// # }
     /// ```
     ///
@@ -389,18 +389,18 @@ impl Filter {
     /// "0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8"])`
     ///
     /// ```rust
-    /// # use alloy_primitives::Address;
+    /// # use alloy_primitives::IcanAddress;
     /// # use alloy_rpc_types::Filter;
     /// # fn main() {
     /// let addresses = vec![
-    ///     "0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<Address>().unwrap(),
-    ///     "0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8".parse::<Address>().unwrap(),
+    ///     "0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap(),
+    ///     "0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8".parse::<IcanAddress>().unwrap(),
     /// ];
     /// let filter = Filter::new().address(addresses);
     /// # }
     /// ```
     #[must_use]
-    pub fn address<T: Into<ValueOrArray<Address>>>(mut self, address: T) -> Self {
+    pub fn address<T: Into<ValueOrArray<IcanAddress>>>(mut self, address: T) -> Self {
         self.address = address.into().into();
         self
     }
@@ -650,14 +650,14 @@ pub enum ValueOrArray<T> {
     Array(Vec<T>),
 }
 
-impl From<Address> for ValueOrArray<Address> {
-    fn from(src: Address) -> Self {
+impl From<IcanAddress> for ValueOrArray<IcanAddress> {
+    fn from(src: IcanAddress) -> Self {
         ValueOrArray::Value(src)
     }
 }
 
-impl From<Vec<Address>> for ValueOrArray<Address> {
-    fn from(src: Vec<Address>) -> Self {
+impl From<Vec<IcanAddress>> for ValueOrArray<IcanAddress> {
+    fn from(src: Vec<IcanAddress>) -> Self {
         ValueOrArray::Array(src)
     }
 }
@@ -1118,7 +1118,7 @@ mod tests {
 
         let event = "ValueChanged(address,string,string)";
         let t0 = sha3(event.as_bytes());
-        let addr: Address = "f817796F60D268A36a57b8D2dF1B97B14C0D0E1d".parse().unwrap();
+        let addr: IcanAddress = "0x0000f817796F60D268A36a57b8D2dF1B97B14C0D0E1d".parse().unwrap();
         let filter = Filter::new();
 
         let ser = serialize(&filter);
@@ -1164,7 +1164,7 @@ mod tests {
         assert_eq!(ser, json!({ "address" : addr, "topics": [t0, t1_padded, t2, t3_padded]}));
     }
 
-    fn build_bloom(address: Address, topic1: B256, topic2: B256) -> Bloom {
+    fn build_bloom(address: IcanAddress, topic1: B256, topic2: B256) -> Bloom {
         let mut block_bloom = Bloom::default();
         block_bloom.accrue(BloomInput::Raw(&address[..]));
         block_bloom.accrue(BloomInput::Raw(&topic1[..]));
@@ -1194,7 +1194,7 @@ mod tests {
         let topics = topic_filter(topic1, topic2, topic3).topics;
         let topics_bloom = FilteredParams::topics_filter(&topics);
         assert!(!FilteredParams::matches_topics(
-            build_bloom(Address::random(), B256::random(), B256::random()),
+            build_bloom(IcanAddress::random(), B256::random(), B256::random()),
             &topics_bloom
         ));
     }
@@ -1210,7 +1210,7 @@ mod tests {
 
         let topics_bloom = FilteredParams::topics_filter(&topics);
         assert!(FilteredParams::matches_topics(
-            build_bloom(Address::random(), topic1, topic2),
+            build_bloom(IcanAddress::random(), topic1, topic2),
             &topics_bloom
         ));
     }
@@ -1226,14 +1226,14 @@ mod tests {
 
         let topics_bloom = FilteredParams::topics_filter(&topics);
         assert!(FilteredParams::matches_topics(
-            build_bloom(Address::random(), B256::random(), B256::random()),
+            build_bloom(IcanAddress::random(), B256::random(), B256::random()),
             &topics_bloom
         ));
     }
 
     #[test]
     fn can_match_address_and_topics() {
-        let rng_address = Address::random();
+        let rng_address = IcanAddress::random();
         let topic1 = B256::random();
         let topic2 = B256::random();
         let topic3 = B256::random();
@@ -1283,7 +1283,7 @@ mod tests {
 
         let topics_bloom = FilteredParams::topics_filter(&topics);
         assert!(FilteredParams::matches_topics(
-            build_bloom(Address::random(), topic1, topic2),
+            build_bloom(IcanAddress::random(), topic1, topic2),
             &topics_bloom
         ));
     }
@@ -1304,14 +1304,14 @@ mod tests {
 
         let topics_bloom = FilteredParams::topics_filter(&topics_input);
         assert!(!FilteredParams::matches_topics(
-            build_bloom(Address::random(), B256::random(), B256::random()),
+            build_bloom(IcanAddress::random(), B256::random(), B256::random()),
             &topics_bloom
         ));
     }
 
     #[test]
     fn can_match_address_filter() {
-        let rng_address = Address::random();
+        let rng_address = IcanAddress::random();
         let filter = Filter {
             block_option: Default::default(),
             address: rng_address.into(),
@@ -1326,8 +1326,8 @@ mod tests {
 
     #[test]
     fn can_detect_different_address() {
-        let bloom_address = Address::random();
-        let rng_address = Address::random();
+        let bloom_address = IcanAddress::random();
+        let rng_address = IcanAddress::random();
         let filter = Filter {
             block_option: Default::default(),
             address: rng_address.into(),
@@ -1364,7 +1364,7 @@ mod tests {
                     to_block: Some(4365627u64.into()),
                 },
                 address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
-                    .parse::<Address>()
+                    .parse::<IcanAddress>()
                     .unwrap()
                     .into(),
                 topics: [
@@ -1419,7 +1419,7 @@ mod tests {
                 to_block: Some(BlockNumberOrTag::Pending),
             },
             address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
-                .parse::<Address>()
+                .parse::<IcanAddress>()
                 .unwrap()
                 .into(),
             topics: [
@@ -1448,7 +1448,7 @@ mod tests {
                 to_block: Some(4365627u64.into()),
             },
             address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
-                .parse::<Address>()
+                .parse::<IcanAddress>()
                 .unwrap()
                 .into(),
             topics: [

@@ -35,10 +35,6 @@ alloy-rpc-types-trace = { version = "0.1.0", default-features = false, path = "c
 alloy-rpc-types = { version = "0.1.0", default-features = false, path = "crates/rpc-types" }
 alloy-serde = { version = "0.1.0", default-features = false, path = "crates/serde" }
 alloy-signer = { version = "0.1.0", default-features = false, path = "crates/signer" }
-alloy-signer-aws = { version = "0.1.0", default-features = false, path = "crates/signer-aws" }
-alloy-signer-gcp = { version = "0.1.0", default-features = false, path = "crates/signer-gcp" }
-alloy-signer-ledger = { version = "0.1.0", default-features = false, path = "crates/signer-ledger" }
-alloy-signer-trezor = { version = "0.1.0", default-features = false, path = "crates/signer-trezor" }
 alloy-signer-wallet = { version = "0.1.0", default-features = false, path = "crates/signer-wallet" }
 alloy-transport = { version = "0.1.0", default-features = false, path = "crates/transport" }
 alloy-transport-http = { version = "0.1.0", default-features = false, path = "crates/transport-http" }
@@ -47,11 +43,11 @@ alloy-transport-ws = { version = "0.1.0", default-features = false, path = "crat
 
 test-utils = { version = "0.1.0", default-features = false, path = "crates/internal-test-utils", package = "alloy-internal-test-utils" }
 
-alloy-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false }
-alloy-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
-alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
-alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
-alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false }
+alloy-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, rev = "9b507d9faa54d87ca0ef930ffb9a36993390b1e6" }
+alloy-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "9b507d9faa54d87ca0ef930ffb9a36993390b1e6" }
+alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "9b507d9faa54d87ca0ef930ffb9a36993390b1e6" }
+alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, rev = "9b507d9faa54d87ca0ef930ffb9a36993390b1e6" }
+alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "9b507d9faa54d87ca0ef930ffb9a36993390b1e6" }
 
 alloy-rlp = { version = "0.3", default-features = false }
 

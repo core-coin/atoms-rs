@@ -1,6 +1,6 @@
 use crate::{SignableTransaction, Signed, Transaction, TxType};
 // use alloy_eips::eip2930::AccessList;
-use alloy_primitives::{sha3, Bytes, ChainId, Signature, TxKind, U256};
+use alloy_primitives::{sha3, Bytes, ChainId, TxKind, Signature, U256};
 use alloy_rlp::{BufMut, Decodable, Encodable, Header};
 use core::mem;
 

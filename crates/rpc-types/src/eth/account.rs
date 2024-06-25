@@ -1,6 +1,7 @@
-use alloy_primitives::{Address, Bytes, IcanAddress, PublicKey, B256, U256, U64};
+use alloy_primitives::{Address, Bytes, IcanAddress, B256, U256, U64};
 use alloy_serde::storage::JsonStorageKey;
 use serde::{Deserialize, Serialize};
+use libgoldilocks::VerifyingKey;
 
 /// Account information.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -62,7 +63,7 @@ pub struct RecoveredAccount {
     /// address of the recovered account
     pub address: IcanAddress,
     /// public key of the recovered account
-    pub public_key: PublicKey,
+    pub public_key: VerifyingKey,
     /// If the signature contains chain replay protection,
     /// And the chain_id encoded within the signature
     /// matches the current chain this would be true, otherwise false.

@@ -1,6 +1,7 @@
-use alloy_primitives::{PublicKey, U256, U64};
+use alloy_primitives::{U256, U64};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::BTreeMap;
+use libgoldilocks::VerifyingKey;
 
 /// Syncing info
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -149,7 +150,7 @@ pub struct TransactionStats {
     /// Block no this transaction was first seen.
     pub first_seen: u64,
     /// Peers this transaction was propagated to with count.
-    pub propagated_to: BTreeMap<PublicKey, usize>,
+    pub propagated_to: BTreeMap<VerifyingKey, usize>,
 }
 
 /// Chain status.

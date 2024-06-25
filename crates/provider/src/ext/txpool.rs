@@ -1,6 +1,6 @@
 //! This modules extends the Ethereum JSON-RPC provider with the Txpool namespace available in gocore.
 use crate::Provider;
-use alloy_network::{Core, Network};
+use alloy_network::{Ethereum, Network};
 use alloy_primitives::IcanAddress;
 use alloy_rpc_types::txpool::{TxpoolContent, TxpoolContentFrom, TxpoolInspect, TxpoolStatus};
 use alloy_transport::{Transport, TransportResult};
@@ -9,7 +9,7 @@ use alloy_transport::{Transport, TransportResult};
 #[allow(unused, unreachable_pub)]
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
-pub trait TxPoolApi<T, N = Core>: Send + Sync {
+pub trait TxPoolApi<T, N = Ethereum>: Send + Sync {
     /// Returns the content of the transaction pool.
     ///
     /// Lists the exact details of all the transactions currently pending for inclusion in the next

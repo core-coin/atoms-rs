@@ -1,11 +1,14 @@
 //! RPC types for transactions
 
+use std::str::FromStr;
+
 use crate::eth::other::OtherFields;
 use alloy_consensus::{
     SignableTransaction, Signed, TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEnvelope,
     TxLegacy, TxType,
 };
-use alloy_primitives::{Address, Bytes, IcanAddress, Signature, TxKind, B1368, B256, U256};
+use alloy_primitives::{Bytes, IcanAddress, Signature, TxKind, B256, U256};
+
 use serde::{Deserialize, Serialize};
 
 pub use alloy_consensus::BlobTransactionSidecar;
@@ -99,8 +102,8 @@ pub struct Transaction {
     /// EIP2930
     ///
     /// Pre-pay to warm storage access.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub access_list: Option<AccessList>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub access_list: Option<AccessList>,
     /// EIP2718
     ///
     /// Transaction type,
@@ -153,7 +156,7 @@ impl Transaction {
             input: self.input.into(),
             nonce: Some(self.nonce),
             network_id: self.network_id,
-            access_list: self.access_list,
+            // access_list: self.access_list,
             transaction_type: self.transaction_type,
             max_fee_per_gas: self.max_fee_per_gas,
             max_priority_fee_per_gas: self.max_priority_fee_per_gas,
@@ -168,7 +171,7 @@ impl TryFrom<Transaction> for Signed<TxLegacy> {
     type Error = ConversionError;
 
     fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
-        let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
+        let signature = tx.signature.ok_or(ConversionError::MissingSignature)?;
 
         let tx = TxLegacy {
             network_id: tx.network_id,
@@ -187,7 +190,7 @@ impl TryFrom<Transaction> for Signed<TxEip1559> {
     type Error = ConversionError;
 
     fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
-        let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
+        let signature = Signature::from_str("0x").unwrap(); // todo:error2215 change it if we use eip4844
 
         let tx = TxEip1559 {
             chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
@@ -197,10 +200,10 @@ impl TryFrom<Transaction> for Signed<TxEip1559> {
                 .max_priority_fee_per_gas
                 .ok_or(ConversionError::MissingMaxPriorityFeePerGas)?,
             gas_limit: tx.energy,
-            to: tx.to.into(),
+            to: TxKind::Call(IcanAddress::repeat_byte(0)), // todo:error2215 change it if we use eip4844
             value: tx.value,
             input: tx.input,
-            access_list: tx.access_list.unwrap_or_default(),
+            // access_list: tx.access_list.unwrap_or_default(),
         };
         Ok(tx.into_signed(signature))
     }
@@ -210,17 +213,17 @@ impl TryFrom<Transaction> for Signed<TxEip2930> {
     type Error = ConversionError;
 
     fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
-        let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
+        let signature = Signature::from_str("0x").unwrap(); // todo:error2215 change it if we use eip4844
 
         let tx = TxEip2930 {
             chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
             nonce: tx.nonce,
             gas_price: tx.energy_price.ok_or(ConversionError::MissingGasPrice)?,
             gas_limit: tx.energy,
-            to: tx.to.into(),
+            to: TxKind::Call(IcanAddress::repeat_byte(0)), // todo:error2215 change it if we use eip4844
             value: tx.value,
             input: tx.input,
-            access_list: tx.access_list.ok_or(ConversionError::MissingAccessList)?,
+            // access_list: tx.access_list.ok_or(ConversionError::MissingAccessList)?,
         };
         Ok(tx.into_signed(signature))
     }
@@ -230,7 +233,7 @@ impl TryFrom<Transaction> for Signed<TxEip4844> {
     type Error = ConversionError;
 
     fn try_from(tx: Transaction) -> Result<Self, Self::Error> {
-        let signature = tx.signature.ok_or(ConversionError::MissingSignature)?.try_into()?;
+        let signature = Signature::from_str("0x").unwrap(); // todo:error2215 change it if we use eip4844
         let tx = TxEip4844 {
             chain_id: tx.network_id.ok_or(ConversionError::MissingChainId)?,
             nonce: tx.nonce,
@@ -239,10 +242,10 @@ impl TryFrom<Transaction> for Signed<TxEip4844> {
                 .max_priority_fee_per_gas
                 .ok_or(ConversionError::MissingMaxPriorityFeePerGas)?,
             gas_limit: tx.energy,
-            to: tx.to.ok_or(ConversionError::MissingTo)?,
+            to: IcanAddress::repeat_byte(0), // todo:error2215 change it if we use eip4844
             value: tx.value,
             input: tx.input,
-            access_list: tx.access_list.unwrap_or_default(),
+            // access_list: tx.access_list.unwrap_or_default(),
             blob_versioned_hashes: tx
                 .blob_versioned_hashes
                 .ok_or(ConversionError::MissingBlobVersionedHashes)?,
@@ -278,9 +281,13 @@ impl TryFrom<Transaction> for TxEnvelope {
         }
     }
 }
+#[cfg(feature = "arbitrary")]
+fn arbitrary_signature(u: &mut Unstructured) -> arbitrary::Result<Signature> {}
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use arbitrary::Arbitrary;
     use rand::Rng;
@@ -301,16 +308,16 @@ mod tests {
             block_hash: Some(B256::with_last_byte(3)),
             block_number: Some(4),
             transaction_index: Some(5),
-            from: Address::with_last_byte(6),
-            to: Some(Address::with_last_byte(7)),
+            from: IcanAddress::with_last_byte(6),
+            to: Some(IcanAddress::with_last_byte(7)),
             value: U256::from(8),
             energy_price: Some(9),
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature::from("0x")),
+            signature: Some(Signature::from_str("0x").unwrap()),
             network_id: Some(17),
             blob_versioned_hashes: None,
-            access_list: None,
+            // access_list: None,
             transaction_type: Some(20),
             max_fee_per_gas: Some(21),
             max_priority_fee_per_gas: Some(22),
@@ -334,16 +341,16 @@ mod tests {
             block_hash: Some(B256::with_last_byte(3)),
             block_number: Some(4),
             transaction_index: Some(5),
-            from: Address::with_last_byte(6),
-            to: Some(Address::with_last_byte(7)),
+            from: IcanAddress::with_last_byte(6),
+            to: Some(IcanAddress::with_last_byte(7)),
             value: U256::from(8),
             energy_price: Some(9),
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
-            signature: Some(Signature::from("0x")),
+            signature: Some(Signature::from_str("0x").unwrap()),
             network_id: Some(17),
             blob_versioned_hashes: None,
-            access_list: None,
+            // access_list: None,
             transaction_type: Some(20),
             max_fee_per_gas: Some(21),
             max_priority_fee_per_gas: Some(22),
@@ -364,7 +371,7 @@ mod tests {
         let transaction = Transaction {
             hash: B256::with_last_byte(1),
             nonce: 2,
-            from: Address::with_last_byte(6),
+            from: IcanAddress::with_last_byte(6),
             value: U256::from(8),
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),

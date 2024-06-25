@@ -3,6 +3,7 @@ use crate::Network;
 use alloy_consensus::BlobTransactionSidecar;
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::AccessList;
+use alloy_signer::Signature;
 use alloy_sol_types::SolCall;
 use futures_utils_wasm::impl_future;
 
@@ -59,7 +60,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
 
     /// Builder-pattern method for setting the network ID.
     fn with_network_id(mut self, network_id: alloy_primitives::ChainId) -> Self {
-        self.set_network_id(chain_id);
+        self.set_network_id(network_id);
         self
     }
 
@@ -198,17 +199,17 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the signature for the transaction.
-    fn signature(&self) -> Option<B1368>;
+    // /// Get the signature for the transaction.
+    // fn signature(&self) -> Option<Signature>;
 
-    /// Set the signature for the transaction.
-    fn set_signature(&mut self, signature: B1368);
+    // /// Set the signature for the transaction.
+    // fn set_signature(&mut self, signature: Signature);
 
-    /// Builder-pattern method for setting the signature.
-    fn with_signature(mut self, signature: B1368) -> Self {
-        self.set_signature(signature);
-        self
-    }
+    // /// Builder-pattern method for setting the signature.
+    // fn with_signature(mut self, signature: Signature) -> Self {
+    //     self.set_signature(signature);
+    //     self
+    // }
 
     /// Get the legacy energy price for the transaction.
     fn energy_price(&self) -> Option<u128>;
@@ -218,7 +219,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
 
     /// Builder-pattern method for setting the legacy energy price.
     fn with_energy_price(mut self, energy_price: u128) -> Self {
-        self.set_energy_price(gas_price);
+        self.set_energy_price(energy_price);
         self
     }
 
@@ -270,17 +271,17 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
         self
     }
 
-    /// Get the EIP-2930 access list for the transaction.
-    fn access_list(&self) -> Option<&AccessList>;
+    // /// Get the EIP-2930 access list for the transaction.
+    // fn access_list(&self) -> Option<&AccessList>;
 
-    /// Sets the EIP-2930 access list.
-    fn set_access_list(&mut self, access_list: AccessList);
+    // /// Sets the EIP-2930 access list.
+    // fn set_access_list(&mut self, access_list: AccessList);
 
-    /// Builder-pattern method for setting the access list.
-    fn with_access_list(mut self, access_list: AccessList) -> Self {
-        self.set_access_list(access_list);
-        self
-    }
+    // /// Builder-pattern method for setting the access list.
+    // fn with_access_list(mut self, access_list: AccessList) -> Self {
+    //     self.set_access_list(access_list);
+    //     self
+    // }
 
     /// Gets the EIP-4844 blob sidecar of the transaction.
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar>;

@@ -2,7 +2,7 @@ use crate::{
     chain::ChainStreamPoller,
     heart::{Heartbeat, HeartbeatHandle},
 };
-use alloy_network::{Core, Network};
+use alloy_network::{Ethereum, Network};
 use alloy_rpc_client::{BuiltInConnectionString, ClientBuilder, ClientRef, RpcClient, WeakClient};
 use alloy_transport::{BoxTransport, BoxTransportConnect, Transport, TransportError};
 use std::{
@@ -19,7 +19,7 @@ use alloy_pubsub::{PubSubFrontend, Subscription};
 
 /// The root provider manages the RPC client and the heartbeat. It is at the
 /// base of every provider stack.
-pub struct RootProvider<T, N = Core> {
+pub struct RootProvider<T, N = Ethereum> {
     /// The inner state of the root provider.
     pub(crate) inner: Arc<RootProviderInner<T, N>>,
 }
@@ -119,7 +119,7 @@ impl<T: Transport + Clone, N: Network> RootProvider<T, N> {
 
 /// The root provider manages the RPC client and the heartbeat. It is at the
 /// base of every provider stack.
-pub(crate) struct RootProviderInner<T, N = Core> {
+pub(crate) struct RootProviderInner<T, N = Ethereum> {
     client: RpcClient<T>,
     heart: OnceLock<HeartbeatHandle>,
     _network: PhantomData<N>,

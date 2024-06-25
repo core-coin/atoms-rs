@@ -1,6 +1,6 @@
 use crate::Error;
-use alloy_network::Core;
-use alloy_primitives::{Address, LogData};
+use alloy_network::Ethereum;
+use alloy_primitives::{Address, IcanAddress, LogData};
 use alloy_provider::{FilterPollerBuilder, Network, Provider};
 use alloy_rpc_types::{Filter, Log};
 use alloy_sol_types::SolEvent;
@@ -11,7 +11,7 @@ use std::{fmt, marker::PhantomData};
 
 /// Helper for managing the event filter before querying or streaming its logs
 #[must_use = "event filters do nothing unless you `query`, `watch`, or `stream` them"]
-pub struct Event<T, P, E, N = Core> {
+pub struct Event<T, P, E, N = Ethereum> {
     /// The provider to use for querying or streaming logs.
     pub provider: P,
     /// The filter to use for querying or streaming logs.
@@ -33,7 +33,7 @@ impl<T, P: fmt::Debug, E, N> fmt::Debug for Event<T, P, E, N> {
 impl<'a, T: Transport + Clone, P: Provider<T, N>, E: SolEvent, N: Network> Event<T, &'a P, E, N> {
     // `sol!` macro constructor, see `#[sol(rpc)]`. Not public API.
     // NOTE: please avoid changing this function due to its use in the `sol!` macro.
-    pub fn new_sol(provider: &'a P, address: &Address) -> Self {
+    pub fn new_sol(provider: &'a P, address: &IcanAddress) -> Self {
         // keccak256 hash of the event signature needed for the filter to actually filter by event
         // check that the event is not anonymous to include the event signature in the filter
         if E::ANONYMOUS {
