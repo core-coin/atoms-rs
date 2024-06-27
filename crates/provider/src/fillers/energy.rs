@@ -111,7 +111,7 @@ impl EnergyFiller {
         let eip1559_fees_fut = if let (
             Some(max_fee_per_energy),
             Some(max_priority_fee_per_energy),
-        ) = (tx.max_fee_per_energy(), tx.max_priority_fee_per_energy())
+        ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
         {
             async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
                 .left_future()
@@ -143,7 +143,7 @@ impl EnergyFiller {
         let eip1559_fees_fut = if let (
             Some(max_fee_per_energy),
             Some(max_priority_fee_per_energy),
-        ) = (tx.max_fee_per_energy(), tx.max_priority_fee_per_energy())
+        ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
         {
             async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
                 .left_future()
@@ -152,7 +152,7 @@ impl EnergyFiller {
         };
 
         let max_fee_per_blob_energy_fut =
-            if let Some(max_fee_per_blob_energy) = tx.max_fee_per_blob_energy() {
+            if let Some(max_fee_per_blob_energy) = tx.max_fee_per_gas() {
                 async move { Ok(max_fee_per_blob_energy) }.left_future()
             } else {
                 async {
@@ -184,9 +184,9 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
         }
 
         // 4844
-        if tx.max_fee_per_blob_energy().is_some()
-            && tx.max_fee_per_energy().is_some()
-            && tx.max_priority_fee_per_energy().is_some()
+        if tx.max_fee_per_blob_gas().is_some()
+            && tx.max_fee_per_gas().is_some()
+            && tx.max_priority_fee_per_gas().is_some()
             && tx.energy_limit().is_some()
         {
             return FillerControlFlow::Finished;
@@ -194,8 +194,8 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
 
         // eip1559
         if tx.blob_sidecar().is_none()
-            && tx.max_fee_per_energy().is_some()
-            && tx.max_priority_fee_per_energy().is_some()
+            && tx.max_fee_per_gas().is_some()
+            && tx.max_priority_fee_per_gas().is_some()
             && tx.energy_limit().is_some()
         {
             return FillerControlFlow::Finished;
@@ -213,7 +213,7 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
         P: Provider<T, N>,
         T: Transport + Clone,
     {
-        if tx.energy_price().is_some() || tx.access_list().is_some() {
+        if tx.energy_price().is_some()  {
             self.prepare_legacy(provider, tx).await
         } else if tx.blob_sidecar().is_some() {
             self.prepare_4844(provider, tx).await
@@ -243,8 +243,8 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
                 }
                 EnergyFillable::Eip1559 { energy_limit: energy_limit, estimate } => {
                     builder.set_energy_limit(energy_limit);
-                    builder.set_max_fee_per_energy(estimate.max_fee_per_energy);
-                    builder.set_max_priority_fee_per_energy(estimate.max_priority_fee_per_energy);
+                    builder.set_max_fee_per_gas(estimate.max_fee_per_energy);
+                    builder.set_max_priority_fee_per_gas(estimate.max_priority_fee_per_energy);
                 }
                 EnergyFillable::Eip4844 {
                     energy_limit: energy_limit,
@@ -252,9 +252,9 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
                     max_fee_per_blob_energy: max_fee_per_blob_energy,
                 } => {
                     builder.set_energy_limit(energy_limit);
-                    builder.set_max_fee_per_energy(estimate.max_fee_per_energy);
-                    builder.set_max_priority_fee_per_energy(estimate.max_priority_fee_per_energy);
-                    builder.set_max_fee_per_blob_energy(max_fee_per_blob_energy);
+                    builder.set_max_fee_per_gas(estimate.max_fee_per_energy);
+                    builder.set_max_priority_fee_per_gas(estimate.max_priority_fee_per_energy);
+                    builder.set_max_fee_per_blob_gas(max_fee_per_blob_energy);
                 }
             }
         };
@@ -267,7 +267,7 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_primitives::{address, U256};
+    use alloy_primitives::{address, cAddress, U256};
     use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]
@@ -278,8 +278,8 @@ mod tests {
         let tx = TransactionRequest {
             from: Some(from),
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            chain_id: Some(31337),
+            to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            network_id: Some(31337),
             ..Default::default()
         };
 
@@ -287,7 +287,7 @@ mod tests {
 
         let tx = tx.get_receipt().await.unwrap();
 
-        assert_eq!(tx.effective_energy_price, 0x3b9aca00);
+        assert_eq!(tx.effective_gas_price, 0x3b9aca00);
         assert_eq!(tx.energy_used, 0x5208);
     }
 
@@ -301,7 +301,7 @@ mod tests {
         let tx = TransactionRequest {
             from: Some(from),
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             energy_price: Some(energy_price),
             ..Default::default()
         };
@@ -322,11 +322,11 @@ mod tests {
             .on_anvil();
 
         let tx = TransactionRequest {
-            from: Some(address!("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")),
+            from: Some(cAddress!("0000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")),
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             // access list forces legacy energysing
-            access_list: Some(vec![Default::default()].into()),
+            // access_list: Some(vec![Default::default()].into()),
             ..Default::default()
         };
 
@@ -334,6 +334,6 @@ mod tests {
 
         let receipt = tx.get_receipt().await.unwrap();
 
-        assert_eq!(receipt.effective_energy_price, 2000000000);
+        assert_eq!(receipt.effective_gas_price, 2000000000);
     }
 }

@@ -94,7 +94,7 @@ impl TransactionReceipt {
     ///
     /// Returns `None` if the transaction is not a contract creation (the `to` field is set), or if
     /// the `from` field is not set.
-    pub fn calculate_create_address(&self, nonce: u64) -> Option<Address> {
+    pub fn calculate_create_address(&self, nonce: u64) -> Option<IcanAddress> {
         if self.to.is_some() {
             return None;
         }
@@ -133,7 +133,7 @@ pub type AnyTransactionReceipt = WithOtherFields<TransactionReceipt<AnyReceiptEn
 mod test {
     use super::*;
     use alloy_consensus::{Receipt, ReceiptWithBloom};
-    use alloy_primitives::{address, b256, bloom, Bloom};
+    use alloy_primitives::{address, b256, bloom, cAddress, Bloom};
     use arbitrary::Arbitrary;
     use rand::Rng;
 
@@ -168,7 +168,7 @@ mod test {
         ));
 
         let log = receipt.inner.as_receipt().unwrap().logs.first().unwrap();
-        assert_eq!(log.address(), address!("dac17f958d2ee523a2206206994597c13d831ec7"));
+        assert_eq!(log.address(), cAddress!("0000dac17f958d2ee523a2206206994597c13d831ec7"));
         assert_eq!(log.log_index, Some(0x118));
         assert_eq!(
             log.topics(),

@@ -1,13 +1,13 @@
 use crate::{
-    BuildResult, Core, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
+    BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
 };
 use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 use alloy_signer::Signature;
 
-impl TransactionBuilder<Core> for TransactionRequest {
-    fn network_id(&self) -> ChainId {
+impl TransactionBuilder<Ethereum> for TransactionRequest {
+    fn network_id(&self) -> Option<ChainId> {
         self.network_id
     }
 
@@ -59,13 +59,13 @@ impl TransactionBuilder<Core> for TransactionRequest {
         self.value = Some(value)
     }
 
-    fn signature(&self) -> Option<Signature> {
-        self.signature
-    }
+    // fn signature(&self) -> Option<Signature> {
+    //     self.signature
+    // }
 
-    fn set_signature(&mut self, signature: Signature) {
-        self.signature = Some(signature)
-    }
+    // fn set_signature(&mut self, signature: Signature) {
+    //     self.signature = Some(signature)
+    // }
 
     fn energy_price(&self) -> Option<u128> {
         self.energy_price
@@ -107,13 +107,13 @@ impl TransactionBuilder<Core> for TransactionRequest {
         self.energy = Some(energy_limit);
     }
 
-    fn access_list(&self) -> Option<&AccessList> {
-        self.access_list.as_ref()
-    }
+    // fn access_list(&self) -> Option<&AccessList> {
+    //     self.access_list.as_ref()
+    // }
 
-    fn set_access_list(&mut self, access_list: AccessList) {
-        self.access_list = Some(access_list);
-    }
+    // fn set_access_list(&mut self, access_list: AccessList) {
+    //     self.access_list = Some(access_list);
+    // }
 
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
         self.sidecar.as_ref()
@@ -137,7 +137,7 @@ impl TransactionBuilder<Core> for TransactionRequest {
         // value and data may be None. If they are, they will be set to default.
         // gas fields and nonce may be None, if they are, they will be populated
         // with default values by the RPC server
-        self.from.is_some() && self.signature.is_some()
+        self.from.is_some()
     }
 
     fn can_build(&self) -> bool {
@@ -147,7 +147,7 @@ impl TransactionBuilder<Core> for TransactionRequest {
         // chain_id and from may be none.
         let common = self.energy.is_some() && self.nonce.is_some();
         let legacy = self.energy_price.is_some();
-        let eip2930 = legacy && self.access_list().is_some();
+        let eip2930 = legacy;
 
         let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();
 
@@ -169,7 +169,7 @@ impl TransactionBuilder<Core> for TransactionRequest {
         self.populate_blob_hashes();
     }
 
-    fn build_unsigned(self) -> BuildResult<TypedTransaction, Core> {
+    fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
         if let Err((tx_type, missing)) = self.missing_keys() {
             return Err((
                 self,
@@ -179,10 +179,10 @@ impl TransactionBuilder<Core> for TransactionRequest {
         Ok(self.build_typed_tx().expect("checked by missing_keys"))
     }
 
-    async fn build<S: NetworkSigner<Core>>(
+    async fn build<S: NetworkSigner<Ethereum>>(
         self,
         signer: &S,
-    ) -> Result<<Core as Network>::TxEnvelope, TransactionBuilderError<Core>> {
+    ) -> Result<<Ethereum as Network>::TxEnvelope, TransactionBuilderError<Ethereum>> {
         Ok(signer.sign_request(self).await?)
     }
 }
@@ -191,7 +191,7 @@ impl TransactionBuilder<Core> for TransactionRequest {
 mod tests {
     use crate::{TransactionBuilder, TransactionBuilderError};
     use alloy_consensus::{BlobTransactionSidecar, TxEip1559, TxType, TypedTransaction};
-    use alloy_primitives::Address;
+    use alloy_primitives::{Address, IcanAddress};
     use alloy_rpc_types::{AccessList, TransactionRequest};
 
     #[test]
@@ -200,7 +200,7 @@ mod tests {
             chain_id: 1,
             nonce: 0,
             gas_limit: 21_000,
-            to: Address::ZERO.into(),
+            to: IcanAddress::ZERO.into(),
             max_priority_fee_per_gas: 20e9 as u128,
             max_fee_per_gas: 20e9 as u128,
             ..Default::default()
@@ -216,7 +216,7 @@ mod tests {
             .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
-            .with_to(Address::ZERO)
+            .with_to(IcanAddress::ZERO)
             .with_blob_sidecar(BlobTransactionSidecar::default())
             .with_max_fee_per_blob_gas(0);
 
@@ -224,7 +224,7 @@ mod tests {
 
         assert!(matches!(tx, TypedTransaction::Eip4844(_)));
 
-        let tx = request.with_gas_price(0).build_unsigned().unwrap();
+        let tx = request.with_energy_price(0).build_unsigned().unwrap();
 
         assert!(matches!(tx, TypedTransaction::Eip4844(_)));
     }
@@ -236,9 +236,9 @@ mod tests {
             .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
-            .with_to(Address::ZERO)
-            .with_gas_price(0)
-            .with_access_list(AccessList::default());
+            .with_to(IcanAddress::ZERO)
+            .with_energy_price(0);
+        // .with_access_list(AccessList::default());
 
         let tx = request.build_unsigned().unwrap();
 
@@ -252,22 +252,22 @@ mod tests {
             .with_energy_limit(0)
             .with_max_fee_per_gas(0)
             .with_max_priority_fee_per_gas(0)
-            .with_to(Address::ZERO);
+            .with_to(IcanAddress::ZERO);
 
         let tx = request.clone().build_unsigned().unwrap();
 
         assert!(matches!(tx, TypedTransaction::Eip1559(_)));
 
-        let request = request.with_gas_price(0);
+        let request = request.with_energy_price(0);
         let tx = request.build_unsigned().unwrap();
         assert!(matches!(tx, TypedTransaction::Legacy(_)));
     }
 
     #[test]
     fn test_fail_when_sidecar_and_access_list() {
-        let request = TransactionRequest::default()
-            .with_blob_sidecar(BlobTransactionSidecar::default())
-            .with_access_list(AccessList::default());
+        let request =
+            TransactionRequest::default().with_blob_sidecar(BlobTransactionSidecar::default());
+        // .with_access_list(AccessList::default());
 
         let error = request.clone().build_unsigned().unwrap_err();
 
@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn test_invalid_2930_fields() {
         let request = TransactionRequest::default()
-            .with_access_list(AccessList::default())
+            // .with_access_list(AccessList::default())
             .with_energy_price(Default::default());
 
         let error = request.clone().build_unsigned().unwrap_err();

@@ -68,10 +68,6 @@ This repository contains the following crates:
   - [`alloy-rpc-types-engine`] - Ethereum execution-consensus layer (engine) API RPC types
   - [`alloy-rpc-types-trace`] - Ethereum RPC trace types
 - [`alloy-signer`] - Ethereum signer abstraction
-  - [`alloy-signer-aws`] - [AWS KMS] signer implementation
-  - [`alloy-signer-gcp`] - [GCP KMS] signer implementation
-  - [`alloy-signer-ledger`] - [Ledger] signer implementation
-  - [`alloy-signer-trezor`] - [Trezor] signer implementation
   - [`alloy-signer-wallet`] - Local wallet (Keystore/Mnemonic/Yubihsm) signer implementation
 - [`alloy-transport`] - Low-level Ethereum JSON-RPC transport abstraction
   - [`alloy-transport-http`] - HTTP transport implementation
@@ -93,10 +89,6 @@ This repository contains the following crates:
 [`alloy-rpc-types-trace`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-types-trace
 [`alloy-rpc-types`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-types
 [`alloy-signer`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer
-[`alloy-signer-aws`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer-aws
-[`alloy-signer-gcp`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer-gcp
-[`alloy-signer-ledger`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer-ledger
-[`alloy-signer-trezor`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer-trezor
 [`alloy-signer-wallet`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer-wallet
 [`alloy-transport`]: https://github.com/alloy-rs/alloy/tree/main/crates/transport
 [`alloy-transport-http`]: https://github.com/alloy-rs/alloy/tree/main/crates/transport-http

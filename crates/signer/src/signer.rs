@@ -1,5 +1,5 @@
 use crate::Result;
-use alloy_primitives::{eip191_hash_message, Address, ChainId, Signature, B256};
+use alloy_primitives::{eip191_hash_message, ChainId, IcanAddress, Signature, B256};
 use async_trait::async_trait;
 use auto_impl::auto_impl;
 
@@ -58,8 +58,8 @@ pub trait Signer<Sig = Signature> {
         self.sign_hash(&payload.eip712_signing_hash()?).await
     }
 
-    /// Returns the signer's Ethereum Address.
-    fn address(&self) -> Address;
+    /// Returns the signer's Ethereum IcanAddress.
+    fn address(&self) -> IcanAddress;
 
     /// Returns the signer's network ID.
     fn network_id(&self) -> Option<ChainId>;
@@ -219,8 +219,8 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             }
 
-            fn address(&self) -> Address {
-                Address::ZERO
+            fn address(&self) -> IcanAddress {
+                IcanAddress::ZERO
             }
 
             fn network_id(&self) -> Option<ChainId> {

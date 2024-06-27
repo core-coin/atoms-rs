@@ -59,13 +59,13 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_value(value)
     }
 
-    fn signature(&self) -> Option<alloy_primitives::B1368> {
-        self.deref().signature()
-    }
+    // fn signature(&self) -> Option<alloy_primitives::B1368> {
+    //     self.deref().signature()
+    // }
 
-    fn set_signature(&mut self, signature: alloy_primitives::B1368) {
-        self.deref_mut().set_signature(signature)
-    }
+    // fn set_signature(&mut self, signature: alloy_primitives::B1368) {
+    //     self.deref_mut().set_signature(signature)
+    // }
 
     fn energy_limit(&self) -> Option<u128> {
         self.deref().energy_limit()
@@ -107,15 +107,15 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_energy_price(gas_price);
     }
 
-    /// Get the EIP-2930 access list for the transaction.
-    fn access_list(&self) -> Option<&AccessList> {
-        self.deref().access_list()
-    }
+    // /// Get the EIP-2930 access list for the transaction.
+    // fn access_list(&self) -> Option<&AccessList> {
+    //     self.deref().access_list()
+    // }
 
-    /// Sets the EIP-2930 access list.
-    fn set_access_list(&mut self, access_list: AccessList) {
-        self.deref_mut().set_access_list(access_list)
-    }
+    // /// Sets the EIP-2930 access list.
+    // fn set_access_list(&mut self, access_list: AccessList) {
+    //     self.deref_mut().set_access_list(access_list)
+    // }
 
     fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
         self.deref().blob_sidecar()

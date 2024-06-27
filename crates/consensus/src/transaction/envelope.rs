@@ -301,7 +301,8 @@ mod tests {
     use super::*;
     use crate::transaction::SignableTransaction;
     use alloy_eips::eip2930::{AccessList, AccessListItem};
-    use alloy_primitives::{hex, Address, Bytes, Signature, TxKind, U256};
+    use alloy_primitives::{hex, Address, Bytes, IcanAddress, TxKind, Signature, U256};
+    use core::str::FromStr;
     use std::{fs, path::PathBuf, vec};
 
     #[cfg(not(feature = "std"))]
@@ -397,7 +398,7 @@ mod tests {
     where
         Signed<T>: Into<TxEnvelope>,
     {
-        let signature = Signature::test_signature();
+        let signature = Signature::from_str("0x").unwrap();
         let tx_signed = tx.into_signed(signature);
         let tx_envelope: TxEnvelope = tx_signed.into();
         let encoded = tx_envelope.encoded_2718();
@@ -414,7 +415,7 @@ mod tests {
             max_fee_per_gas: 3,
             max_priority_fee_per_gas: 4,
             gas_limit: 5,
-            to: Address::left_padding_from(&[6]).into(),
+            to: IcanAddress::left_padding_from(&[6]).into(),
             value: U256::from(7_u64),
             input: Bytes::from(vec![8]),
             // access_list: Default::default(),
@@ -429,7 +430,7 @@ mod tests {
             nonce: 2,
             gas_price: 3,
             gas_limit: 4,
-            to: Address::left_padding_from(&[5]).into(),
+            to: IcanAddress::left_padding_from(&[5]).into(),
             value: U256::from(6_u64),
             input: Bytes::from(vec![7]),
             // access_list: AccessList(vec![AccessListItem {
@@ -442,7 +443,7 @@ mod tests {
 
     #[test]
     fn test_encode_decode_transaction_list() {
-        let signature = Signature::test_signature();
+        let signature = Signature::from_str("0x").unwrap();
         let tx = TxEnvelope::Eip1559(
             TxEip1559 {
                 chain_id: 1u64,
@@ -450,7 +451,7 @@ mod tests {
                 max_fee_per_gas: 3,
                 max_priority_fee_per_gas: 4,
                 gas_limit: 5,
-                to: Address::left_padding_from(&[6]).into(),
+                to: IcanAddress::left_padding_from(&[6]).into(),
                 value: U256::from(7_u64),
                 input: Bytes::from(vec![8]),
                 // access_list: Default::default(),
@@ -482,7 +483,9 @@ mod tests {
     where
         Signed<T>: Into<TxEnvelope>,
     {
-        let signature = Signature::test_signature();
+        use core::str::FromStr;
+
+        let signature = Signature::from_str("0x").unwrap();
         let tx_envelope: TxEnvelope = tx.into_signed(signature).into();
 
         let serialized = serde_json::to_string(&tx_envelope).unwrap();
@@ -499,7 +502,7 @@ mod tests {
             nonce: 100,
             energy_price: 3_000_000_000,
             energy_limit: 50_000,
-            to: Address::default().into(),
+            to: IcanAddress::default().into(),
             value: U256::from(10e18),
             input: Bytes::new(),
         };
@@ -534,7 +537,7 @@ mod tests {
             nonce: u64::MAX,
             gas_price: u128::MAX,
             gas_limit: u128::MAX,
-            to: Address::random().into(),
+            to: IcanAddress::random().into(),
             value: U256::MAX,
             input: Bytes::new(),
             // access_list: Default::default(),
@@ -553,7 +556,7 @@ mod tests {
             max_fee_per_gas: 50_000_000_000,
             max_priority_fee_per_gas: 1_000_000_000_000,
             gas_limit: 1_000_000,
-            to: Address::random(),
+            to: IcanAddress::random(),
             value: U256::from(10e18),
             input: Bytes::new(),
             // access_list: AccessList(vec![AccessListItem {
@@ -572,7 +575,7 @@ mod tests {
                 max_fee_per_gas: 50_000_000_000,
                 max_priority_fee_per_gas: 1_000_000_000_000,
                 gas_limit: 1_000_000,
-                to: Address::random(),
+                to: IcanAddress::random(),
                 value: U256::from(10e18),
                 input: Bytes::new(),
                 // access_list: AccessList(vec![AccessListItem {

@@ -7,14 +7,14 @@ use crate::{
 };
 use alloy_eips::eip2718::Encodable2718;
 use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
-use alloy_network::{Core, Network};
+use alloy_network::{Ethereum, Network};
 use alloy_primitives::{
     hex, IcanAddress, BlockHash, BlockNumber, Bytes, StorageKey, StorageValue, TxHash, B256, U128,
     U256, U64,
 };
 use alloy_rpc_client::{ClientRef, PollerBuilder, WeakClient};
 use alloy_rpc_types::{
-    AccessListWithEnergyUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
+    AccessListWithGasUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
     FeeHistory, Filter, FilterChanges, Log, SyncStatus,
 };
 use alloy_rpc_types_trace::parity::{LocalizedTransactionTrace, TraceResults, TraceType};
@@ -46,7 +46,7 @@ pub type FilterPollerBuilder<T, R> = PollerBuilder<T, (U256,), Vec<R>>;
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 #[auto_impl::auto_impl(&, &mut, Rc, Arc, Box)]
-pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Core>: Send + Sync {
+pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>: Send + Sync {
     /// Returns the root provider.
     fn root(&self) -> &RootProvider<T, N>;
 
@@ -741,7 +741,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Core>: Send
                     .await?
                     .ok_or(RpcError::NullResp)?
                     .header
-                    .base_fee_per_energy
+                    .base_fee_per_gas
                     .ok_or(RpcError::UnsupportedFeature("eip1559"))?
             }
         };
@@ -771,7 +771,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Core>: Send
         &self,
         request: &N::TransactionRequest,
         block: BlockId,
-    ) -> TransportResult<AccessListWithEnergyUsed> {
+    ) -> TransportResult<AccessListWithGasUsed> {
         self.client().request("xcb_createAccessList", (request, block)).await
     }
 
@@ -928,7 +928,7 @@ mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
     use alloy_node_bindings::Anvil;
-    use alloy_primitives::{address, b256, bytes};
+    use alloy_primitives::{address, b256, bytes, cAddress};
     use alloy_rpc_types::request::TransactionRequest;
 
     fn init_tracing() {
@@ -993,7 +993,7 @@ mod tests {
         let anvil = Anvil::new().block_time(1).spawn();
         let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
         let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
-        let provider = RootProvider::<_, Core>::new(client);
+        let provider = RootProvider::<_, Ethereum>::new(client);
 
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(2);
@@ -1014,7 +1014,7 @@ mod tests {
         let anvil = Anvil::new().block_time(1).spawn();
         let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
         let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
-        let provider = RootProvider::<_, Core>::new(client);
+        let provider = RootProvider::<_, Ethereum>::new(client);
         let provider = provider.boxed();
 
         let sub = provider.subscribe_blocks().await.unwrap();
@@ -1036,7 +1036,7 @@ mod tests {
         let url = "wss://eth-mainnet.g.alchemy.com/v2/viFmeVzhg6bWKVMIWWS8MhmzREB-D4f7";
         let ws = alloy_rpc_client::WsConnect::new(url);
         let Ok(client) = alloy_rpc_client::RpcClient::connect_pubsub(ws).await else { return };
-        let provider = RootProvider::<_, Core>::new(client);
+        let provider = RootProvider::<_, Ethereum>::new(client);
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(1);
         while let Some(block) = stream.next().await {
@@ -1051,7 +1051,7 @@ mod tests {
         let provider = ProviderBuilder::new().on_anvil();
         let tx = TransactionRequest {
             value: Some(U256::from(100)),
-            to: Some(address!("d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
+            to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             energy_price: Some(20e9 as u128),
             energy: Some(21000),
             ..Default::default()
@@ -1091,7 +1091,7 @@ mod tests {
         let provider = ProviderBuilder::new().on_anvil();
         let count = provider
             .get_transaction_count(
-                address!("328375e18E7db8F1CA9d9bA8bF3E9C94ee34136A"),
+                cAddress!("0000328375e18E7db8F1CA9d9bA8bF3E9C94ee34136A"),
                 BlockNumberOrTag::Latest.into(),
             )
             .await
@@ -1321,7 +1321,7 @@ mod tests {
         let anvil = Anvil::new().spawn();
 
         let provider =
-            RootProvider::<BoxTransport, Core>::connect_builtin(anvil.endpoint().as_str()).await;
+            RootProvider::<BoxTransport, Ethereum>::connect_builtin(anvil.endpoint().as_str()).await;
 
         match provider {
             Ok(provider) => {

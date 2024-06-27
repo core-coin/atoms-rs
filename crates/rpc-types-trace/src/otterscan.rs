@@ -147,7 +147,7 @@ pub struct TransactionsWithReceipts {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ContractCreator {
     pub tx: Transaction,
-    pub creator: Address,
+    pub creator: IcanAddress,
 }
 
 #[cfg(test)]

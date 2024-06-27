@@ -5,7 +5,7 @@ use alloy_consensus::{
     TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip4844WithSidecar, TxEnvelope, TxLegacy,
     TxType, TypedTransaction,
 };
-use alloy_primitives::{Address, Bytes, ChainId, TxKind, B256, U256};
+use alloy_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, B256, U256};
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 
@@ -75,8 +75,8 @@ pub struct TransactionRequest {
     )]
     pub network_id: Option<ChainId>,
     /// An EIP-2930 access list, which lowers cost for accessing accounts and storages in the list. See [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) for more information.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub access_list: Option<AccessList>,
+    // #[serde(default, skip_serializing_if = "Option::is_none")]
+    // pub access_list: Option<AccessList>,
     /// The EIP-2718 transaction type. See [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) for more information.
     #[serde(
         default,
@@ -96,7 +96,7 @@ pub struct TransactionRequest {
 impl TransactionRequest {
     /// Sets the `from` field in the call to the provided address
     #[inline]
-    pub const fn from(mut self, from: Address) -> Self {
+    pub const fn from(mut self, from: IcanAddress) -> Self {
         self.from = Some(from);
         self
     }
@@ -144,11 +144,11 @@ impl TransactionRequest {
         self
     }
 
-    /// Sets the access list for the transaction.
-    pub fn access_list(mut self, access_list: AccessList) -> Self {
-        self.access_list = Some(access_list);
-        self
-    }
+    // /// Sets the access list for the transaction.
+    // pub fn access_list(mut self, access_list: AccessList) -> Self {
+    //     self.access_list = Some(access_list);
+    //     self
+    // }
 
     /// Sets the input data for the transaction.
     pub fn input(mut self, input: TransactionInput) -> Self {
@@ -242,7 +242,7 @@ impl TransactionRequest {
             to: checked_to,
             value: self.value.unwrap_or_default(),
             input: self.input.into_input().unwrap_or_default(),
-            access_list: self.access_list.unwrap_or_default(),
+            // access_list: self.access_list.unwrap_or_default(),
         }
     }
 
@@ -263,7 +263,7 @@ impl TransactionRequest {
             to: checked_to,
             value: self.value.unwrap_or_default(),
             input: self.input.into_input().unwrap_or_default(),
-            access_list: self.access_list.unwrap_or_default(),
+            // access_list: self.access_list.unwrap_or_default(),
         }
     }
 
@@ -294,7 +294,7 @@ impl TransactionRequest {
                     .expect("checked in complete_4844"),
                 to: to_address,
                 value: self.value.unwrap_or_default(),
-                access_list: self.access_list.unwrap_or_default(),
+                // access_list: self.access_list.unwrap_or_default(),
                 blob_versioned_hashes: self
                     .blob_versioned_hashes
                     .expect("populated at top of block"),
@@ -346,7 +346,7 @@ impl TransactionRequest {
                 self.max_fee_per_blob_gas = None;
                 self.blob_versioned_hashes = None;
                 self.sidecar = None;
-                self.access_list = None;
+                // self.access_list = None;
             }
             TxType::Eip2930 => {
                 self.max_fee_per_gas = None;
@@ -376,8 +376,8 @@ impl TransactionRequest {
     pub const fn preferred_type(&self) -> TxType {
         if self.sidecar.is_some() || self.max_fee_per_blob_gas.is_some() {
             TxType::Eip4844
-        } else if self.access_list.is_some() && self.energy_price.is_some() {
-            TxType::Eip2930
+        // } else if self.access_list.is_some() && self.energy_price.is_some() {
+        //     TxType::Eip2930
         } else if self.energy_price.is_some() {
             TxType::Legacy
         } else {
@@ -450,9 +450,9 @@ impl TransactionRequest {
         let mut missing = self.check_reqd_fields();
         self.check_legacy_fields(&mut missing);
 
-        if self.access_list.is_none() {
-            missing.push("access_list");
-        }
+        // if self.access_list.is_none() {
+        //     missing.push("access_list");
+        // }
 
         if missing.is_empty() {
             Ok(())
@@ -622,7 +622,7 @@ impl From<TxEip2930> for TransactionRequest {
             input: tx.input.into(),
             nonce: Some(tx.nonce),
             network_id: Some(tx.chain_id),
-            access_list: Some(tx.access_list),
+            // access_list: Some(tx.access_list),
             transaction_type: Some(1),
             ..Default::default()
         }
@@ -640,7 +640,7 @@ impl From<TxEip1559> for TransactionRequest {
             input: tx.input.into(),
             nonce: Some(tx.nonce),
             network_id: Some(tx.chain_id),
-            access_list: Some(tx.access_list),
+            // access_list: Some(tx.access_list),
             transaction_type: Some(2),
             ..Default::default()
         }
@@ -659,7 +659,7 @@ impl From<TxEip4844> for TransactionRequest {
             input: tx.input.into(),
             nonce: Some(tx.nonce),
             network_id: Some(tx.chain_id),
-            access_list: Some(tx.access_list),
+            // access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             transaction_type: Some(3),
             ..Default::default()
@@ -681,7 +681,7 @@ impl From<TxEip4844WithSidecar> for TransactionRequest {
             input: tx.input.into(),
             nonce: Some(tx.nonce),
             network_id: Some(tx.chain_id),
-            access_list: Some(tx.access_list),
+            // access_list: Some(tx.access_list),
             blob_versioned_hashes: Some(tx.blob_versioned_hashes),
             sidecar: Some(sidecar),
             transaction_type: Some(3),

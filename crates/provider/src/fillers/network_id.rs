@@ -75,7 +75,7 @@ impl<N: Network> TxFiller<N> for NetworkIdFiller {
         match self.0.get().copied() {
             Some(network_id) => Ok(network_id),
             None => {
-                let network_id = provider.get_network_id().await?;
+                let network_id = provider.get_chain_id().await?;
                 let network_id = *self.0.get_or_init(|| network_id);
                 Ok(network_id)
             }

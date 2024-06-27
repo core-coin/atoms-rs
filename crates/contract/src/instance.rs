@@ -1,7 +1,7 @@
 use crate::{CallBuilder, Event, Interface, Result};
 use alloy_dyn_abi::DynSolValue;
 use alloy_json_abi::{Function, JsonAbi};
-use alloy_network::{Core, Network};
+use alloy_network::{Ethereum, Network};
 use alloy_primitives::{Address, Selector};
 use alloy_provider::Provider;
 use alloy_rpc_types::Filter;
@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 /// A contract is an abstraction of an executable program on Ethereum. Every deployed contract has
 /// an address, which is used to connect to it so that it may receive messages (transactions).
 #[derive(Clone)]
-pub struct ContractInstance<T, P, N = Core> {
+pub struct ContractInstance<T, P, N = Ethereum> {
     address: Address,
     provider: P,
     interface: Interface,

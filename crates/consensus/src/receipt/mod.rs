@@ -35,7 +35,7 @@ pub trait TxReceipt<T = Log> {
 mod tests {
     use super::*;
     use alloy_eips::eip2718::Encodable2718;
-    use alloy_primitives::{address, b256, bytes, hex, Bytes, LogData};
+    use alloy_primitives::{b256, bytes, cAddress, hex, Bytes, LogData};
     use alloy_rlp::{Decodable, Encodable};
 
     // Test vector from: https://eips.ethereum.org/EIPS/eip-2481
@@ -49,7 +49,7 @@ mod tests {
                 receipt: Receipt {
                     cumulative_gas_used: 0x1u128,
                     logs: vec![Log {
-                        address: address!("0000000000000000000000000000000000000011"),
+                        address: cAddress!("00000000000000000000000000000000000000000011"),
                         data: LogData::new_unchecked(
                             vec![
                     b256!("000000000000000000000000000000000000000000000000000000000000dead"),
@@ -81,7 +81,7 @@ mod tests {
                 receipt: Receipt {
                     cumulative_gas_used: 0x1u128,
                     logs: vec![Log {
-                        address: address!("0000000000000000000000000000000000000011"),
+                        address: cAddress!("00000000000000000000000000000000000000000011"),
                         data: LogData::new_unchecked(
                             vec![
                         b256!("000000000000000000000000000000000000000000000000000000000000dead"),
@@ -106,7 +106,7 @@ mod tests {
             status: true,
             logs: vec![
                 Log {
-                    address: address!("4bf56695415f725e43c3e04354b604bcfb6dfb6e"),
+                    address: cAddress!("00004bf56695415f725e43c3e04354b604bcfb6dfb6e"),
                     data: LogData::new_unchecked(
                         vec![b256!(
                             "c69dc3d7ebff79e41f525be431d5cd3cc08f80eaf0f7819054a726eeb7086eb9"
@@ -115,7 +115,7 @@ mod tests {
                     ),
                 },
                 Log {
-                    address: address!("faca325c86bf9c2d5b413cd7b90b209be92229c2"),
+                    address: cAddress!("0000faca325c86bf9c2d5b413cd7b90b209be92229c2"),
                     data: LogData::new_unchecked(
                         vec![b256!(
                             "8cca58667b1e9ffa004720ac99a3d61a138181963b294d270d91c53d36402ae2"
