@@ -67,8 +67,8 @@ pub struct StructLog {
     /// remaining energy
     pub energy: u64,
     /// cost for executing op
-    #[serde(rename = "gasCost")]
-    pub gas_cost: u64,
+    #[serde(rename = "energyCost")]
+    pub energy_cost: u64,
     /// Current call depth
     pub depth: u64,
     /// Error message if any
@@ -594,7 +594,7 @@ mod tests {
 
     #[test]
     fn test_serialize_storage_map() {
-        let s = r#"{"pc":3349,"op":"SLOAD","gas":23959,"gasCost":2100,"depth":1,"stack":[],"memory":[],"storage":{"6693dabf5ec7ab1a0d1c5bc58451f85d5e44d504c9ffeb75799bfdb61aa2997a":"0000000000000000000000000000000000000000000000000000000000000000"}}"#;
+        let s = r#"{"pc":3349,"op":"SLOAD","energy":23959,"energyCost":2100,"depth":1,"stack":[],"memory":[],"storage":{"6693dabf5ec7ab1a0d1c5bc58451f85d5e44d504c9ffeb75799bfdb61aa2997a":"0000000000000000000000000000000000000000000000000000000000000000"}}"#;
         let log: StructLog = serde_json::from_str(s).unwrap();
         let val = serde_json::to_value(&log).unwrap();
         let input = serde_json::from_str::<serde_json::Value>(s).unwrap();
@@ -606,8 +606,8 @@ mod tests {
         let s = r#"        {
             "result": {
                 "from": "0xccc5499e15fedaaeaba68aeb79b95b20f725bc56",
-                "gas": "0x186a0",
-                "gasUsed": "0xdb91",
+                "energy": "0x186a0",
+                "energyUsed": "0xdb91",
                 "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
                 "input": "0xa9059cbb000000000000000000000000e3f85a274c1edbea2f2498cf5978f41961cf8b5b0000000000000000000000000000000000000000000000000000000068c8f380",
                 "value": "0x0",

@@ -277,17 +277,17 @@ mod tests {
     #[test]
     fn parse_prestate_default_resp() {
         let s = r#"{
-  "0x0000000000000000000000000000000000000002": {
+  "0x00000000000000000000000000000000000000000002": {
     "balance": "0x0"
   },
-  "0x008b3b2f992c0e14edaa6e2c662bec549caa8df1": {
+  "0x0000008b3b2f992c0e14edaa6e2c662bec549caa8df1": {
     "balance": "0x2638035a26d133809"
   },
-  "0x35a9f94af726f07b5162df7e828cc9dc8439e7d0": {
+  "0x000035a9f94af726f07b5162df7e828cc9dc8439e7d0": {
     "balance": "0x7a48734599f7284",
     "nonce": 1133
   },
-  "0xc8ba32cab1757528daf49033e3673fae77dcf05d": {
+  "0x0000c8ba32cab1757528daf49033e3673fae77dcf05d": {
     "balance": "0x0",
     "code": "0x",
     "nonce": 1,
@@ -307,12 +307,12 @@ mod tests {
     fn parse_prestate_diff_resp() {
         let s = r#"{
   "post": {
-    "0x35a9f94af726f07b5162df7e828cc9dc8439e7d0": {
+    "0x000035a9f94af726f07b5162df7e828cc9dc8439e7d0": {
       "nonce": 1135
     }
   },
   "pre": {
-    "0x35a9f94af726f07b5162df7e828cc9dc8439e7d0": {
+    "0x000035a9f94af726f07b5162df7e828cc9dc8439e7d0": {
       "balance": "0x7a48429e177130a",
       "nonce": 1134
     }
@@ -327,12 +327,12 @@ mod tests {
     fn test_retain_changed_accounts() {
         let s = r#"{
   "post": {
-    "0x35a9f94af726f07b5162df7e828cc9dc8439e7d0": {
+    "0x000035a9f94af726f07b5162df7e828cc9dc8439e7d0": {
       "nonce": 1135
     }
   },
   "pre": {
-    "0x35a9f94af726f07b5162df7e828cc9dc8439e7d0": {
+    "0x000035a9f94af726f07b5162df7e828cc9dc8439e7d0": {
       "balance": "0x7a48429e177130a",
       "nonce": 1134
     }
