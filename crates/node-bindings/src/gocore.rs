@@ -466,9 +466,12 @@ impl Gocore {
             self.inner_disable_discovery();
         }
 
-        // Set the port for authenticated APIs
-        let authrpc_port = self.authrpc_port.unwrap_or_else(&mut unused_port);
-        cmd.arg("--authrpc.port").arg(authrpc_port.to_string());
+
+        // Gocore doesn't support authrpc 
+
+        // // Set the port for authenticated APIs
+        // let authrpc_port = self.authrpc_port.unwrap_or_else(&mut unused_port);
+        // cmd.arg("--authrpc.port").arg(authrpc_port.to_string());
 
         // use gocore init to initialize the datadir if the genesis exists
         if is_clique {
