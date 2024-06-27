@@ -43,11 +43,11 @@ alloy-transport-ws = { version = "0.1.0", default-features = false, path = "crat
 
 test-utils = { version = "0.1.0", default-features = false, path = "crates/internal-test-utils", package = "alloy-internal-test-utils" }
 
-alloy-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, rev = "cb4666009708c86b3b49f113d188bcce4dcc5f52" }
-alloy-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "cb4666009708c86b3b49f113d188bcce4dcc5f52" }
-alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "cb4666009708c86b3b49f113d188bcce4dcc5f52" }
-alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, rev = "cb4666009708c86b3b49f113d188bcce4dcc5f52" }
-alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, rev = "cb4666009708c86b3b49f113d188bcce4dcc5f52" }
+alloy-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
+alloy-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
+alloy-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
+alloy-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
+alloy-sol-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
 
 alloy-rlp = { version = "0.3", default-features = false }
 
