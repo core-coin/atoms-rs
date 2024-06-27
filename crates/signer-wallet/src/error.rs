@@ -11,6 +11,10 @@ pub enum WalletError {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 
+    /// Libgoldilocks error.
+    #[error(transparent)]
+    LibgoldilockError(#[from] libgoldilocks::errors::LibgoldilockErrors),
+
     /// [`coins_bip32`] error.
     #[error(transparent)]
     #[cfg(feature = "mnemonic")]
@@ -20,9 +24,9 @@ pub enum WalletError {
     #[cfg(feature = "mnemonic")]
     Bip39Error(#[from] coins_bip39::MnemonicError),
     /// [`MnemonicBuilder`](super::mnemonic::MnemonicBuilder) error.
-    #[error(transparent)]
-    #[cfg(feature = "mnemonic")]
-    MnemonicBuilderError(#[from] super::mnemonic::MnemonicBuilderError),
+    // #[error(transparent)]
+    // #[cfg(feature = "mnemonic")]
+    // MnemonicBuilderError(#[from] super::mnemonic::MnemonicBuilderError),
 
     /// [`xcb_keystore`] error.
     #[cfg(feature = "keystore")]

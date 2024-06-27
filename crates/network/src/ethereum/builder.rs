@@ -326,7 +326,7 @@ mod tests {
         assert_eq!(errors.len(), 3);
         assert!(errors.contains(&"to"));
         assert!(errors.contains(&"nonce"));
-        assert!(errors.contains(&"gas_limit"));
+        assert!(errors.contains(&"energy_limit"));
     }
 
     #[test]
@@ -344,7 +344,7 @@ mod tests {
         assert_eq!(errors.len(), 7);
         assert!(errors.contains(&"to"));
         assert!(errors.contains(&"nonce"));
-        assert!(errors.contains(&"gas_limit"));
+        assert!(errors.contains(&"energy_limit"));
         assert!(errors.contains(&"max_priority_fee_per_gas"));
         assert!(errors.contains(&"max_fee_per_gas"));
         assert!(errors.contains(&"to"));
