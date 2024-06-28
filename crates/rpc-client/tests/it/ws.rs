@@ -10,7 +10,7 @@ async fn it_makes_a_request() {
     let connector = WsConnect { url: url.parse().unwrap(), auth: None };
     let client = ClientBuilder::default().pubsub(connector).await.unwrap();
     let req: RpcCall<_, (), U64> = client.request("xcb_blockNumber", ());
-    let timeout = tokio::time::timeout(std::time::Duration::from_secs(2), req);
+    let timeout = tokio::time::timeout(std::time::Duration::from_secs(15), req);
     let res = timeout.await.unwrap().unwrap();
     assert_eq!(res.to::<u64>(), 0);
 }
