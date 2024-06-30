@@ -3,14 +3,11 @@ use alloy_primitives::{Bloom, Log};
 mod any;
 pub use any::AnyReceiptEnvelope;
 
-mod envelope;
-pub use envelope::ReceiptEnvelope;
-
 mod receipts;
 pub use receipts::{Receipt, ReceiptWithBloom};
 
 /// Receipt is the result of a transaction execution.
-pub trait TxReceipt<T = Log> {
+pub trait TxReceipt {
     /// Returns true if the transaction was successful.
     fn status(&self) -> bool;
 
@@ -28,13 +25,12 @@ pub trait TxReceipt<T = Log> {
     fn cumulative_gas_used(&self) -> u128;
 
     /// Returns the logs emitted by this transaction.
-    fn logs(&self) -> &[T];
+    fn logs(&self) -> &[Log];
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_eips::eip2718::Encodable2718;
     use alloy_primitives::{b256, bytes, cAddress, hex, Bytes, LogData};
     use alloy_rlp::{Decodable, Encodable};
 

@@ -84,6 +84,7 @@ impl TxLegacy {
         len += self.to.length();
         len += self.value.length();
         len += self.input.0.length();
+        len += self.chain_id().unwrap().length();
         len
     }
 
@@ -93,6 +94,7 @@ impl TxLegacy {
         self.nonce.encode(out);
         self.energy_price.encode(out);
         self.energy_limit.encode(out);
+        self.chain_id().unwrap().encode(out);
         self.to.encode(out);
         self.value.encode(out);
         self.input.0.encode(out);
@@ -124,14 +126,13 @@ impl TxLegacy {
     /// Encodes EIP-155 arguments into the desired buffer. Only encodes values
     /// for legacy transactions.
     pub(crate) fn encode_eip155_signing_fields(&self, out: &mut dyn BufMut) {
-        // if this is a legacy transaction without a chain ID, it must be pre-EIP-155
-        // and does not need to encode the chain ID for the signature hash encoding
-        if let Some(id) = self.network_id {
-            // EIP-155 encodes the chain ID and two zeroes
-            id.encode(out);
-            0x00u8.encode(out);
-            0x00u8.encode(out);
-        }
+        self.nonce.encode(out);
+        self.energy_price.encode(out);
+        self.energy_limit.encode(out);
+        self.to.encode(out);
+        self.value.encode(out);
+        self.input.0.encode(out);
+        self.chain_id().unwrap().encode(out);
     }
 
     /// Outputs the length of EIP-155 fields. Only outputs a non-zero value for EIP-155 legacy
@@ -232,14 +233,13 @@ impl SignableTransaction<Signature> for TxLegacy {
     }
 
     fn encode_for_signing(&self, out: &mut dyn BufMut) {
-        Header { list: true, payload_length: self.fields_len() + self.eip155_fields_len() }
-            .encode(out);
-        self.encode_fields(out);
+        Header { list: true, payload_length: self.fields_len() }.encode(out);
+        // self.encode_fields(out);
         self.encode_eip155_signing_fields(out);
     }
 
     fn payload_len_for_signature(&self) -> usize {
-        let payload_length = self.fields_len() + self.eip155_fields_len();
+        let payload_length = self.fields_len();
         // 'header length' + 'payload length'
         Header { list: true, payload_length }.length() + payload_length
     }

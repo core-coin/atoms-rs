@@ -15,18 +15,16 @@ use alloy_rlp::{Decodable, Encodable};
 /// [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AnyReceiptEnvelope<T = Log> {
+pub struct AnyReceiptEnvelope {
     /// The receipt envelope.
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub inner: ReceiptWithBloom<T>,
+    pub inner: ReceiptWithBloom,
     /// The transaction type.
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::num::u8_via_ruint"))]
     pub r#type: u8,
 }
 
-impl<T> AnyReceiptEnvelope<T>
-where
-    T: Encodable,
+impl AnyReceiptEnvelope
 {
     /// Calculate the length of the rlp payload of the network encoded receipt.
     pub fn rlp_payload_length(&self) -> usize {
@@ -39,7 +37,7 @@ where
     }
 }
 
-impl<T> AnyReceiptEnvelope<T> {
+impl AnyReceiptEnvelope {
     /// Returns whether this is a legacy receipt (type 0)
     pub const fn is_legacy(&self) -> bool {
         self.r#type == 0
@@ -66,12 +64,12 @@ impl<T> AnyReceiptEnvelope<T> {
     }
 
     /// Return the receipt logs.
-    pub fn logs(&self) -> &[T] {
+    pub fn logs(&self) -> &[Log] {
         &self.inner.receipt.logs
     }
 }
 
-impl<T> TxReceipt<T> for AnyReceiptEnvelope<T> {
+impl TxReceipt for AnyReceiptEnvelope {
     /// Returns the success status of the receipt's transaction.
     fn status(&self) -> bool {
         self.inner.receipt.status
@@ -88,7 +86,7 @@ impl<T> TxReceipt<T> for AnyReceiptEnvelope<T> {
     }
 
     /// Return the receipt logs.
-    fn logs(&self) -> &[T] {
+    fn logs(&self) -> &[Log] {
         &self.inner.receipt.logs
     }
 }
