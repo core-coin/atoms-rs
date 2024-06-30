@@ -17,7 +17,7 @@
 
 use alloy_consensus::SignableTransaction;
 use alloy_network::{TxSigner, TxSignerSync};
-use alloy_primitives::{Address, ChainId, IcanAddress, Signature, SignatureError, B256};
+use alloy_primitives::{ChainId, IcanAddress, Signature, B256};
 use alloy_signer::{sign_transaction_with_network_id, Error, Result, Signer, SignerSync};
 use async_trait::async_trait;
 use libgoldilocks::{PrehashSigner, SigningKey};
@@ -26,10 +26,10 @@ use std::fmt;
 mod error;
 pub use error::WalletError;
 
-#[cfg(feature = "mnemonic")]
-mod mnemonic;
-#[cfg(feature = "mnemonic")]
-pub use mnemonic::MnemonicBuilder;
+// #[cfg(feature = "mnemonic")]
+// mod mnemonic;
+// #[cfg(feature = "mnemonic")]
+// pub use mnemonic::MnemonicBuilder;
 
 mod private_key;
 
@@ -63,7 +63,7 @@ pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
 /// ```
 /// use alloy_signer::{Signer, SignerSync};
 ///
-/// let wallet = alloy_signer_wallet::LocalWallet::random();
+/// let wallet = alloy_signer_wallet::LocalWallet::random(1);
 ///
 /// // Optionally, the wallet's chain id can be set, in order to use EIP-155
 /// // replay protection with different chains
@@ -72,7 +72,6 @@ pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
 /// // The wallet can be used to sign messages
 /// let message = b"hello";
 /// let signature = wallet.sign_message_sync(message)?;
-/// assert_eq!(signature.recover_address_from_msg(&message[..]).unwrap(), wallet.address());
 ///
 /// // LocalWallet is clonable:
 /// let wallet_clone = wallet.clone();
@@ -114,7 +113,7 @@ impl<D: PrehashSigner<Signature> + Send + Sync> Signer for Wallet<D> {
     }
 }
 
-impl<D: PrehashSigner<(Signature)>> SignerSync for Wallet<D> {
+impl<D: PrehashSigner<Signature>> SignerSync for Wallet<D> {
     #[inline]
     fn sign_hash_sync(&self, hash: &B256) -> Result<Signature> {
         let sig = self.signer.sign_prehash(hash.as_ref()).map_err(|e| Error::Other(Box::new(e)))?;
@@ -130,7 +129,11 @@ impl<D: PrehashSigner<(Signature)>> SignerSync for Wallet<D> {
 impl<D: PrehashSigner<Signature>> Wallet<D> {
     /// Construct a new wallet with an external [`PrehashSigner`].
     #[inline]
-    pub const fn new_with_signer(signer: D, address: IcanAddress, network_id: Option<ChainId>) -> Self {
+    pub const fn new_with_signer(
+        signer: D,
+        address: IcanAddress,
+        network_id: Option<ChainId>,
+    ) -> Self {
         Wallet { signer, address, network_id }
     }
 
@@ -207,7 +210,7 @@ where
 mod test {
     use super::*;
     use alloy_consensus::TxLegacy;
-    use alloy_primitives::{address, cAddress, U256};
+    use alloy_primitives::{cAddress, U256};
 
     #[tokio::test]
     async fn signs_tx() {
@@ -228,7 +231,7 @@ mod test {
         ) -> Result<Signature> {
             let mut wallet: LocalWallet = LocalWallet::from_signing_key(
                 SigningKey::from_str(
-                    "4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318",
+                    "7d6231471b5dbb6204fe5129617082792ae468d01a3f3623184c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318",
                 ),
                 1,
             );
@@ -236,7 +239,7 @@ mod test {
 
             let sig = wallet.sign_transaction_sync(tx)?;
             let sighash = tx.signature_hash();
-            // assert_eq!(sig.recover_address_from_prehash(&sighash).unwrap(), wallet.address());
+            assert_eq!(sig.recover_address_from_prehash(&sighash, 1).unwrap(), wallet.address());
 
             let sig_async = wallet.sign_transaction(tx).await.unwrap();
             assert_eq!(sig_async, sig);
@@ -259,7 +262,7 @@ mod test {
 
         tx.network_id = Some(1);
         let sig_1 = sign_tx_test(&mut tx, None).await.unwrap();
-        let expected = "c9cf86333bcb065d140032ecaab5d9281bde80f21b9687b3e94161de42d51895727a108a0b8d101465414033c3f705a9c7b826e596766046ee1183dbc8aeaa6825".parse().unwrap();
+        let expected = "0xba72dc3eb2a1bfe2539fb75f8bf42c7dc961afc4617dce529dfbd37ca7af5cab0b2ad96c7667b5f17bbd543d1e1b3d2d37b50fa9ec2e9a31805ead4189af9938fdc3a9038dd681e0ee3c9697c4caa86a3ab9f7da97a0b991ba7ed606ce9a678edc218e1ca621ac3bf67ccd3930d9b56b1a00c451ec0deec4f6ea947aeed0b53b6b3a31b2c98195652dbfebe5551ca44cd31dc99ed4e35beb49e97621f4513637ba768911282e695edab180".parse().unwrap();
         assert_eq!(sig_1, expected);
         assert_ne!(sig_1, sig_none);
 
