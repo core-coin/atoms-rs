@@ -9,7 +9,7 @@ use alloy_eips::eip2718::Encodable2718;
 use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
 use alloy_network::{Ethereum, Network};
 use alloy_primitives::{
-    hex, IcanAddress, BlockHash, BlockNumber, Bytes, StorageKey, StorageValue, TxHash, B256, U128,
+    hex, BlockHash, BlockNumber, Bytes, IcanAddress, StorageKey, StorageValue, TxHash, B256, U128,
     U256, U64,
 };
 use alloy_rpc_client::{ClientRef, PollerBuilder, WeakClient};
@@ -46,7 +46,9 @@ pub type FilterPollerBuilder<T, R> = PollerBuilder<T, (U256,), Vec<R>>;
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 #[auto_impl::auto_impl(&, &mut, Rc, Arc, Box)]
-pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>: Send + Sync {
+pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
+    Send + Sync
+{
     /// Returns the root provider.
     fn root(&self) -> &RootProvider<T, N>;
 
@@ -424,7 +426,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>: 
     /// Gets the transaction count (AKA "nonce") of the corresponding address.
     #[doc(alias = "get_nonce")]
     #[doc(alias = "get_account_nonce")]
-    async fn get_transaction_count(&self, address: IcanAddress, tag: BlockId) -> TransportResult<u64> {
+    async fn get_transaction_count(
+        &self,
+        address: IcanAddress,
+        tag: BlockId,
+    ) -> TransportResult<u64> {
         self.client()
             .request("xcb_getTransactionCount", (address, tag))
             .await
@@ -536,7 +542,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>: 
 
     /// Gets the chain ID.
     async fn get_chain_id(&self) -> TransportResult<u64> {
-        self.client().request("xcb_chainId", ()).await.map(|id: U64| id.to::<u64>())
+        self.client().request("xcb_networkId", ()).await.map(|id: U64| id.to::<u64>())
     }
 
     /// Gets the network ID. Same as `xcb_chainId`.
@@ -1321,7 +1327,8 @@ mod tests {
         let anvil = Anvil::new().spawn();
 
         let provider =
-            RootProvider::<BoxTransport, Ethereum>::connect_builtin(anvil.endpoint().as_str()).await;
+            RootProvider::<BoxTransport, Ethereum>::connect_builtin(anvil.endpoint().as_str())
+                .await;
 
         match provider {
             Ok(provider) => {

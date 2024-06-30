@@ -148,7 +148,8 @@ mod test {
 
     use super::*;
     use alloy_network::TransactionBuilder;
-    use alloy_primitives::{cAddress, U256};
+    use alloy_primitives::{cAddress, hex::FromHex, Bytes, U256};
+    use alloy_rpc_types::TransactionInput;
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt::try_init();
@@ -161,12 +162,13 @@ mod test {
         let from = provider.default_signer_address();
 
         let energy_price = provider.get_energy_price().await.unwrap();
-        let tx = TransactionRequest::default()
+        let mut tx = TransactionRequest::default()
             .from(from)
-            .to(cAddress!("0000deadbeef00000000deadbeef00000000deadbeef"))
-            .value(U256::from(100))
-            .max_fee_per_gas(energy_price + 1)
-            .max_priority_fee_per_gas(energy_price + 1);
+            .to(cAddress!("cb7175017a3fa2d4dc29489bfc01ec2e60b140e1c019"))
+            .value(U256::from(100));
+        tx.set_energy_price(energy_price);
+        // .max_fee_per_gas(energy_price + 1)
+        // .max_priority_fee_per_gas(energy_price + 1);
         let pending = provider.send_transaction(tx).await.unwrap();
         let receipt = pending.get_receipt().await.unwrap();
 
@@ -186,14 +188,19 @@ mod test {
         let provider = ProviderBuilder::new().on_anvil_with_signer();
         let from = provider.default_signer_address();
         let energy_price = provider.get_energy_price().await.unwrap();
-        let tx = TransactionRequest::default()
-            .from(from)
-            .with_input("0xdeadbeef")
-            .max_fee_per_gas(energy_price + 1)
-            .max_priority_fee_per_gas(energy_price + 1);
+        let tx = TransactionRequest::default().from(from).input(TransactionInput {
+            data: Some(Bytes::from_hex("0xdeadbeef").unwrap()),
+            input: None,
+        });
+        // .max_fee_per_gas(energy_price + 1)
+        // .max_priority_fee_per_gas(energy_price + 1);
 
         let trace = provider
-            .debug_trace_call(tx, BlockNumberOrTag::Latest, GocoreDebugTracingCallOptions::default())
+            .debug_trace_call(
+                tx,
+                BlockNumberOrTag::Latest,
+                GocoreDebugTracingCallOptions::default(),
+            )
             .await
             .unwrap();
 

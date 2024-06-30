@@ -130,7 +130,11 @@ impl<D: PrehashSigner<(Signature)>> SignerSync for Wallet<D> {
 impl<D: PrehashSigner<Signature>> Wallet<D> {
     /// Construct a new wallet with an external [`PrehashSigner`].
     #[inline]
-    pub const fn new_with_signer(signer: D, address: IcanAddress, network_id: Option<ChainId>) -> Self {
+    pub const fn new_with_signer(
+        signer: D,
+        address: IcanAddress,
+        network_id: Option<ChainId>,
+    ) -> Self {
         Wallet { signer, address, network_id }
     }
 
