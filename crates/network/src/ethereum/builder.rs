@@ -176,7 +176,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
                 TransactionBuilderError::InvalidTransactionRequest(tx_type, missing),
             ));
         }
-        Ok(self.build_typed_tx().expect("checked by complete_legacy\"))
+        Ok(self.build_typed_tx().expect("checked by complete_legacy"))
     }
 
     async fn build<S: NetworkSigner<Ethereum>>(
