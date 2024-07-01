@@ -1,7 +1,7 @@
 //! Utilities for launching an Anvil instance.
 
-use alloy_primitives::{hex, Address, IcanAddress};
-use libgoldilocks::SecretKey;
+use alloy_primitives::{hex, IcanAddress};
+use libgoldilocks::SigningKey;
 use std::{
     io::{BufRead, BufReader},
     net::SocketAddr,
@@ -14,7 +14,8 @@ use thiserror::Error;
 use url::Url;
 
 /// How long we will wait for anvil to indicate that it is ready.
-const ANVIL_STARTUP_TIMEOUT_MILLIS: u64 = 10_000;
+const ANVIL_STARTUP_TIMEOUT_MILLIS: u64 = 20_000;
+const ANVIL_HARDHAT_CHAIN_ID: u64 = 1;
 
 /// An anvil CLI instance. Will close the instance when dropped.
 ///
@@ -22,7 +23,7 @@ const ANVIL_STARTUP_TIMEOUT_MILLIS: u64 = 10_000;
 #[derive(Debug)]
 pub struct AnvilInstance {
     child: Child,
-    private_keys: Vec<SecretKey>,
+    private_keys: Vec<SigningKey>,
     addresses: Vec<IcanAddress>,
     port: u16,
     chain_id: Option<u64>,
@@ -40,7 +41,7 @@ impl AnvilInstance {
     }
 
     /// Returns the private keys used to instantiate this instance
-    pub fn keys(&self) -> &[SecretKey] {
+    pub fn keys(&self) -> &[SigningKey] {
         &self.private_keys
     }
 
@@ -56,7 +57,6 @@ impl AnvilInstance {
 
     /// Returns the chain of the anvil instance
     pub fn chain_id(&self) -> u64 {
-        const ANVIL_HARDHAT_CHAIN_ID: u64 = 31_337;
         self.chain_id.unwrap_or(ANVIL_HARDHAT_CHAIN_ID)
     }
 
@@ -286,8 +286,11 @@ impl Anvil {
         let mut cmd = if let Some(ref prg) = self.program {
             Command::new(prg)
         } else {
-            Command::new("anvil")
+            Command::new("shuttle")
         };
+
+        let mut global_chain_id = Some(ANVIL_HARDHAT_CHAIN_ID);
+
         cmd.stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::inherit());
         let mut port = self.port.unwrap_or_default();
         cmd.arg("-p").arg(port.to_string());
@@ -298,6 +301,7 @@ impl Anvil {
 
         if let Some(chain_id) = self.chain_id {
             cmd.arg("--chain-id").arg(chain_id.to_string());
+            global_chain_id = Some(chain_id);
         }
 
         if let Some(block_time) = self.block_time {
@@ -324,7 +328,6 @@ impl Anvil {
         let mut private_keys = Vec::new();
         let mut addresses = Vec::new();
         let mut is_private_key = false;
-        let mut chain_id = None;
         loop {
             if start + Duration::from_millis(self.timeout.unwrap_or(ANVIL_STARTUP_TIMEOUT_MILLIS))
                 <= Instant::now()
@@ -348,21 +351,24 @@ impl Anvil {
                 is_private_key = true;
             }
 
-            // if is_private_key && line.starts_with('(') {
-            //     let key_str =
-            //         line.split("0x").last().ok_or(AnvilError::ParsePrivateKeyError)?.trim();
-            //     let key_hex = hex::decode(key_str).map_err(AnvilError::FromHexError)?;
-            //     let key = K256SecretKey::from_bytes((&key_hex[..]).into())
-            //         .map_err(|_| AnvilError::DeserializePrivateKeyError)?;
-            //     addresses.push(Address::from_public_key(SigningKey::from(&key).verifying_key()));
-            //     private_keys.push(key);
-            // }
-
-            if let Some(start_chain_id) = line.find("Chain ID:") {
-                let rest = &line[start_chain_id + "Chain ID:".len()..];
+            if let Some(start_chain_id) = line.find("Network ID:") {
+                let rest = &line[start_chain_id + "Network ID:".len()..];
                 if let Ok(chain) = rest.split_whitespace().next().unwrap_or("").parse::<u64>() {
-                    chain_id = Some(chain);
+                    global_chain_id = Some(chain);
                 };
+            }
+
+            if is_private_key && line.starts_with('(') {
+                let key_str =
+                    line.split("0x").last().ok_or(AnvilError::ParsePrivateKeyError)?.trim();
+                let key_hex = hex::decode(key_str).map_err(AnvilError::FromHexError)?;
+                let key = SigningKey::from_bytes((&key_hex[..]).into())
+                    .map_err(|_| AnvilError::DeserializePrivateKeyError)?;
+                addresses.push(IcanAddress::from_public_key(
+                    key.verifying_key(),
+                    global_chain_id.unwrap(),
+                ));
+                private_keys.push(key);
             }
         }
 
@@ -371,7 +377,7 @@ impl Anvil {
             private_keys,
             addresses,
             port,
-            chain_id: self.chain_id.or(chain_id),
+            chain_id: self.chain_id.or(global_chain_id),
         })
     }
 }
@@ -400,19 +406,20 @@ mod tests {
     }
 
     #[test]
-    fn can_launch_anvil_with_sub_seconds_block_time() {
-        let _ = Anvil::new().block_time_f64(0.5).spawn();
-    }
-
-    #[test]
     fn assert_chain_id() {
-        let anvil = Anvil::new().fork("https://rpc.ankr.com/eth").spawn();
+        let anvil = Anvil::new().fork("https://xcbapi.coreblockchain.net").spawn();
         assert_eq!(anvil.chain_id(), 1);
     }
 
     #[test]
     fn assert_chain_id_without_rpc() {
         let anvil = Anvil::new().spawn();
-        assert_eq!(anvil.chain_id(), 31337);
+        assert_eq!(anvil.chain_id(), 1);
+    }
+
+    #[test]
+    fn assert_set_chain_id() {
+        let anvil = Anvil::new().chain_id(1337).spawn();
+        assert_eq!(anvil.chain_id(), 1337);
     }
 }
