@@ -7,7 +7,7 @@ mod receipts;
 pub use receipts::{Receipt, ReceiptWithBloom};
 
 /// Receipt is the result of a transaction execution.
-pub trait TxReceipt {
+pub trait TxReceipt<T = Log> {
     /// Returns true if the transaction was successful.
     fn status(&self) -> bool;
 
@@ -25,7 +25,7 @@ pub trait TxReceipt {
     fn cumulative_gas_used(&self) -> u128;
 
     /// Returns the logs emitted by this transaction.
-    fn logs(&self) -> &[Log];
+    fn logs(&self) -> &[T];
 }
 
 #[cfg(test)]
@@ -39,9 +39,9 @@ mod tests {
     fn encode_legacy_receipt() {
         let expected = hex!("f901668001b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85ff85d940000000000000000000000000000000000000011f842a0000000000000000000000000000000000000000000000000000000000000deada0000000000000000000000000000000000000000000000000000000000000beef830100ff");
 
-        let mut data = vec![];
+        let mut data: Vec<u8> = vec![];
         let receipt =
-            ReceiptEnvelope::Legacy(ReceiptWithBloom {
+            ReceiptWithBloom {
                 receipt: Receipt {
                     cumulative_gas_used: 0x1u128,
                     logs: vec![Log {
@@ -57,9 +57,7 @@ mod tests {
                     status: false,
                 },
                 logs_bloom: [0; 256].into(),
-            });
-
-        receipt.network_encode(&mut data);
+            };
 
         // check that the rlp length equals the length of the expected rlp
         assert_eq!(receipt.length(), expected.len());

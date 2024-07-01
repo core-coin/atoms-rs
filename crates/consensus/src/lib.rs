@@ -28,9 +28,7 @@ mod receipt;
 pub use receipt::{AnyReceiptEnvelope, Receipt, ReceiptWithBloom, TxReceipt};
 
 mod transaction;
-pub use transaction::{
-    SignableTransaction,  Transaction, 
-};
+pub use transaction::{SignableTransaction, Transaction, TxLegacy, TypedTransaction};
 
 #[cfg(feature = "kzg")]
 pub use transaction::BlobTransactionValidationError;

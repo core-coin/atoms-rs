@@ -324,7 +324,7 @@ mod tests {
         let signed_tx = tx.into_signed(sig);
 
         assert_eq!(*signed_tx.hash(), hash, "Expected same hash");
-        assert_eq!(signed_tx.recover_signer().unwrap(), signer, "Recovering signer should pass.");
+        assert_eq!(signed_tx.recover_signer(1).unwrap(), signer, "Recovering signer should pass.");
     }
 
     #[test]
@@ -337,7 +337,7 @@ mod tests {
         )
         .unwrap();
 
-        let recovered = tx.recover_signer().unwrap();
+        let recovered = tx.recover_signer(1).unwrap();
         let expected = address!("a12e1462d0ceD572f396F58B6E2D03894cD7C8a4");
 
         assert_eq!(tx.tx().chain_id, Some(1), "Expected same chain id");

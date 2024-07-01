@@ -170,13 +170,13 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
     }
 
     fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
-        if let Err((tx_type, missing)) = self.missing_keys() {
+        if let Err(missing) = self.complete_legacy() {
             return Err((
                 self,
                 TransactionBuilderError::InvalidTransactionRequest(tx_type, missing),
             ));
         }
-        Ok(self.build_typed_tx().expect("checked by missing_keys"))
+        Ok(self.build_typed_tx().expect("checked by complete_legacy"))
     }
 
     async fn build<S: NetworkSigner<Ethereum>>(
