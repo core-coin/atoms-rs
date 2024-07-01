@@ -1,10 +1,7 @@
 //! Alloy basic Transaction Request type.
 
-use crate::{eth::transaction::AccessList, BlobTransactionSidecar, Transaction};
-use alloy_consensus::{
-    TxEip1559, TxEip2930, TxEip4844, TxEip4844Variant, TxEip4844WithSidecar, TxEnvelope, TxLegacy,
-    TxType, TypedTransaction,
-};
+use crate::Transaction;
+use alloy_consensus::{TxLegacy, TypedTransaction};
 use alloy_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, B256, U256};
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
@@ -85,12 +82,12 @@ pub struct TransactionRequest {
         with = "alloy_serde::num::u8_opt_via_ruint"
     )]
     pub transaction_type: Option<u8>,
-    /// Blob versioned hashes for EIP-4844 transactions.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub blob_versioned_hashes: Option<Vec<B256>>,
-    /// Blob sidecar for EIP-4844 transactions.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub sidecar: Option<BlobTransactionSidecar>,
+    // /// Blob versioned hashes for EIP-4844 transactions.
+    // #[serde(default, skip_serializing_if = "Option::is_none")]
+    // pub blob_versioned_hashes: Option<Vec<B256>>,
+    // /// Blob sidecar for EIP-4844 transactions.
+    // #[serde(default, skip_serializing_if = "Option::is_none")]
+    // pub sidecar: Option<BlobTransactionSidecar>,
 }
 
 impl TransactionRequest {
@@ -164,14 +161,6 @@ impl TransactionRequest {
         self.energy_price.or(self.max_fee_per_gas)
     }
 
-    /// Populate the `blob_versioned_hashes` key, if a sidecar exists. No
-    /// effect otherwise.
-    pub fn populate_blob_hashes(&mut self) {
-        if let Some(sidecar) = self.sidecar.as_ref() {
-            self.blob_versioned_hashes = Some(sidecar.versioned_hashes().collect())
-        }
-    }
-
     /// Gets invalid fields for all transaction types
     pub fn get_invalid_common_fields(&self) -> Vec<&'static str> {
         let mut errors = vec![];
@@ -222,88 +211,6 @@ impl TransactionRequest {
         }
     }
 
-    /// Build an EIP-1559 transaction.
-    ///
-    /// # Panics
-    ///
-    /// If required fields are missing. Use `complete_1559` to check if the
-    /// request can be built.
-    fn build_1559(self) -> TxEip1559 {
-        let checked_to = self.to.expect("checked in complete_1559.");
-
-        TxEip1559 {
-            chain_id: self.network_id.unwrap_or(1),
-            nonce: self.nonce.expect("checked in invalid_common_fields"),
-            max_priority_fee_per_gas: self
-                .max_priority_fee_per_gas
-                .expect("checked in invalid_1559_fields"),
-            max_fee_per_gas: self.max_fee_per_gas.expect("checked in invalid_1559_fields"),
-            gas_limit: self.energy.expect("checked in invalid_common_fields"),
-            to: checked_to,
-            value: self.value.unwrap_or_default(),
-            input: self.input.into_input().unwrap_or_default(),
-            // access_list: self.access_list.unwrap_or_default(),
-        }
-    }
-
-    /// Build an EIP-2930 transaction.
-    ///
-    /// # Panics
-    ///
-    /// If required fields are missing. Use `complete_2930` to check if the
-    /// request can be built.
-    fn build_2930(self) -> TxEip2930 {
-        let checked_to = self.to.expect("checked in complete_2930.");
-
-        TxEip2930 {
-            chain_id: self.network_id.unwrap_or(1),
-            nonce: self.nonce.expect("checked in complete_2930"),
-            gas_price: self.energy_price.expect("checked in complete_2930"),
-            gas_limit: self.energy.expect("checked in complete_2930"),
-            to: checked_to,
-            value: self.value.unwrap_or_default(),
-            input: self.input.into_input().unwrap_or_default(),
-            // access_list: self.access_list.unwrap_or_default(),
-        }
-    }
-
-    /// Build an EIP-4844 transaction.
-    ///
-    /// # Panics
-    ///
-    /// If required fields are missing. Use `complete_4844` to check if the
-    /// request can be built.
-    fn build_4844(mut self) -> TxEip4844WithSidecar {
-        self.populate_blob_hashes();
-
-        let checked_to = self.to.expect("checked in complete_4844.");
-        let to_address = match checked_to {
-            TxKind::Create => panic!("the field `to` can only be of type TxKind::Call(Account). Please change it accordingly."),
-            TxKind::Call(to) => to,
-        };
-
-        TxEip4844WithSidecar {
-            sidecar: self.sidecar.expect("checked in complete_4844"),
-            tx: TxEip4844 {
-                chain_id: self.network_id.unwrap_or(1),
-                nonce: self.nonce.expect("checked in complete_4844"),
-                gas_limit: self.energy.expect("checked in complete_4844"),
-                max_fee_per_gas: self.max_fee_per_gas.expect("checked in complete_4844"),
-                max_priority_fee_per_gas: self
-                    .max_priority_fee_per_gas
-                    .expect("checked in complete_4844"),
-                to: to_address,
-                value: self.value.unwrap_or_default(),
-                // access_list: self.access_list.unwrap_or_default(),
-                blob_versioned_hashes: self
-                    .blob_versioned_hashes
-                    .expect("populated at top of block"),
-                max_fee_per_blob_gas: self.max_fee_per_blob_gas.expect("checked in complete_4844"),
-                input: self.input.into_input().unwrap_or_default(),
-            },
-        }
-    }
-
     fn check_reqd_fields(&self) -> Vec<&'static str> {
         let mut missing = Vec::with_capacity(12);
         if self.nonce.is_none() {
@@ -315,157 +222,16 @@ impl TransactionRequest {
         if self.to.is_none() {
             missing.push("to");
         }
-        missing
-    }
-
-    fn check_legacy_fields(&self, missing: &mut Vec<&'static str>) {
         if self.energy_price.is_none() {
             missing.push("energy_price");
         }
-    }
-
-    fn check_1559_fields(&self, missing: &mut Vec<&'static str>) {
-        if self.max_fee_per_gas.is_none() {
-            missing.push("max_fee_per_gas");
-        }
-        if self.max_priority_fee_per_gas.is_none() {
-            missing.push("max_priority_fee_per_gas");
-        }
-    }
-
-    /// Trim field conflicts, based on the preferred type
-    ///
-    /// This is used to ensure that the request will not be rejected by the
-    /// server due to conflicting keys, and should only be called before
-    /// submission via rpc.
-    pub fn trim_conflicting_keys(&mut self) {
-        match self.preferred_type() {
-            TxType::Legacy => {
-                self.max_fee_per_gas = None;
-                self.max_priority_fee_per_gas = None;
-                self.max_fee_per_blob_gas = None;
-                self.blob_versioned_hashes = None;
-                self.sidecar = None;
-                // self.access_list = None;
-            }
-            TxType::Eip2930 => {
-                self.max_fee_per_gas = None;
-                self.max_priority_fee_per_gas = None;
-                self.max_fee_per_blob_gas = None;
-                self.blob_versioned_hashes = None;
-                self.sidecar = None;
-            }
-            TxType::Eip1559 => {
-                self.energy_price = None;
-                self.blob_versioned_hashes = None;
-                self.sidecar = None;
-            }
-            TxType::Eip4844 => {
-                self.energy_price = None;
-            }
-        }
-    }
-
-    /// Check this builder's preferred type, based on the fields that are set.
-    ///
-    /// Types are preferred as follows:
-    /// - EIP-4844 if sidecar or max_blob_fee_per_gas is set
-    /// - EIP-2930 if access_list is set
-    /// - Legacy if gas_price is set and access_list is unset
-    /// - EIP-1559 in all other cases
-    pub const fn preferred_type(&self) -> TxType {
-        if self.sidecar.is_some() || self.max_fee_per_blob_gas.is_some() {
-            TxType::Eip4844
-        // } else if self.access_list.is_some() && self.energy_price.is_some() {
-        //     TxType::Eip2930
-        } else if self.energy_price.is_some() {
-            TxType::Legacy
-        } else {
-            TxType::Eip1559
-        }
-    }
-
-    /// Check if all necessary keys are present to build a transaction.
-    ///
-    /// # Returns
-    ///
-    /// - Ok(type) if all necessary keys are present to build the preferred
-    /// type.
-    /// - Err((type, missing)) if some keys are missing to build the preferred
-    /// type.
-    pub fn missing_keys(&self) -> Result<TxType, (TxType, Vec<&'static str>)> {
-        let pref = self.preferred_type();
-        if let Err(missing) = match pref {
-            TxType::Legacy => self.complete_legacy(),
-            TxType::Eip2930 => self.complete_2930(),
-            TxType::Eip1559 => self.complete_1559(),
-            TxType::Eip4844 => self.complete_4844(),
-        } {
-            Err((pref, missing))
-        } else {
-            Ok(pref)
-        }
-    }
-
-    /// Check if all necessary keys are present to build a 4844 transaction,
-    /// returning a list of keys that are missing.
-    pub fn complete_4844(&self) -> Result<(), Vec<&'static str>> {
-        let mut missing = self.check_reqd_fields();
-        self.check_1559_fields(&mut missing);
-
-        if self.to.is_none() {
-            missing.push("to");
-        }
-
-        if self.sidecar.is_none() {
-            missing.push("sidecar");
-        }
-
-        if self.max_fee_per_blob_gas.is_none() {
-            missing.push("max_fee_per_blob_gas");
-        }
-
-        if missing.is_empty() {
-            Ok(())
-        } else {
-            Err(missing)
-        }
-    }
-
-    /// Check if all necessary keys are present to build a 1559 transaction,
-    /// returning a list of keys that are missing.
-    pub fn complete_1559(&self) -> Result<(), Vec<&'static str>> {
-        let mut missing = self.check_reqd_fields();
-        self.check_1559_fields(&mut missing);
-        if missing.is_empty() {
-            Ok(())
-        } else {
-            Err(missing)
-        }
-    }
-
-    /// Check if all necessary keys are present to build a 2930 transaction,
-    /// returning a list of keys that are missing.
-    pub fn complete_2930(&self) -> Result<(), Vec<&'static str>> {
-        let mut missing = self.check_reqd_fields();
-        self.check_legacy_fields(&mut missing);
-
-        // if self.access_list.is_none() {
-        //     missing.push("access_list");
-        // }
-
-        if missing.is_empty() {
-            Ok(())
-        } else {
-            Err(missing)
-        }
+        missing
     }
 
     /// Check if all necessary keys are present to build a legacy transaction,
     /// returning a list of keys that are missing.
     pub fn complete_legacy(&self) -> Result<(), Vec<&'static str>> {
         let mut missing = self.check_reqd_fields();
-        self.check_legacy_fields(&mut missing);
 
         if missing.is_empty() {
             Ok(())
@@ -474,33 +240,10 @@ impl TransactionRequest {
         }
     }
 
-    /// Return the tx type this request can be built as. Computed by checking
-    /// the preferred type, and then checking for completeness.
-    pub fn buildable_type(&self) -> Option<TxType> {
-        let pref = self.preferred_type();
-        match pref {
-            TxType::Legacy => self.complete_legacy().ok(),
-            TxType::Eip2930 => self.complete_2930().ok(),
-            TxType::Eip1559 => self.complete_1559().ok(),
-            TxType::Eip4844 => self.complete_4844().ok(),
-        }?;
-        Some(pref)
-    }
-
     /// Build an [`TypedTransaction`]
     pub fn build_typed_tx(self) -> Result<TypedTransaction, Self> {
-        let tx_type = self.buildable_type();
-
-        if tx_type.is_none() {
-            return Err(self);
-        }
-
-        Ok(match tx_type.expect("checked") {
-            TxType::Legacy => self.build_legacy().into(),
-            TxType::Eip2930 => self.build_2930().into(),
-            TxType::Eip1559 => self.build_1559().into(),
-            TxType::Eip4844 => self.build_4844().into(),
-        })
+        let tx = self.build_legacy();
+        Ok(TypedTransaction::Legacy(tx))
     }
 }
 
@@ -612,176 +355,10 @@ impl From<TxLegacy> for TransactionRequest {
     }
 }
 
-impl From<TxEip2930> for TransactionRequest {
-    fn from(tx: TxEip2930) -> Self {
-        Self {
-            to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
-            energy_price: Some(tx.gas_price),
-            energy: Some(tx.gas_limit),
-            value: Some(tx.value),
-            input: tx.input.into(),
-            nonce: Some(tx.nonce),
-            network_id: Some(tx.chain_id),
-            // access_list: Some(tx.access_list),
-            transaction_type: Some(1),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<TxEip1559> for TransactionRequest {
-    fn from(tx: TxEip1559) -> Self {
-        Self {
-            to: if let TxKind::Call(to) = tx.to { Some(to.into()) } else { None },
-            max_fee_per_gas: Some(tx.max_fee_per_gas),
-            max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
-            energy: Some(tx.gas_limit),
-            value: Some(tx.value),
-            input: tx.input.into(),
-            nonce: Some(tx.nonce),
-            network_id: Some(tx.chain_id),
-            // access_list: Some(tx.access_list),
-            transaction_type: Some(2),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<TxEip4844> for TransactionRequest {
-    fn from(tx: TxEip4844) -> Self {
-        Self {
-            to: Some(tx.to.into()),
-            max_fee_per_blob_gas: Some(tx.max_fee_per_blob_gas),
-            energy: Some(tx.gas_limit),
-            max_fee_per_gas: Some(tx.max_fee_per_gas),
-            max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
-            value: Some(tx.value),
-            input: tx.input.into(),
-            nonce: Some(tx.nonce),
-            network_id: Some(tx.chain_id),
-            // access_list: Some(tx.access_list),
-            blob_versioned_hashes: Some(tx.blob_versioned_hashes),
-            transaction_type: Some(3),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<TxEip4844WithSidecar> for TransactionRequest {
-    fn from(tx: TxEip4844WithSidecar) -> Self {
-        let sidecar = tx.sidecar;
-        let tx = tx.tx;
-        Self {
-            to: Some(tx.to.into()),
-            max_fee_per_blob_gas: Some(tx.max_fee_per_blob_gas),
-            energy: Some(tx.gas_limit),
-            max_fee_per_gas: Some(tx.max_fee_per_gas),
-            max_priority_fee_per_gas: Some(tx.max_priority_fee_per_gas),
-            value: Some(tx.value),
-            input: tx.input.into(),
-            nonce: Some(tx.nonce),
-            network_id: Some(tx.chain_id),
-            // access_list: Some(tx.access_list),
-            blob_versioned_hashes: Some(tx.blob_versioned_hashes),
-            sidecar: Some(sidecar),
-            transaction_type: Some(3),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<TxEip4844Variant> for TransactionRequest {
-    fn from(tx: TxEip4844Variant) -> Self {
-        match tx {
-            TxEip4844Variant::TxEip4844(tx) => tx.into(),
-            TxEip4844Variant::TxEip4844WithSidecar(tx) => tx.into(),
-        }
-    }
-}
-
 impl From<TypedTransaction> for TransactionRequest {
     fn from(tx: TypedTransaction) -> Self {
         match tx {
             TypedTransaction::Legacy(tx) => tx.into(),
-            TypedTransaction::Eip2930(tx) => tx.into(),
-            TypedTransaction::Eip1559(tx) => tx.into(),
-            TypedTransaction::Eip4844(tx) => tx.into(),
-        }
-    }
-}
-
-impl From<TxEnvelope> for TransactionRequest {
-    fn from(envelope: TxEnvelope) -> Self {
-        match envelope {
-            TxEnvelope::Legacy(tx) => {
-                #[cfg(feature = "k256")]
-                {
-                    let from = tx.recover_signer().ok();
-                    let tx: TransactionRequest = tx.strip_signature().into();
-                    if let Some(from) = from {
-                        tx.from(from)
-                    } else {
-                        tx
-                    }
-                }
-
-                #[cfg(not(feature = "k256"))]
-                {
-                    tx.strip_signature().into()
-                }
-            }
-            TxEnvelope::Eip2930(tx) => {
-                #[cfg(feature = "k256")]
-                {
-                    let from = tx.recover_signer().ok();
-                    let tx: TransactionRequest = tx.strip_signature().into();
-                    if let Some(from) = from {
-                        tx.from(from)
-                    } else {
-                        tx
-                    }
-                }
-
-                #[cfg(not(feature = "k256"))]
-                {
-                    tx.strip_signature().into()
-                }
-            }
-            TxEnvelope::Eip1559(tx) => {
-                #[cfg(feature = "k256")]
-                {
-                    let from = tx.recover_signer().ok();
-                    let tx: TransactionRequest = tx.strip_signature().into();
-                    if let Some(from) = from {
-                        tx.from(from)
-                    } else {
-                        tx
-                    }
-                }
-
-                #[cfg(not(feature = "k256"))]
-                {
-                    tx.strip_signature().into()
-                }
-            }
-            TxEnvelope::Eip4844(tx) => {
-                #[cfg(feature = "k256")]
-                {
-                    let from = tx.recover_signer().ok();
-                    let tx: TransactionRequest = tx.strip_signature().into();
-                    if let Some(from) = from {
-                        tx.from(from)
-                    } else {
-                        tx
-                    }
-                }
-
-                #[cfg(not(feature = "k256"))]
-                {
-                    tx.strip_signature().into()
-                }
-            }
-            _ => Default::default(),
         }
     }
 }
@@ -801,39 +378,39 @@ mod tests {
     // <https://github.com/paradigmxyz/reth/issues/6670>
     #[test]
     fn serde_from_to() {
-        let s = r#"{"from":"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "to":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }"#;
+        let s = r#"{"from":"0x0000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "to":"0x000070997970C51812dc3A010C7d01b50e0d17dc79C8" }"#;
         let req = serde_json::from_str::<TransactionRequest>(s).unwrap();
         assert!(req.input.check_unique_input().is_ok())
     }
 
     #[test]
     fn serde_tx_request() {
-        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
+        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11"}"#;
         let _req = serde_json::from_str::<TransactionRequest>(s).unwrap();
     }
 
     #[test]
     fn serde_unique_call_input() {
-        let s = r#"{"accessList":[],"data":"0x0902f1ac", "input":"0x0902f1ac","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
+        let s = r#"{"accessList":[],"data":"0x0902f1ac", "input":"0x0902f1ac","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
         let req = serde_json::from_str::<TransactionRequest>(s).unwrap();
         assert!(req.input.try_into_unique_input().unwrap().is_some());
 
-        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
+        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
         let req = serde_json::from_str::<TransactionRequest>(s).unwrap();
         assert!(req.input.try_into_unique_input().unwrap().is_some());
 
-        let s = r#"{"accessList":[],"input":"0x0902f1ac","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
+        let s = r#"{"accessList":[],"input":"0x0902f1ac","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
         let req = serde_json::from_str::<TransactionRequest>(s).unwrap();
         assert!(req.input.try_into_unique_input().unwrap().is_some());
 
-        let s = r#"{"accessList":[],"data":"0x0902f1ac", "input":"0x0902f1","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
+        let s = r#"{"accessList":[],"data":"0x0902f1ac", "input":"0x0902f1","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02"}"#;
         let req = serde_json::from_str::<TransactionRequest>(s).unwrap();
         assert!(req.input.try_into_unique_input().is_err());
     }
 
     #[test]
     fn serde_tx_request_additional_fields() {
-        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0xa478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02","sourceHash":"0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a"}"#;
+        let s = r#"{"accessList":[],"data":"0x0902f1ac","to":"0x0000a478c2975ab1ea89e8196811f51a7b7ade33eb11","type":"0x02","sourceHash":"0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a"}"#;
         let req = serde_json::from_str::<WithOtherFields<TransactionRequest>>(s).unwrap();
         assert_eq!(
             req.other.get_deserialized::<B256>("sourceHash").unwrap().unwrap(),
@@ -842,16 +419,16 @@ mod tests {
     }
 
     #[test]
-    fn serde_tx_chain_id_field() {
-        let chain_id: u64 = 12345678;
+    fn serde_tx_network_id_field() {
+        let network_id: u64 = 12345678;
 
-        let chain_id_as_num = format!(r#"{{"chainId": {} }}"#, chain_id);
-        let req1 = serde_json::from_str::<TransactionRequest>(&chain_id_as_num).unwrap();
-        assert_eq!(req1.network_id.unwrap(), chain_id);
+        let network_id_as_num = format!(r#"{{"networkId": {} }}"#, network_id);
+        let req1 = serde_json::from_str::<TransactionRequest>(&network_id_as_num).unwrap();
+        assert_eq!(req1.network_id.unwrap(), network_id);
 
-        let chain_id_as_hex = format!(r#"{{"chainId": "0x{:x}" }}"#, chain_id);
-        let req2 = serde_json::from_str::<TransactionRequest>(&chain_id_as_hex).unwrap();
-        assert_eq!(req2.network_id.unwrap(), chain_id);
+        let network_id_as_hex = format!(r#"{{"networkId": "0x{:x}" }}"#, network_id);
+        let req2 = serde_json::from_str::<TransactionRequest>(&network_id_as_hex).unwrap();
+        assert_eq!(req2.network_id.unwrap(), network_id);
     }
 
     #[test]

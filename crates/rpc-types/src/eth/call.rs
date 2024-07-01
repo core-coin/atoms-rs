@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn serde_bundle() {
-        let s = r#"{"transactions":[{"data":"0x70a08231000000000000000000000000000000dbc80bf780c6dc0ca16ed071b1f00cc000","to":"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}],"blockOverride":{"timestamp":1711546233}}"#;
+        let s = r#"{"transactions":[{"data":"0x70a08231000000000000000000000000000000dbc80bf780c6dc0ca16ed071b1f00cc000","to":"0x0000C02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}],"blockOverride":{"timestamp":1711546233}}"#;
         let bundle = serde_json::from_str::<Bundle>(s).unwrap();
         assert_eq!(bundle.transactions.len(), 1);
         assert_eq!(bundle.block_override.unwrap().time.unwrap().to::<u64>(), 1711546233);
@@ -139,12 +139,12 @@ mod tests {
     #[test]
     fn full_bundle() {
         // <https://github.com/paradigmxyz/reth/issues/7542>
-        let s = r#"{"transactions":[{"from":"0x0000000000000011110000000000000000000000","to":"0x1100000000000000000000000000000000000000","value":"0x1111111","maxFeePerGas":"0x3a35294400","maxPriorityFeePerGas":"0x3b9aca00"}]}"#;
+        let s = r#"{"transactions":[{"from":"0x00000000000000000011110000000000000000000000","to":"0x00001100000000000000000000000000000000000000","value":"0x1111111","maxFeePerGas":"0x3a35294400","maxPriorityFeePerGas":"0x3b9aca00"}]}"#;
         let bundle = serde_json::from_str::<Bundle>(s).unwrap();
         assert_eq!(bundle.transactions.len(), 1);
         assert_eq!(
             bundle.transactions[0].from,
-            Some("0x0000000000000011110000000000000000000000".parse().unwrap())
+            Some("0x00000000000000000011110000000000000000000000".parse().unwrap())
         );
         assert_eq!(bundle.transactions[0].value, Some("0x1111111".parse().unwrap()));
         assert_eq!(bundle.transactions[0].max_priority_fee_per_gas, Some(1000000000));

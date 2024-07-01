@@ -244,8 +244,8 @@ mod tests {
         let response = r#"{
             "enode": "enode://a997fde0023537ad01e536ebf2eeeb4b4b3d5286707586727b704f32e8e2b4959e08b6db5b27eb6b7e9f6efcbb53657f4e2bd16900aa77a89426dc3382c29ce0@[::1]:60948",
             "id": "df6f8bc331005962c2ef1f5236486a753bc6b2ddb5ef04370757999d1ca832d4",
-            "name": "Geth/v1.10.26-stable-e5eb32ac/linux-amd64/go1.18.5",
-            "caps": ["eth/66","eth/67","snap/1"],
+            "name": "Gocore/v1.10.26-stable-e5eb32ac/linux-amd64/go1.18.5",
+            "caps": ["xcb/66","xcb/67","snap/1"],
             "network":{
                 "localAddress":"[::1]:30304",
                 "remoteAddress":"[::1]:60948",
@@ -254,7 +254,7 @@ mod tests {
                 "static":false
             },
             "protocols":{
-                "eth":"handshake",
+                "xcb":"handshake",
                 "snap":"handshake"
             }
         }"#;
@@ -269,7 +269,7 @@ mod tests {
         let response = r#"{
             "enode": "enode://f769f8cf850dd9f88a13c81ff3e70c3400cf93511c676c6d50f0e359beb43c28388931f64f56ab4110ccced37fb08163b6966fe42b6e15ec647fa8087914463d@127.0.0.1:45591?discport=0",
             "id": "daa738efebf7e349b9f5b1a91d782e7355060bb15af8570e23463729d0632deb",
-            "name": "Geth/v1.13.14-stable-2bd6bd01/linux-amd64/go1.21.6",
+            "name": "Gocore/v1.13.14-stable-2bd6bd01/linux-amd64/go1.21.6",
             "caps": ["eth/68", "snap/1"],
             "network": {
                 "localAddress": "127.0.0.1:33236",
@@ -278,7 +278,7 @@ mod tests {
                 "trusted": false,
                 "static": true
             },
-            "protocols": { "eth": { "version": 68 }, "snap": { "version": 1 } }
+            "protocols": { "xcb": { "version": 68 }, "snap": { "version": 1 } }
         }"#;
 
         let info: PeerInfo = serde_json::from_str(response).unwrap();

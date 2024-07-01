@@ -13,7 +13,6 @@ Crates used in Core or that are used by other crates
 - [x] rpc-client - in work (Misha)
 - [x] rpc-types - in work (Misha)
 - [ ] rpc-types-anvil
-- [ ] rpc-types-engine
 - [x] rpc-types-trace
 - [x] serde - in work (Misha)
 - [x] signer - in work (Misha)
@@ -65,7 +64,6 @@ This repository contains the following crates:
 - [`alloy-pubsub`] - Ethereum JSON-RPC [publish-subscribe] tower service and type definitions
 - [`alloy-rpc-client`] - Low-level Ethereum JSON-RPC client implementation
 - [`alloy-rpc-types`] - Ethereum JSON-RPC types
-  - [`alloy-rpc-types-engine`] - Ethereum execution-consensus layer (engine) API RPC types
   - [`alloy-rpc-types-trace`] - Ethereum RPC trace types
 - [`alloy-signer`] - Ethereum signer abstraction
   - [`alloy-signer-wallet`] - Local wallet (Keystore/Mnemonic/Yubihsm) signer implementation
@@ -85,7 +83,6 @@ This repository contains the following crates:
 [`alloy-provider`]: https://github.com/alloy-rs/alloy/tree/main/crates/provider
 [`alloy-pubsub`]: https://github.com/alloy-rs/alloy/tree/main/crates/pubsub
 [`alloy-rpc-client`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-client
-[`alloy-rpc-types-engine`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-types-engine
 [`alloy-rpc-types-trace`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-types-trace
 [`alloy-rpc-types`]: https://github.com/alloy-rs/alloy/tree/main/crates/rpc-types
 [`alloy-signer`]: https://github.com/alloy-rs/alloy/tree/main/crates/signer
