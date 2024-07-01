@@ -39,8 +39,7 @@ impl Receipt {
     }
 }
 
-impl TxReceipt for Receipt
-{
+impl TxReceipt for Receipt {
     fn status(&self) -> bool {
         self.status
     }
@@ -104,8 +103,7 @@ impl TxReceipt for ReceiptWithBloom {
     }
 }
 
-impl From<Receipt> for ReceiptWithBloom
-{
+impl From<Receipt> for ReceiptWithBloom {
     fn from(receipt: Receipt) -> Self {
         let bloom = receipt.bloom_slow();
         Self { receipt, logs_bloom: bloom }
@@ -148,8 +146,7 @@ impl ReceiptWithBloom {
     }
 
     /// Decodes the receipt payload
-    fn decode_receipt(buf: &mut &[u8]) -> alloy_rlp::Result<Self>
-    {
+    fn decode_receipt(buf: &mut &[u8]) -> alloy_rlp::Result<Self> {
         let b: &mut &[u8] = &mut &**buf;
         let rlp_head = alloy_rlp::Header::decode(b)?;
         if !rlp_head.list {
@@ -198,8 +195,7 @@ impl Decodable for ReceiptWithBloom {
 }
 
 #[cfg(any(test, feature = "arbitrary"))]
-impl<'a> arbitrary::Arbitrary<'a> for ReceiptWithBloom
-{
+impl<'a> arbitrary::Arbitrary<'a> for ReceiptWithBloom {
     fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
         Ok(Self { receipt: Receipt::arbitrary(u)?, logs_bloom: Bloom::arbitrary(u)? })
     }
