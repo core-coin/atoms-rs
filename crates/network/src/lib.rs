@@ -15,10 +15,11 @@
 #![deny(unused_must_use, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use alloy_consensus::TxReceipt;
+use alloy_consensus::{SignableTransaction, TxReceipt};
 use alloy_eips::eip2718::{Eip2718Envelope, Eip2718Error};
 use alloy_json_rpc::RpcObject;
 use alloy_primitives::IcanAddress;
+use alloy_signer::Signature;
 use core::fmt::{Debug, Display};
 
 mod transaction;
@@ -53,28 +54,6 @@ pub trait ReceiptResponse {
 pub trait Network: Debug + Clone + Copy + Sized + Send + Sync + 'static {
     // -- Consensus types --
 
-    /// The network transaction type enum.
-    ///
-    /// This should be a simple `#[repr(u8)]` enum, and as such has strict type
-    /// bounds for better use in error messages, assertions etc.
-    type TxType: Into<u8>
-        + PartialEq
-        + Eq
-        + TryFrom<u8, Error = Eip2718Error>
-        + Debug
-        + Display
-        + Clone
-        + Copy
-        + Send
-        + Sync
-        + 'static;
-
-    /// The network transaction envelope type.
-    type TxEnvelope: Eip2718Envelope + Debug;
-
-    /// An enum over the various transaction types.
-    type UnsignedTx: From<Self::TxEnvelope>;
-
     /// The network receipt envelope type.
     type ReceiptEnvelope: Eip2718Envelope + TxReceipt;
 
@@ -84,11 +63,7 @@ pub trait Network: Debug + Clone + Copy + Sized + Send + Sync + 'static {
     // -- JSON RPC types --
 
     /// The JSON body of a transaction request.
-    type TransactionRequest: RpcObject
-        + TransactionBuilder<Self>
-        + Debug
-        + From<Self::TxEnvelope>
-        + From<Self::UnsignedTx>;
+    type TransactionRequest: RpcObject + TransactionBuilder<Self> + Debug;
 
     /// The JSON body of a transaction response.
     type TransactionResponse: RpcObject;

@@ -1,13 +1,14 @@
 use std::ops::{Deref, DerefMut};
 
-use alloy_consensus::BlobTransactionSidecar;
+use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
 use alloy_primitives::Bytes;
 use alloy_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
+use alloy_signer::Signature;
 
 use crate::{any::AnyNetwork, BuildResult, Network, TransactionBuilder, TransactionBuilderError};
 
 impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
-    fn network_id(&self) -> Option<alloy_primitives::ChainId> {
+    fn network_id(&self) -> alloy_primitives::ChainId {
         self.deref().network_id()
     }
 
@@ -117,16 +118,16 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
     //     self.deref_mut().set_access_list(access_list)
     // }
 
-    fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
-        self.deref().blob_sidecar()
-    }
+    // fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
+    //     self.deref().blob_sidecar()
+    // }
 
-    fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
-        self.deref_mut().set_blob_sidecar(sidecar)
-    }
+    // fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
+    //     self.deref_mut().set_blob_sidecar(sidecar)
+    // }
 
-    fn complete_type(&self, ty: <AnyNetwork as Network>::TxType) -> Result<(), Vec<&'static str>> {
-        self.deref().complete_type(ty.try_into().map_err(|_| vec!["supported tx type"])?)
+    fn complete_type(&self) -> Result<(), Vec<&'static str>> {
+        self.deref().complete_type()
     }
 
     fn can_build(&self) -> bool {
@@ -137,24 +138,13 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref().can_submit()
     }
 
-    fn output_tx_type(&self) -> <AnyNetwork as Network>::TxType {
-        self.deref().output_tx_type().into()
-    }
-
-    fn output_tx_type_checked(&self) -> Option<<AnyNetwork as Network>::TxType> {
-        self.deref().output_tx_type_checked().map(Into::into)
-    }
-
     fn prep_for_submission(&mut self) {
         self.deref_mut().prep_for_submission()
     }
 
-    fn build_unsigned(self) -> BuildResult<<AnyNetwork as Network>::UnsignedTx, AnyNetwork> {
+    fn build_unsigned(self) -> BuildResult<TypedTransaction, AnyNetwork> {
         if let Err(missing) = self.complete_legacy() {
-            return Err((
-                self,
-                TransactionBuilderError::InvalidTransactionRequest(tx_type.into(), missing),
-            ));
+            return Err((self, TransactionBuilderError::InvalidTransactionRequest(missing)));
         }
         Ok(self.inner.build_typed_tx().expect("checked by complete_legacy"))
     }
@@ -162,7 +152,7 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
     async fn build<S: crate::NetworkSigner<AnyNetwork>>(
         self,
         signer: &S,
-    ) -> Result<<AnyNetwork as Network>::TxEnvelope, TransactionBuilderError<AnyNetwork>> {
+    ) -> Result<Signed<TxLegacy, Signature>, TransactionBuilderError> {
         Ok(signer.sign_request(self).await?)
     }
 }

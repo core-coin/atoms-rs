@@ -12,13 +12,7 @@ pub struct Ethereum {
 }
 
 impl Network for Ethereum {
-    type TxType = alloy_consensus::TxType;
-
-    type TxEnvelope = alloy_consensus::TxEnvelope;
-
-    type UnsignedTx = alloy_consensus::TypedTransaction;
-
-    type ReceiptEnvelope = alloy_consensus::ReceiptEnvelope;
+    type ReceiptEnvelope = alloy_consensus::AnyReceiptEnvelope;
 
     type Header = alloy_consensus::Header;
 

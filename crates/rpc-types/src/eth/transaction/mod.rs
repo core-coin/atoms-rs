@@ -90,8 +90,8 @@ pub struct Transaction {
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub signature: Option<Signature>,
     /// The network id of the transaction.
-    #[serde(default, with = "alloy_serde::u64_opt_via_ruint")]
-    pub network_id: Option<u64>,
+    #[serde(default, with = "alloy_serde::u64_via_ruint")]
+    pub network_id: u64,
     /// Contains the blob hashes for eip-4844 transactions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blob_versioned_hashes: Option<Vec<B256>>,
@@ -213,7 +213,7 @@ mod tests {
             energy: 10,
             input: Bytes::from(vec![11, 12, 13]),
             signature: Some(Signature::from_str("0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").unwrap()),
-            network_id: Some(17),
+            network_id: 17,
             blob_versioned_hashes: None,
             // access_list: None,
             transaction_type: Some(20),
@@ -245,7 +245,7 @@ mod tests {
         let serialized = serde_json::to_string(&transaction).unwrap();
         assert_eq!(
             serialized,
-            r#"{"hash":"0x0000000000000000000000000000000000000000000000000000000000000001","nonce":"0x2","blockHash":null,"blockNumber":null,"transactionIndex":null,"from":"0x00000000000000000000000000000000000000000006","to":null,"value":"0x8","energy":"0xa","input":"0x0b0c0d","networkId":null}"#
+            r#"{"hash":"0x0000000000000000000000000000000000000000000000000000000000000001","nonce":"0x2","blockHash":null,"blockNumber":null,"transactionIndex":null,"from":"0x00000000000000000000000000000000000000000006","to":null,"value":"0x8","energy":"0xa","input":"0x0b0c0d","networkId":"0x0"}"#
         );
         let deserialized: Transaction = serde_json::from_str(&serialized).unwrap();
         assert_eq!(transaction, deserialized);

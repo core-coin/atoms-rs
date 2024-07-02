@@ -56,7 +56,7 @@ let mut tx = TxLegacy {
     nonce: 0,
     energy_price: 21_000_000_000,
     input: bytes!(),
-    network_id: Some(1),
+    network_id: 1,
 };
 
 // Sign it.

@@ -36,7 +36,7 @@ impl TypedTransaction {
 }
 
 impl Transaction for TypedTransaction {
-    fn chain_id(&self) -> Option<alloy_primitives::ChainId> {
+    fn chain_id(&self) -> alloy_primitives::ChainId {
         match self {
             Self::Legacy(tx) => tx.chain_id(),
         }

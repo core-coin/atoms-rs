@@ -23,7 +23,7 @@ pub trait Transaction: any::Any + Send + Sync + 'static {
     fn value(&self) -> U256;
 
     /// Get `chain_id`.
-    fn chain_id(&self) -> Option<ChainId>;
+    fn chain_id(&self) -> ChainId;
 
     /// Get `nonce`.
     fn nonce(&self) -> u64;
@@ -50,17 +50,10 @@ pub trait SignableTransaction<Signature>: Transaction {
     /// Set `chain_id` if it is not already set. Checks that the provided `chain_id` matches the
     /// existing `chain_id` if it is already set, returning `false` if they do not match.
     fn set_chain_id_checked(&mut self, chain_id: ChainId) -> bool {
-        match self.chain_id() {
-            Some(tx_chain_id) => {
-                if tx_chain_id != chain_id {
-                    return false;
-                }
-                self.set_chain_id(chain_id);
-            }
-            None => {
-                self.set_chain_id(chain_id);
-            }
+        if self.chain_id() != chain_id && self.chain_id() != 0 {
+            return false;
         }
+        self.set_chain_id(chain_id);
         true
     }
 

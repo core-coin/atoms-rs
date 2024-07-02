@@ -19,7 +19,7 @@ impl Wallet<SigningKey> {
     #[inline]
     pub fn from_signing_key(signer: SigningKey, network_id: u64) -> Self {
         let address = secret_key_to_address(&signer, network_id);
-        Self::new_with_signer(signer, address, Some(network_id))
+        Self::new_with_signer(signer, address, network_id)
     }
 
     // /// Creates a new Wallet instance from a raw scalar serialized as a [`B256`] byte array.
@@ -349,7 +349,7 @@ mod tests {
 
         let wallet_sk: Wallet<SigningKey> = Wallet::<SigningKey>::from_signing_key(sk, 1);
         assert_eq!(wallet_sk.address, cAddress!("cb94b3ccb2368c2d4b7a5e1c9c773d42eda1721683b3"));
-        assert_eq!(wallet_sk.network_id, Some(1));
+        assert_eq!(wallet_sk.network_id, 1);
         assert_eq!(wallet_sk.signer, SigningKey::from_bytes(key_slice).unwrap());
 
         let wallet_slice = Wallet::from_slice(&key_slice[..], 1).unwrap();

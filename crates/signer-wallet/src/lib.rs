@@ -67,7 +67,7 @@ pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
 ///
 /// // Optionally, the wallet's chain id can be set, in order to use EIP-155
 /// // replay protection with different chains
-/// let wallet = wallet.with_network_id(Some(1337));
+/// let wallet = wallet.with_network_id(1337);
 ///
 /// // The wallet can be used to sign messages
 /// let message = b"hello";
@@ -86,7 +86,7 @@ pub struct Wallet<D> {
     /// The wallet's address.
     pub(crate) address: IcanAddress,
     /// The wallet's network ID.
-    pub(crate) network_id: Option<ChainId>,
+    pub(crate) network_id: ChainId,
 }
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
@@ -103,12 +103,12 @@ impl<D: PrehashSigner<Signature> + Send + Sync> Signer for Wallet<D> {
     }
 
     #[inline]
-    fn network_id(&self) -> Option<ChainId> {
+    fn network_id(&self) -> ChainId {
         self.network_id
     }
 
     #[inline]
-    fn set_network_id(&mut self, network_id: Option<ChainId>) {
+    fn set_network_id(&mut self, network_id: ChainId) {
         self.network_id = network_id;
     }
 }
@@ -121,7 +121,7 @@ impl<D: PrehashSigner<Signature>> SignerSync for Wallet<D> {
     }
 
     #[inline]
-    fn network_id_sync(&self) -> Option<ChainId> {
+    fn network_id_sync(&self) -> ChainId {
         self.network_id
     }
 }
@@ -129,11 +129,7 @@ impl<D: PrehashSigner<Signature>> SignerSync for Wallet<D> {
 impl<D: PrehashSigner<Signature>> Wallet<D> {
     /// Construct a new wallet with an external [`PrehashSigner`].
     #[inline]
-    pub const fn new_with_signer(
-        signer: D,
-        address: IcanAddress,
-        network_id: Option<ChainId>,
-    ) -> Self {
+    pub const fn new_with_signer(signer: D, address: IcanAddress, network_id: ChainId) -> Self {
         Wallet { signer, address, network_id }
     }
 
@@ -157,7 +153,7 @@ impl<D: PrehashSigner<Signature>> Wallet<D> {
 
     /// Returns this wallet's chain ID.
     #[inline]
-    pub const fn network_id(&self) -> Option<ChainId> {
+    pub const fn network_id(&self) -> ChainId {
         self.network_id
     }
 }
@@ -214,12 +210,12 @@ mod test {
 
     #[tokio::test]
     async fn signs_tx() {
-        async fn sign_tx_test(tx: &mut TxLegacy, chain_id: Option<ChainId>) -> Result<Signature> {
+        async fn sign_tx_test(tx: &mut TxLegacy, chain_id: ChainId) -> Result<Signature> {
             let mut before = tx.clone();
             let sig = sign_dyn_tx_test(tx, chain_id).await?;
-            if let Some(chain_id) = chain_id {
-                assert_eq!(tx.network_id, Some(chain_id), "chain ID was not set");
-                before.network_id = Some(chain_id);
+            if chain_id == 0 {
+                assert_eq!(tx.network_id, chain_id, "chain ID was not set");
+                before.network_id = chain_id;
             }
             assert_eq!(*tx, before);
             Ok(sig)
@@ -227,7 +223,7 @@ mod test {
 
         async fn sign_dyn_tx_test(
             tx: &mut dyn SignableTransaction<Signature>,
-            chain_id: Option<ChainId>,
+            chain_id: ChainId,
         ) -> Result<Signature> {
             let mut wallet: LocalWallet = LocalWallet::from_signing_key(
                 SigningKey::from_str(
@@ -256,37 +252,19 @@ mod test {
             nonce: 0,
             energy_price: 21_000_000_000,
             input: Default::default(),
-            network_id: None,
+            network_id: 1,
         };
-        let sig_none = sign_tx_test(&mut tx, None).await.unwrap();
+        let sig_none = sign_tx_test(&mut tx, 1).await.unwrap();
 
-        tx.network_id = Some(1);
-        let sig_1 = sign_tx_test(&mut tx, None).await.unwrap();
-        let expected = "0xba72dc3eb2a1bfe2539fb75f8bf42c7dc961afc4617dce529dfbd37ca7af5cab0b2ad96c7667b5f17bbd543d1e1b3d2d37b50fa9ec2e9a31805ead4189af9938fdc3a9038dd681e0ee3c9697c4caa86a3ab9f7da97a0b991ba7ed606ce9a678edc218e1ca621ac3bf67ccd3930d9b56b1a00c451ec0deec4f6ea947aeed0b53b6b3a31b2c98195652dbfebe5551ca44cd31dc99ed4e35beb49e97621f4513637ba768911282e695edab180".parse().unwrap();
+        tx.network_id = 2;
+        let sig_1 = sign_tx_test(&mut tx, 2).await.unwrap();
+        let expected = "0x653f20923022efb0f38fb665c8c5d4f6181fd1d59aa15d7878dcf3400016e5b2751d70b8c8b0345bbcabbeec4a281f7d9208029116d5cf3100dc3de0908623d31e6d88bd7376166b6ff1c24d972d58da080a6a4dcc00d0ac7a6db17f0b2312a4aff7d75882c4a997dbdca805c10cf9be2700c451ec0deec4f6ea947aeed0b53b6b3a31b2c98195652dbfebe5551ca44cd31dc99ed4e35beb49e97621f4513637ba768911282e695edab180".parse().unwrap();
         assert_eq!(sig_1, expected);
         assert_ne!(sig_1, sig_none);
 
-        tx.network_id = Some(2);
-        let sig_2 = sign_tx_test(&mut tx, None).await.unwrap();
-        assert_ne!(sig_2, sig_1);
-        assert_ne!(sig_2, sig_none);
-
-        // Sets chain ID.
-        tx.network_id = None;
-        let sig_none_none = sign_tx_test(&mut tx, None).await.unwrap();
-        assert_eq!(sig_none_none, sig_none);
-
-        tx.network_id = None;
-        let sig_none_1 = sign_tx_test(&mut tx, Some(1)).await.unwrap();
-        assert_eq!(sig_none_1, sig_1);
-
-        tx.network_id = None;
-        let sig_none_2 = sign_tx_test(&mut tx, Some(2)).await.unwrap();
-        assert_eq!(sig_none_2, sig_2);
-
         // Errors on mismatch.
-        tx.network_id = Some(2);
-        let error = sign_tx_test(&mut tx, Some(1)).await.unwrap_err();
+        tx.network_id = 2;
+        let error = sign_tx_test(&mut tx, 1).await.unwrap_err();
         let expected_error = alloy_signer::Error::TransactionNetworkIdMismatch { signer: 1, tx: 2 };
         assert_eq!(error.to_string(), expected_error.to_string());
     }
