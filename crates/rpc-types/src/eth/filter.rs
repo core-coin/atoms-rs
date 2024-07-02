@@ -381,7 +381,7 @@ impl Filter {
     /// # use alloy_rpc_types::Filter;
     /// # fn main() {
     /// let filter = Filter::new()
-    ///     .address("0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap());
+    ///     .address("0x0000Ac4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap());
     /// # }
     /// ```
     ///
@@ -393,8 +393,8 @@ impl Filter {
     /// # use alloy_rpc_types::Filter;
     /// # fn main() {
     /// let addresses = vec![
-    ///     "0xAc4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap(),
-    ///     "0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8".parse::<IcanAddress>().unwrap(),
+    ///     "0x0000Ac4b3DacB91461209Ae9d41EC517c2B9Cb1B7DAF".parse::<IcanAddress>().unwrap(),
+    ///     "0x00008ad599c3A0ff1De082011EFDDc58f1908eb6e6D8".parse::<IcanAddress>().unwrap(),
     /// ];
     /// let filter = Filter::new().address(addresses);
     /// # }
@@ -1346,7 +1346,7 @@ mod tests {
                     {
           "fromBlock": "0x429d3b",
           "toBlock": "0x429d3b",
-          "address": "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907",
+          "address": "0x0000b59f67a8bff5d8cd03f6ac17265c550ed8f33907",
           "topics": [
           "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
           "0x00000000000000000000000000b46c2526e227482e2ebb8f4c69e4674d262e75",
@@ -1363,7 +1363,7 @@ mod tests {
                     from_block: Some(4365627u64.into()),
                     to_block: Some(4365627u64.into()),
                 },
-                address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
+                address: "0x0000b59f67a8bff5d8cd03f6ac17265c550ed8f33907"
                     .parse::<IcanAddress>()
                     .unwrap()
                     .into(),
@@ -1418,7 +1418,7 @@ mod tests {
                 from_block: Some(BlockNumberOrTag::Pending),
                 to_block: Some(BlockNumberOrTag::Pending),
             },
-            address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
+            address: "0x0000b59f67a8bff5d8cd03f6ac17265c550ed8f33907"
                 .parse::<IcanAddress>()
                 .unwrap()
                 .into(),
@@ -1447,7 +1447,7 @@ mod tests {
                 from_block: Some(4365627u64.into()),
                 to_block: Some(4365627u64.into()),
             },
-            address: "0xb59f67a8bff5d8cd03f6ac17265c550ed8f33907"
+            address: "0x0000b59f67a8bff5d8cd03f6ac17265c550ed8f33907"
                 .parse::<IcanAddress>()
                 .unwrap()
                 .into(),

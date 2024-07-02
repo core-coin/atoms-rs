@@ -1,5 +1,5 @@
 use crate::{other::OtherFields, TransactionRequest};
-use alloy_consensus::{TxEnvelope, TypedTransaction};
+use alloy_consensus::TypedTransaction;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Deref, DerefMut};
@@ -26,12 +26,6 @@ impl<T> WithOtherFields<T> {
 impl From<TypedTransaction> for WithOtherFields<TransactionRequest> {
     fn from(tx: TypedTransaction) -> Self {
         Self::new(tx.into())
-    }
-}
-
-impl From<TxEnvelope> for WithOtherFields<TransactionRequest> {
-    fn from(envelope: TxEnvelope) -> Self {
-        Self::new(envelope.into())
     }
 }
 
