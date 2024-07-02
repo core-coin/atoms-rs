@@ -65,12 +65,8 @@ pub struct TransactionRequest {
     )]
     pub nonce: Option<u64>,
     /// The chain ID for the transaction.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u64_opt_via_ruint"
-    )]
-    pub network_id: Option<ChainId>,
+    #[serde(default, with = "alloy_serde::num::u64_via_ruint")]
+    pub network_id: ChainId,
     /// An EIP-2930 access list, which lowers cost for accessing accounts and storages in the list. See [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) for more information.
     // #[serde(default, skip_serializing_if = "Option::is_none")]
     // pub access_list: Option<AccessList>,
@@ -424,17 +420,17 @@ mod tests {
 
         let network_id_as_num = format!(r#"{{"networkId": {} }}"#, network_id);
         let req1 = serde_json::from_str::<TransactionRequest>(&network_id_as_num).unwrap();
-        assert_eq!(req1.network_id.unwrap(), network_id);
+        assert_eq!(req1.network_id, network_id);
 
         let network_id_as_hex = format!(r#"{{"networkId": "0x{:x}" }}"#, network_id);
         let req2 = serde_json::from_str::<TransactionRequest>(&network_id_as_hex).unwrap();
-        assert_eq!(req2.network_id.unwrap(), network_id);
+        assert_eq!(req2.network_id, network_id);
     }
 
     #[test]
     fn serde_empty() {
         let tx = TransactionRequest::default();
         let serialized = serde_json::to_string(&tx).unwrap();
-        assert_eq!(serialized, "{}");
+        assert_eq!(serialized, "{\"networkId\":\"0x0\"}");
     }
 }

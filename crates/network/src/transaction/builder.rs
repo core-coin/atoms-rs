@@ -1,6 +1,6 @@
 use super::signer::NetworkSigner;
 use crate::Network;
-use alloy_consensus::BlobTransactionSidecar;
+use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::AccessList;
 use alloy_signer::Signature;
@@ -11,14 +11,14 @@ use futures_utils_wasm::impl_future;
 pub type BuildResult<T, N> = Result<T, Unbuilt<N>>;
 
 /// An unbuilt transaction, along with some error.
-pub type Unbuilt<N> = (<N as Network>::TransactionRequest, TransactionBuilderError<N>);
+pub type Unbuilt<N> = (<N as Network>::TransactionRequest, TransactionBuilderError);
 
 /// Error type for transaction builders.
 #[derive(Debug, thiserror::Error)]
-pub enum TransactionBuilderError<N: Network> {
+pub enum TransactionBuilderError {
     /// Invalid transaction request
-    #[error("{0} transaction can't be built due to missing keys: {1:?}")]
-    InvalidTransactionRequest(N::TxType, Vec<&'static str>),
+    #[error("Transaction can't be built due to missing keys: {0:?}")]
+    InvalidTransactionRequest(Vec<&'static str>),
 
     /// Signer cannot produce signature type required for transaction.
     #[error("Signer cannot produce signature type required for transaction")]
@@ -33,7 +33,7 @@ pub enum TransactionBuilderError<N: Network> {
     Custom(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
-impl<N: Network> TransactionBuilderError<N> {
+impl TransactionBuilderError {
     /// Instantiate a custom error.
     pub fn custom<E>(e: E) -> Self
     where
@@ -53,7 +53,7 @@ impl<N: Network> TransactionBuilderError<N> {
 /// network.
 pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'static {
     /// Get the network ID for the transaction.
-    fn network_id(&self) -> Option<ChainId>;
+    fn network_id(&self) -> ChainId;
 
     /// Set the network ID for the transaction.
     fn set_network_id(&mut self, chain_id: ChainId);
@@ -283,46 +283,29 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     //     self
     // }
 
-    /// Gets the EIP-4844 blob sidecar of the transaction.
-    fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar>;
+    // /// Gets the EIP-4844 blob sidecar of the transaction.
+    // fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar>;
 
-    /// Sets the EIP-4844 blob sidecar of the transaction.
-    ///
-    /// Note: This will also set the versioned blob hashes accordingly:
-    /// [BlobTransactionSidecar::versioned_hashes]
-    fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar);
+    // /// Sets the EIP-4844 blob sidecar of the transaction.
+    // ///
+    // /// Note: This will also set the versioned blob hashes accordingly:
+    // /// [BlobTransactionSidecar::versioned_hashes]
+    // fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar);
 
-    /// Builder-pattern method for setting the EIP-4844 blob sidecar of the transaction.
-    fn with_blob_sidecar(mut self, sidecar: BlobTransactionSidecar) -> Self {
-        self.set_blob_sidecar(sidecar);
-        self
-    }
+    // /// Builder-pattern method for setting the EIP-4844 blob sidecar of the transaction.
+    // fn with_blob_sidecar(mut self, sidecar: BlobTransactionSidecar) -> Self {
+    //     self.set_blob_sidecar(sidecar);
+    //     self
+    // }
 
     /// Check if all necessary keys are present to build the specified type,
     /// returning a list of missing keys.
-    fn complete_type(&self, ty: N::TxType) -> Result<(), Vec<&'static str>>;
+    fn complete_type(&self) -> Result<(), Vec<&'static str>>;
 
     /// Check if all necessary keys are present to build the currently-preferred
     /// transaction type, returning a list of missing keys.
     fn complete_preferred(&self) -> Result<(), Vec<&'static str>> {
-        self.complete_type(self.output_tx_type())
-    }
-
-    /// Assert that the builder prefers a certain transaction type. This does
-    /// not indicate that the builder is ready to build. This function uses a
-    /// `dbg_assert_eq!` to check the builder status, and will have no affect
-    /// in release builds.
-    fn assert_preferred(&self, ty: N::TxType) {
-        debug_assert_eq!(self.output_tx_type(), ty);
-    }
-
-    /// Assert that the builder prefers a certain transaction type. This does
-    /// not indicate that the builder is ready to build. This function uses a
-    /// `dbg_assert_eq!` to check the builder status, and will have no affect
-    /// in release builds.
-    fn assert_preferred_chained(self, ty: N::TxType) -> Self {
-        self.assert_preferred(ty);
-        self
+        self.complete_type()
     }
 
     /// True if the builder contains all necessary information to be submitted
@@ -332,14 +315,6 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     /// True if the builder contains all necessary information to be built into
     /// a valid transaction.
     fn can_build(&self) -> bool;
-
-    /// Returns the transaction type that this builder will attempt to build.
-    /// This does not imply that the builder is ready to build.
-    fn output_tx_type(&self) -> N::TxType;
-
-    /// Returns the transaction type that this builder will build. `None` if
-    /// the builder is not ready to build.
-    fn output_tx_type_checked(&self) -> Option<N::TxType>;
 
     /// Trim any conflicting keys and populate any computed fields (like blob
     /// hashes).
@@ -351,11 +326,11 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     fn prep_for_submission(&mut self);
 
     /// Build an unsigned, but typed, transaction.
-    fn build_unsigned(self) -> BuildResult<N::UnsignedTx, N>;
+    fn build_unsigned(self) -> BuildResult<TypedTransaction, N>;
 
     /// Build a signed transaction.
     fn build<S: NetworkSigner<N>>(
         self,
         signer: &S,
-    ) -> impl_future!(<Output = Result<N::TxEnvelope, TransactionBuilderError<N>>>);
+    ) -> impl_future!(<Output = Result<Signed<TxLegacy, Signature>, TransactionBuilderError>>);
 }

@@ -1,18 +1,18 @@
 use crate::{
     BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
 };
-use alloy_consensus::{BlobTransactionSidecar, TxType, TypedTransaction};
+use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
 use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
 use alloy_rpc_types::{request::TransactionRequest, AccessList};
 use alloy_signer::Signature;
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
-    fn network_id(&self) -> Option<ChainId> {
+    fn network_id(&self) -> ChainId {
         self.network_id
     }
 
     fn set_network_id(&mut self, network_id: ChainId) {
-        self.network_id = Some(network_id);
+        self.network_id = network_id;
     }
 
     fn nonce(&self) -> Option<u64> {
@@ -115,22 +115,17 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
     //     self.access_list = Some(access_list);
     // }
 
-    fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
-        self.sidecar.as_ref()
-    }
+    // fn blob_sidecar(&self) -> Option<&BlobTransactionSidecar> {
+    //     self.sidecar.as_ref()
+    // }
 
-    fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
-        self.sidecar = Some(sidecar);
-        self.populate_blob_hashes();
-    }
+    // fn set_blob_sidecar(&mut self, sidecar: BlobTransactionSidecar) {
+    //     self.sidecar = Some(sidecar);
+    //     self.populate_blob_hashes();
+    // }
 
-    fn complete_type(&self, ty: TxType) -> Result<(), Vec<&'static str>> {
-        match ty {
-            TxType::Legacy => self.complete_legacy(),
-            TxType::Eip2930 => self.complete_2930(),
-            TxType::Eip1559 => self.complete_1559(),
-            TxType::Eip4844 => self.complete_4844(),
-        }
+    fn complete_type(&self) -> Result<(), Vec<&'static str>> {
+        self.complete_legacy()
     }
 
     fn can_submit(&self) -> bool {
@@ -151,29 +146,17 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
         let eip1559 = self.max_fee_per_gas.is_some() && self.max_priority_fee_per_gas.is_some();
 
-        let eip4844 = eip1559 && self.sidecar.is_some() && self.to.is_some();
+        let eip4844 = eip1559 && self.to.is_some();
         common && (legacy || eip2930 || eip1559 || eip4844)
     }
 
-    fn output_tx_type(&self) -> TxType {
-        self.preferred_type()
-    }
-
-    fn output_tx_type_checked(&self) -> Option<TxType> {
-        self.buildable_type()
-    }
-
-    fn prep_for_submission(&mut self) {
-        self.transaction_type = Some(self.preferred_type() as u8);
-        self.trim_conflicting_keys();
-        self.populate_blob_hashes();
-    }
+    fn prep_for_submission(&mut self) {}
 
     fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
         if let Err(missing) = self.complete_legacy() {
             return Err((
                 self,
-                TransactionBuilderError::InvalidTransactionRequest(tx_type, missing),
+                TransactionBuilderError::InvalidTransactionRequest(missing),
             ));
         }
         Ok(self.build_typed_tx().expect("checked by complete_legacy"))
@@ -182,7 +165,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
     async fn build<S: NetworkSigner<Ethereum>>(
         self,
         signer: &S,
-    ) -> Result<<Ethereum as Network>::TxEnvelope, TransactionBuilderError<Ethereum>> {
+    ) -> Result<Signed<TxLegacy, Signature>, TransactionBuilderError> {
         Ok(signer.sign_request(self).await?)
     }
 }
@@ -190,88 +173,22 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 #[cfg(test)]
 mod tests {
     use crate::{TransactionBuilder, TransactionBuilderError};
-    use alloy_consensus::{BlobTransactionSidecar, TxEip1559, TxType, TypedTransaction};
+    use alloy_consensus::{TxLegacy, TypedTransaction};
     use alloy_primitives::{Address, IcanAddress};
     use alloy_rpc_types::{AccessList, TransactionRequest};
 
     #[test]
-    fn from_eip1559_to_tx_req() {
-        let tx = TxEip1559 {
-            chain_id: 1,
+    fn from_legacy_to_tx_req() {
+        let tx = TxLegacy {
+            network_id: 1,
             nonce: 0,
-            gas_limit: 21_000,
+            energy_limit: 21_000,
             to: IcanAddress::ZERO.into(),
-            max_priority_fee_per_gas: 20e9 as u128,
-            max_fee_per_gas: 20e9 as u128,
+            energy_price: 1,
             ..Default::default()
         };
         let tx_req: TransactionRequest = tx.into();
         tx_req.build_unsigned().unwrap();
-    }
-
-    #[test]
-    fn test_4844_when_sidecar() {
-        let request = TransactionRequest::default()
-            .with_nonce(1)
-            .with_energy_limit(0)
-            .with_max_fee_per_gas(0)
-            .with_max_priority_fee_per_gas(0)
-            .with_to(IcanAddress::ZERO)
-            .with_blob_sidecar(BlobTransactionSidecar::default())
-            .with_max_fee_per_blob_gas(0);
-
-        let tx = request.clone().build_unsigned().unwrap();
-
-        assert!(matches!(tx, TypedTransaction::Eip4844(_)));
-
-        let tx = request.with_energy_price(0).build_unsigned().unwrap();
-
-        assert!(matches!(tx, TypedTransaction::Eip4844(_)));
-    }
-
-    #[test]
-    fn test_2930_when_access_list() {
-        let request = TransactionRequest::default()
-            .with_nonce(1)
-            .with_energy_limit(0)
-            .with_max_fee_per_gas(0)
-            .with_max_priority_fee_per_gas(0)
-            .with_to(IcanAddress::ZERO)
-            .with_energy_price(0);
-        // .with_access_list(AccessList::default());
-
-        let tx = request.build_unsigned().unwrap();
-
-        assert!(matches!(tx, TypedTransaction::Eip2930(_)));
-    }
-
-    #[test]
-    fn test_default_to_1559() {
-        let request = TransactionRequest::default()
-            .with_nonce(1)
-            .with_energy_limit(0)
-            .with_max_fee_per_gas(0)
-            .with_max_priority_fee_per_gas(0)
-            .with_to(IcanAddress::ZERO);
-
-        let tx = request.clone().build_unsigned().unwrap();
-
-        assert!(matches!(tx, TypedTransaction::Eip1559(_)));
-
-        let request = request.with_energy_price(0);
-        let tx = request.build_unsigned().unwrap();
-        assert!(matches!(tx, TypedTransaction::Legacy(_)));
-    }
-
-    #[test]
-    fn test_fail_when_sidecar_and_access_list() {
-        let request =
-            TransactionRequest::default().with_blob_sidecar(BlobTransactionSidecar::default());
-        // .with_access_list(AccessList::default());
-
-        let error = request.clone().build_unsigned().unwrap_err();
-
-        assert!(matches!(error.1, TransactionBuilderError::InvalidTransactionRequest(_, _)));
     }
 
     #[test]
@@ -280,74 +197,13 @@ mod tests {
 
         let error = request.clone().build_unsigned().unwrap_err();
 
-        let (_, TransactionBuilderError::InvalidTransactionRequest(tx_type, errors)) = error else {
+        let (_, TransactionBuilderError::InvalidTransactionRequest(errors)) = error else {
             panic!("wrong variant")
         };
 
-        assert_eq!(tx_type, TxType::Legacy);
-        assert_eq!(errors.len(), 3);
-        assert!(errors.contains(&"to"));
-        assert!(errors.contains(&"nonce"));
-        assert!(errors.contains(&"gas_limit"));
-    }
-
-    #[test]
-    fn test_invalid_1559_fields() {
-        let request = TransactionRequest::default();
-
-        let error = request.clone().build_unsigned().unwrap_err();
-
-        let (_, TransactionBuilderError::InvalidTransactionRequest(tx_type, errors)) = error else {
-            panic!("wrong variant")
-        };
-
-        assert_eq!(tx_type, TxType::Eip1559);
-        assert_eq!(errors.len(), 5);
-        assert!(errors.contains(&"to"));
-        assert!(errors.contains(&"nonce"));
-        assert!(errors.contains(&"gas_limit"));
-        assert!(errors.contains(&"max_priority_fee_per_gas"));
-        assert!(errors.contains(&"max_fee_per_gas"));
-    }
-
-    #[test]
-    fn test_invalid_2930_fields() {
-        let request = TransactionRequest::default()
-            // .with_access_list(AccessList::default())
-            .with_energy_price(Default::default());
-
-        let error = request.clone().build_unsigned().unwrap_err();
-
-        let (_, TransactionBuilderError::InvalidTransactionRequest(tx_type, errors)) = error else {
-            panic!("wrong variant")
-        };
-
-        assert_eq!(tx_type, TxType::Eip2930);
         assert_eq!(errors.len(), 3);
         assert!(errors.contains(&"to"));
         assert!(errors.contains(&"nonce"));
         assert!(errors.contains(&"energy_limit"));
-    }
-
-    #[test]
-    fn test_invalid_4844_fields() {
-        let request =
-            TransactionRequest::default().with_blob_sidecar(BlobTransactionSidecar::default());
-
-        let error = request.clone().build_unsigned().unwrap_err();
-
-        let (_, TransactionBuilderError::InvalidTransactionRequest(tx_type, errors)) = error else {
-            panic!("wrong variant")
-        };
-
-        assert_eq!(tx_type, TxType::Eip4844);
-        assert_eq!(errors.len(), 7);
-        assert!(errors.contains(&"to"));
-        assert!(errors.contains(&"nonce"));
-        assert!(errors.contains(&"energy_limit"));
-        assert!(errors.contains(&"max_priority_fee_per_gas"));
-        assert!(errors.contains(&"max_fee_per_gas"));
-        assert!(errors.contains(&"to"));
-        assert!(errors.contains(&"max_fee_per_blob_gas"));
     }
 }

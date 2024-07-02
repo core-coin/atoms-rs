@@ -62,16 +62,16 @@ pub trait Signer<Sig = Signature> {
     fn address(&self) -> IcanAddress;
 
     /// Returns the signer's network ID.
-    fn network_id(&self) -> Option<ChainId>;
+    fn network_id(&self) -> ChainId;
 
     /// Sets the signer's network ID.
-    fn set_network_id(&mut self, network_id: Option<ChainId>);
+    fn set_network_id(&mut self, network_id: ChainId);
 
     /// Sets the signer's network ID and returns `self`.
     #[inline]
     #[must_use]
     #[auto_impl(keep_default_for(&mut, Box))]
-    fn with_network_id(mut self, network_id: Option<ChainId>) -> Self
+    fn with_network_id(mut self, network_id: ChainId) -> Self
     where
         Self: Sized,
     {
@@ -129,7 +129,7 @@ pub trait SignerSync<Sig = Signature> {
     }
 
     /// Returns the signer's network ID.
-    fn network_id_sync(&self) -> Option<ChainId>;
+    fn network_id_sync(&self) -> ChainId;
 }
 
 #[cfg(test)]
@@ -184,7 +184,7 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             );
 
-            assert_eq!(s.network_id(), None);
+            assert_eq!(s.network_id(), 0);
         }
 
         fn test_unsized_unimplemented_signer_sync<S: SignerSync + ?Sized>(s: &S) {
@@ -207,7 +207,7 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             );
 
-            assert_eq!(s.network_id_sync(), None);
+            assert_eq!(s.network_id_sync(), 0);
         }
 
         struct UnimplementedSigner;
@@ -223,11 +223,11 @@ mod tests {
                 IcanAddress::ZERO
             }
 
-            fn network_id(&self) -> Option<ChainId> {
-                None
+            fn network_id(&self) -> ChainId {
+                0
             }
 
-            fn set_network_id(&mut self, _network_id: Option<ChainId>) {}
+            fn set_network_id(&mut self, _network_id: ChainId) {}
         }
 
         impl SignerSync for UnimplementedSigner {
@@ -235,8 +235,8 @@ mod tests {
                 Err(Error::UnsupportedOperation(UnsupportedSignerOperation::SignHash))
             }
 
-            fn network_id_sync(&self) -> Option<ChainId> {
-                None
+            fn network_id_sync(&self) -> ChainId {
+                0
             }
         }
 

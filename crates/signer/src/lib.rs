@@ -35,12 +35,12 @@ macro_rules! sign_transaction_with_network_id {
     //    sign: lazy Signature,
     // )
     ($signer:expr, $tx:expr, $sign:expr) => {{
-        if let Some(network_id) = $signer.network_id() {
+        if let network_id = $signer.network_id() {
             if !$tx.set_chain_id_checked(network_id) {
                 return Err(alloy_signer::Error::TransactionNetworkIdMismatch {
                     signer: network_id,
                     // we can only end up here if the tx has a network id
-                    tx: $tx.chain_id().unwrap(),
+                    tx: $tx.chain_id(),
                 });
             }
         }

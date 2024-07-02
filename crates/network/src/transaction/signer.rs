@@ -1,6 +1,7 @@
 use crate::{Network, TransactionBuilder};
-use alloy_consensus::SignableTransaction;
+use alloy_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
 use alloy_primitives::IcanAddress;
+use alloy_signer::Signature;
 use async_trait::async_trait;
 use futures_utils_wasm::impl_future;
 
@@ -33,14 +34,14 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
     async fn sign_transaction_from(
         &self,
         sender: IcanAddress,
-        tx: N::UnsignedTx,
-    ) -> alloy_signer::Result<N::TxEnvelope>;
+        tx: TypedTransaction,
+    ) -> alloy_signer::Result<Signed<TxLegacy, Signature>>;
 
     /// Asynchronously sign an unsigned transaction.
     fn sign_transaction(
         &self,
-        tx: N::UnsignedTx,
-    ) -> impl_future!(<Output = alloy_signer::Result<N::TxEnvelope>>) {
+        tx: TypedTransaction,
+    ) -> impl_future!(<Output = alloy_signer::Result<Signed<TxLegacy, Signature>>>) {
         self.sign_transaction_from(self.default_signer_address(), tx)
     }
 
@@ -49,7 +50,7 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
     async fn sign_request(
         &self,
         request: N::TransactionRequest,
-    ) -> alloy_signer::Result<N::TxEnvelope> {
+    ) -> alloy_signer::Result<Signed<TxLegacy, Signature>> {
         let sender = request.from().unwrap_or_else(|| self.default_signer_address());
         let tx = request.build_unsigned().map_err(|(_, e)| alloy_signer::Error::other(e))?;
         self.sign_transaction_from(sender, tx).await
