@@ -22,7 +22,7 @@ pub trait TxReceipt<T = Log> {
     }
 
     /// Returns the cumulative gas used in the block after this transaction was executed.
-    fn cumulative_gas_used(&self) -> u128;
+    fn cumulative_energy_used(&self) -> u128;
 
     /// Returns the logs emitted by this transaction.
     fn logs(&self) -> &[T];
@@ -43,7 +43,7 @@ mod tests {
         let receipt =
             ReceiptWithBloom {
                 receipt: Receipt {
-                    cumulative_gas_used: 0x1u128,
+                    cumulative_energy_used: 0x1u128,
                     logs: vec![Log {
                         address: cAddress!("00000000000000000000000000000000000000000011"),
                         data: LogData::new_unchecked(
@@ -73,7 +73,7 @@ mod tests {
         let expected =
             ReceiptWithBloom {
                 receipt: Receipt {
-                    cumulative_gas_used: 0x1u128,
+                    cumulative_energy_used: 0x1u128,
                     logs: vec![Log {
                         address: cAddress!("00000000000000000000000000000000000000000011"),
                         data: LogData::new_unchecked(
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn gigantic_receipt() {
         let receipt = Receipt {
-            cumulative_gas_used: 16747627,
+            cumulative_energy_used: 16747627,
             status: true,
             logs: vec![
                 Log {

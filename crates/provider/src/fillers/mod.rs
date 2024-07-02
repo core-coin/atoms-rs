@@ -239,10 +239,7 @@ where
     }
 
     /// Fills the transaction request, using the configured fillers
-    pub async fn fill(&self, tx: N::TransactionRequest) -> TransportResult<SendableTx<N>>
-    where
-        N::TxEnvelope: Clone,
-    {
+    pub async fn fill(&self, tx: N::TransactionRequest) -> TransportResult<SendableTx<N>> {
         self.filler.prepare_and_fill(self, SendableTx::Builder(tx)).await
     }
 }

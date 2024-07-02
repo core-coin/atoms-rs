@@ -4,7 +4,7 @@ use alloy_json_abi::Function;
 use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
 use alloy_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_provider::{PendingTransactionBuilder, Provider};
-use alloy_rpc_types::{state::StateOverride, AccessList, BlobTransactionSidecar, BlockId};
+use alloy_rpc_types::{state::StateOverride, AccessList, BlockId};
 use alloy_sol_types::SolCall;
 use alloy_transport::Transport;
 use std::{
@@ -313,11 +313,11 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
         self
     }
 
-    /// Sets the `sidecar` field in the transaction to the provided value.
-    pub fn sidecar(mut self, blob_sidecar: BlobTransactionSidecar) -> Self {
-        self.request.set_blob_sidecar(blob_sidecar);
-        self
-    }
+    // /// Sets the `sidecar` field in the transaction to the provided value.
+    // pub fn sidecar(mut self, blob_sidecar: BlobTransactionSidecar) -> Self {
+    //     self.request.set_blob_sidecar(blob_sidecar);
+    //     self
+    // }
 
     /// Uses a Legacy transaction instead of an EIP-1559 one to execute the call
     pub fn legacy(self) -> Self {
@@ -612,7 +612,7 @@ mod tests {
     fn change_chain_id() {
         let call_builder = build_call_builder().chain_id(1337);
         assert_eq!(
-            call_builder.request.network_id.expect("chain_id should be set"),
+            call_builder.request.network_id,
             1337,
             "chain_id of request should be '1337'"
         );

@@ -202,10 +202,10 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// ```no_run
     /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
-    /// use alloy_primitives::keccak256;
+    /// use alloy_primitives::sha3;
     /// use alloy_rpc_types::Filter;
     ///
-    /// let signature = keccak256("Transfer(address,address,uint256)".as_bytes());
+    /// let signature = sha3("Transfer(address,address,uint256)".as_bytes());
     ///
     /// let sub = provider.subscribe_logs(&Filter::new().event_signature(signature)).await?;
     /// let mut stream = sub.into_stream().take(5);
@@ -344,11 +344,11 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ///
     /// ```no_run
     /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
-    /// use alloy_primitives::{address, b256};
+    /// use alloy_primitives::{cAddress, b256};
     /// use alloy_rpc_types::Filter;
     /// use futures::StreamExt;
     ///
-    /// let address = address!("a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48");
+    /// let address = cAddress!("0000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48");
     /// let transfer_signature = b256!("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef");
     /// let filter = Filter::new().address(address).event_signature(transfer_signature);
     ///
@@ -493,9 +493,9 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
                 let tx_hash = self.client().request("xcb_sendTransaction", (tx,)).await?;
                 Ok(PendingTransactionBuilder::new(self.root(), tx_hash))
             }
-            SendableTx::Envelope(tx) => {
+            SendableTx::Signed(tx) => {
                 let mut encoded_tx = vec![];
-                tx.encode_2718(&mut encoded_tx);
+                tx.tx().encode_with_signature_fields(tx.signature(), &mut encoded_tx);
                 self.send_raw_transaction(&encoded_tx).await
             }
         }
@@ -590,12 +590,12 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     }
 
     /// Returns a suggestion for the current `maxPriorityFeePerEnergy` in wei.
-    async fn get_max_priority_fee_per_energy(&self) -> TransportResult<u128> {
-        self.client()
-            .request("xcb_maxPriorityFeePerEnergy", ())
-            .await
-            .map(|fee: U128| fee.to::<u128>())
-    }
+    // async fn get_max_priority_fee_per_energy(&self) -> TransportResult<u128> {
+    //     self.client()
+    //         .request("xcb_maxPriorityFeePerEnergy", ())
+    //         .await
+    //         .map(|fee: U128| fee.to::<u128>())
+    // }
 
     /// Returns the base fee per blob energy (blob energy price) in wei.
     async fn get_blob_base_fee(&self) -> TransportResult<u128> {
@@ -611,12 +611,12 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     }
 
     /// Gets the selected block [BlockNumberOrTag] receipts.
-    async fn get_block_receipts(
-        &self,
-        block: BlockNumberOrTag,
-    ) -> TransportResult<Option<Vec<N::ReceiptResponse>>> {
-        self.client().request("xcb_getBlockReceipts", (block,)).await
-    }
+    // async fn get_block_receipts(
+    //     &self,
+    //     block: BlockNumberOrTag,
+    // ) -> TransportResult<Option<Vec<N::ReceiptResponse>>> {
+    //     self.client().request("xcb_getBlockReceipts", (block,)).await
+    // }
 
     /// Gets an uncle block through the tag [BlockId] and index [u64].
     async fn get_uncle(&self, tag: BlockId, idx: u64) -> TransportResult<Option<Block>> {
@@ -695,19 +695,19 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
         XcbCall::new(self.weak_client(), tx)
     }
 
-    /// Returns a collection of historical energy information [FeeHistory] which
-    /// can be used to calculate the EIP1559 fields `maxFeePerEnergy` and `maxPriorityFeePerEnergy`.
-    /// `block_count` can range from 1 to 1024 blocks in a single request.
-    async fn get_fee_history(
-        &self,
-        block_count: u64,
-        last_block: BlockNumberOrTag,
-        reward_percentiles: &[f64],
-    ) -> TransportResult<FeeHistory> {
-        self.client()
-            .request("xcb_feeHistory", (U64::from(block_count), last_block, reward_percentiles))
-            .await
-    }
+    // /// Returns a collection of historical energy information [FeeHistory] which
+    // /// can be used to calculate the EIP1559 fields `maxFeePerEnergy` and `maxPriorityFeePerEnergy`.
+    // /// `block_count` can range from 1 to 1024 blocks in a single request.
+    // async fn get_fee_history(
+    //     &self,
+    //     block_count: u64,
+    //     last_block: BlockNumberOrTag,
+    //     reward_percentiles: &[f64],
+    // ) -> TransportResult<FeeHistory> {
+    //     self.client()
+    //         .request("xcb_feeHistory", (U64::from(block_count), last_block, reward_percentiles))
+    //         .await
+    // }
 
     /// Estimate the energy needed for a transaction.
     async fn estimate_energy(
@@ -725,38 +725,38 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ///
     /// Receives an optional [EstimatorFunction] that can be used to modify
     /// how to estimate these fees.
-    async fn estimate_eip1559_fees(
-        &self,
-        estimator: Option<EstimatorFunction>,
-    ) -> TransportResult<Eip1559Estimation> {
-        let fee_history = self
-            .get_fee_history(
-                utils::EIP1559_FEE_ESTIMATION_PAST_BLOCKS,
-                BlockNumberOrTag::Latest,
-                &[utils::EIP1559_FEE_ESTIMATION_REWARD_PERCENTILE],
-            )
-            .await?;
+    // async fn estimate_eip1559_fees(
+    //     &self,
+    //     estimator: Option<EstimatorFunction>,
+    // ) -> TransportResult<Eip1559Estimation> {
+    //     let fee_history = self
+    //         .get_fee_history(
+    //             utils::EIP1559_FEE_ESTIMATION_PAST_BLOCKS,
+    //             BlockNumberOrTag::Latest,
+    //             &[utils::EIP1559_FEE_ESTIMATION_REWARD_PERCENTILE],
+    //         )
+    //         .await?;
 
-        // if the base fee of the Latest block is 0 then we need check if the latest block even has
-        // a base fee/supports EIP1559
-        let base_fee_per_energy = match fee_history.latest_block_base_fee() {
-            Some(base_fee) if (base_fee != 0) => base_fee,
-            _ => {
-                // empty response, fetch basefee from latest block directly
-                self.get_block_by_number(BlockNumberOrTag::Latest, false)
-                    .await?
-                    .ok_or(RpcError::NullResp)?
-                    .header
-                    .base_fee_per_gas
-                    .ok_or(RpcError::UnsupportedFeature("eip1559"))?
-            }
-        };
+    //     // if the base fee of the Latest block is 0 then we need check if the latest block even has
+    //     // a base fee/supports EIP1559
+    //     let base_fee_per_energy = match fee_history.latest_block_base_fee() {
+    //         Some(base_fee) if (base_fee != 0) => base_fee,
+    //         _ => {
+    //             // empty response, fetch basefee from latest block directly
+    //             self.get_block_by_number(BlockNumberOrTag::Latest, false)
+    //                 .await?
+    //                 .ok_or(RpcError::NullResp)?
+    //                 .header
+    //                 .base_fee_per_gas
+    //                 .ok_or(RpcError::UnsupportedFeature("eip1559"))?
+    //         }
+    //     };
 
-        Ok(estimator.unwrap_or(utils::eip1559_default_estimator)(
-            base_fee_per_energy,
-            &fee_history.reward.unwrap_or_default(),
-        ))
-    }
+    //     Ok(estimator.unwrap_or(utils::eip1559_default_estimator)(
+    //         base_fee_per_energy,
+    //         &fee_history.reward.unwrap_or_default(),
+    //     ))
+    // }
 
     /// Get the account and storage values of the specified account including the merkle proofs.
     ///
@@ -826,18 +826,18 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Note
     ///
     /// Not all nodes support this call.
-    async fn trace_block(
-        &self,
-        block: BlockNumberOrTag,
-    ) -> TransportResult<Vec<LocalizedTransactionTrace>> {
-        self.client().request("trace_block", (block,)).await
-    }
+    // async fn trace_block(
+    //     &self,
+    //     block: BlockNumberOrTag,
+    // ) -> TransportResult<Vec<LocalizedTransactionTrace>> {
+    //     self.client().request("trace_block", (block,)).await
+    // }
 
     /* ------------------------------------------ anvil ----------------------------------------- */
 
     /// Set the bytecode of a given account.
     async fn set_code(&self, address: IcanAddress, code: &str) -> TransportResult<()> {
-        self.client().request("anvil_setCode", (address, code)).await
+        self.client().request("shuttle_setCode", (address, code)).await
     }
 
     /* ---------------------------------------- raw calls --------------------------------------- */
@@ -933,6 +933,7 @@ impl<T: Transport + Clone, N: Network> Provider<T, N> for RootProvider<T, N> {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
+    use alloy_network::TransactionBuilder;
     use alloy_node_bindings::Anvil;
     use alloy_primitives::{address, b256, bytes, cAddress};
     use alloy_rpc_types::request::TransactionRequest;
@@ -1003,7 +1004,7 @@ mod tests {
 
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(2);
-        let mut n = 1;
+        let mut n = 11;
         while let Some(block) = stream.next().await {
             assert_eq!(block.header.number.unwrap(), n);
             assert_eq!(block.transactions.hashes().len(), 0);
@@ -1025,7 +1026,7 @@ mod tests {
 
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(2);
-        let mut n = 1;
+        let mut n = 11;
         while let Some(block) = stream.next().await {
             assert_eq!(block.header.number.unwrap(), n);
             assert_eq!(block.transactions.hashes().len(), 0);
@@ -1039,7 +1040,7 @@ mod tests {
         use futures::stream::StreamExt;
 
         init_tracing();
-        let url = "wss://eth-mainnet.g.alchemy.com/v2/viFmeVzhg6bWKVMIWWS8MhmzREB-D4f7";
+        let url = "wss://xcbws-devin.coreblockchain.net";
         let ws = alloy_rpc_client::WsConnect::new(url);
         let Ok(client) = alloy_rpc_client::RpcClient::connect_pubsub(ws).await else { return };
         let provider = RootProvider::<_, Ethereum>::new(client);
@@ -1060,6 +1061,7 @@ mod tests {
             to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             energy_price: Some(20e9 as u128),
             energy: Some(21000),
+            network_id: 1,
             ..Default::default()
         };
 
@@ -1157,7 +1159,7 @@ mod tests {
         init_tracing();
         let provider = ProviderBuilder::new().on_anvil();
         let version = provider.get_client_version().await.unwrap();
-        assert!(version.contains("anvil"));
+        assert!(version.contains("shuttle"));
     }
 
     #[tokio::test]
@@ -1215,11 +1217,12 @@ mod tests {
         init_tracing();
         let provider = ProviderBuilder::new().with_recommended_fillers().on_anvil_with_signer();
 
-        let req = TransactionRequest::default()
+        let mut req = TransactionRequest::default()
             .from(provider.default_signer_address())
             .to(IcanAddress::repeat_byte(5))
             .value(U256::ZERO)
             .input(bytes!("deadbeef").into());
+        req.set_network_id(1);
 
         let tx_hash = *provider.send_transaction(req).await.expect("failed to send tx").tx_hash();
 
@@ -1266,44 +1269,44 @@ mod tests {
         );
     }
 
-    #[tokio::test]
-    async fn gets_max_priority_fee_per_energy() {
-        init_tracing();
-        let provider = ProviderBuilder::new().on_anvil();
-        let _fee = provider.get_max_priority_fee_per_energy().await.unwrap();
-    }
+    // #[tokio::test]
+    // async fn gets_max_priority_fee_per_energy() {
+    //     init_tracing();
+    //     let provider = ProviderBuilder::new().on_anvil();
+    //     let _fee = provider.get_max_priority_fee_per_energy().await.unwrap();
+    // }
 
-    #[tokio::test]
-    async fn gets_fee_history() {
-        init_tracing();
-        let provider = ProviderBuilder::new().on_anvil();
-        let block_number = provider.get_block_number().await.unwrap();
-        let fee_history = provider
-            .get_fee_history(
-                utils::EIP1559_FEE_ESTIMATION_PAST_BLOCKS,
-                BlockNumberOrTag::Number(block_number),
-                &[utils::EIP1559_FEE_ESTIMATION_REWARD_PERCENTILE],
-            )
-            .await
-            .unwrap();
-        assert_eq!(fee_history.oldest_block, 0_u64);
-    }
+    // #[tokio::test]
+    // async fn gets_fee_history() {
+    //     init_tracing();
+    //     let provider = ProviderBuilder::new().on_anvil();
+    //     let block_number = provider.get_block_number().await.unwrap();
+    //     let fee_history = provider
+    //         .get_fee_history(
+    //             utils::EIP1559_FEE_ESTIMATION_PAST_BLOCKS,
+    //             BlockNumberOrTag::Number(block_number),
+    //             &[utils::EIP1559_FEE_ESTIMATION_REWARD_PERCENTILE],
+    //         )
+    //         .await
+    //         .unwrap();
+    //     assert_eq!(fee_history.oldest_block, 0_u64);
+    // }
 
-    #[tokio::test]
-    async fn gets_block_receipts() {
-        init_tracing();
-        let provider = ProviderBuilder::new().on_anvil();
-        let receipts = provider.get_block_receipts(BlockNumberOrTag::Latest).await.unwrap();
-        assert!(receipts.is_some());
-    }
+    // #[tokio::test]
+    // async fn gets_block_receipts() {
+    //     init_tracing();
+    //     let provider = ProviderBuilder::new().on_anvil();
+    //     let receipts = provider.get_block_receipts(BlockNumberOrTag::Latest).await.unwrap();
+    //     assert!(receipts.is_some());
+    // }
 
-    #[tokio::test]
-    async fn gets_block_traces() {
-        init_tracing();
-        let provider = ProviderBuilder::new().on_anvil();
-        let traces = provider.trace_block(BlockNumberOrTag::Latest).await.unwrap();
-        assert_eq!(traces.len(), 0);
-    }
+    // #[tokio::test]
+    // async fn gets_block_traces() {
+    //     init_tracing();
+    //     let provider = ProviderBuilder::new().on_anvil();
+    //     let traces = provider.trace_block(BlockNumberOrTag::Latest).await.unwrap();
+    //     assert_eq!(traces.len(), 0);
+    // }
 
     #[tokio::test]
     async fn sends_raw_transaction() {
@@ -1311,13 +1314,12 @@ mod tests {
         let provider = ProviderBuilder::new().on_anvil();
         let pending = provider
             .send_raw_transaction(
-                // Transfer 1 ETH from default EOA address to the Genesis address.
-                bytes!("f865808477359400825208940000000000000000000000000000000000000000018082f4f5a00505e227c1c636c76fac55795db1a40a4d24840d81b40d2fe0cc85767f6bd202a01e91b437099a8a90234ac5af3cb7ca4fb1432e133f75f9a91678eaf5f487c74b").as_ref()
+                bytes!("f8d1808504a817c80082520801960000d8da6bf26964af9d7eed9e03e53415d37aa960456480b8ab673abb5b516de00368413d5820ebf62e3d4b27f5ed5d2dd500793c8d40d7fc63cdc257e78541fe6ab644bbd6d4502abc308ed259818acdd180102fba0f2a4d3fc3f3be8f730da07e6478d294cfd32034e46f6b9ce2b31351844fe4f1cd889a0f1a593e900a0f8df4b7190e86e8d070f42500cce9b032abc93b3607188cb68fb3630ef23b9dabf1a8860baa1420532d2285bca721427d5075a4678bdc61d6e380b4998ac48172805ad7c580").as_ref()
             )
             .await.unwrap();
         assert_eq!(
             pending.tx_hash().to_string(),
-            "0x9dae5cf33694a02e8a7d5de3fe31e9d05ca0ba6e9180efac4ab20a06c9e598a3"
+            "0x35e28b25597659678f00d1cf7a4ae5197ad2a036bf45e5ec6e12d0640d2d082d"
         );
     }
 

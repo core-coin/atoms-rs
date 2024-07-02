@@ -21,7 +21,7 @@ pub trait TxPoolApi<T, N = Ethereum>: Send + Sync {
     /// Returns the content of the transaction pool filtered by a specific address.
     ///
     /// See [here](https://gocore.ethereum.org/docs/rpc/ns-txpool#txpool_contentFrom) for more details
-    async fn txpool_content_from(&self, from: IcanAddress) -> TransportResult<TxpoolContentFrom>;
+    // async fn txpool_content_from(&self, from: IcanAddress) -> TransportResult<TxpoolContentFrom>;
 
     /// Returns a textual summary of each transaction in the pool.
     ///
@@ -54,9 +54,9 @@ where
         self.client().request("txpool_content", ()).await
     }
 
-    async fn txpool_content_from(&self, from: IcanAddress) -> TransportResult<TxpoolContentFrom> {
-        self.client().request("txpool_contentFrom", (from,)).await
-    }
+    // async fn txpool_content_from(&self, from: IcanAddress) -> TransportResult<TxpoolContentFrom> {
+        // self.client().request("txpool_contentFrom", (from,)).await
+    // }
 
     async fn txpool_inspect(&self) -> TransportResult<TxpoolInspect> {
         self.client().request("txpool_inspect", ()).await
@@ -83,14 +83,14 @@ mod tests {
         assert_eq!(content, TxpoolContent::default());
     }
 
-    #[tokio::test]
-    async fn test_txpool_content_from() {
-        let temp_dir = tempfile::TempDir::with_prefix("gocore-test-").unwrap();
-        let gocore = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
-        let provider = ProviderBuilder::new().on_http(gocore.endpoint_url());
-        let content = provider.txpool_content_from(IcanAddress::default()).await.unwrap();
-        assert_eq!(content, TxpoolContentFrom::default());
-    }
+    // #[tokio::test]
+    // async fn test_txpool_content_from() {
+    //     let temp_dir = tempfile::TempDir::with_prefix("gocore-test-").unwrap();
+    //     let gocore = Gocore::new().disable_discovery().data_dir(temp_dir.path()).spawn();
+    //     let provider = ProviderBuilder::new().on_http(gocore.endpoint_url());
+    //     let content = provider.txpool_content_from(IcanAddress::default()).await.unwrap();
+    //     assert_eq!(content, TxpoolContentFrom::default());
+    // }
 
     #[tokio::test]
     async fn test_txpool_inspect() {

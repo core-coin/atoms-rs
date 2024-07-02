@@ -21,7 +21,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Core};
+/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
 /// # use alloy_rpc_types::TransactionRequest;
 /// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
@@ -56,7 +56,7 @@ impl<N: Network> TxFiller<N> for NetworkIdFiller {
     type Fillable = u64;
 
     fn status(&self, tx: &N::TransactionRequest) -> FillerControlFlow {
-        if tx.network_id().is_some() {
+        if tx.network_id() != 0 {
             FillerControlFlow::Finished
         } else {
             FillerControlFlow::Ready
@@ -88,7 +88,7 @@ impl<N: Network> TxFiller<N> for NetworkIdFiller {
         mut tx: SendableTx<N>,
     ) -> TransportResult<SendableTx<N>> {
         if let Some(builder) = tx.as_mut_builder() {
-            if builder.network_id().is_none() {
+            if builder.network_id() == 0 {
                 builder.set_network_id(fillable)
             }
         };

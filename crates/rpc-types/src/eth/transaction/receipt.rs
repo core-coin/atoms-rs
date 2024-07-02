@@ -36,8 +36,8 @@ pub struct TransactionReceipt {
     /// The price paid post-execution by the transaction (i.e. base fee + priority fee). Both
     /// fields in 1559-style transactions are maximums (max fee + max priority fee), the amount
     /// that's actually paid by users can only be determined post-execution
-    #[serde(with = "alloy_serde::u128_via_ruint")]
-    pub effective_gas_price: u128,
+    // #[serde(with = "alloy_serde::u128_via_ruint")]
+    // pub effective_gas_price: u128,
     /// Blob gas used by the eip-4844 transaction
     ///
     /// This is None for non eip-4844 transactions
@@ -121,7 +121,7 @@ mod test {
         assert!(matches!(
             receipt.inner,
             ReceiptWithBloom {
-                receipt: Receipt { status: true, cumulative_gas_used: EXPECTED_CGU, .. },
+                receipt: Receipt { status: true, cumulative_energy_used: EXPECTED_CGU, .. },
                 logs_bloom: EXPECTED_BLOOM
             }
         ));

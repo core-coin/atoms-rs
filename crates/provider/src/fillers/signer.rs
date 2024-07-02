@@ -99,7 +99,7 @@ where
 
         let envelope = builder.build(&self.signer).await.map_err(RpcError::local_usage)?;
 
-        Ok(SendableTx::Envelope(envelope))
+        Ok(SendableTx::Signed(envelope))
     }
 }
 
@@ -120,6 +120,7 @@ mod tests {
             to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             energy_price: Some(20e9 as u128),
             energy: Some(21000),
+            network_id: 1,
             ..Default::default()
         };
 
@@ -127,7 +128,7 @@ mod tests {
         let node_hash = *builder.tx_hash();
         assert_eq!(
             node_hash,
-            b256!("eb56033eab0279c6e9b685a5ec55ea0ff8d06056b62b7f36974898d4fbb57e64")
+            b256!("35e28b25597659678f00d1cf7a4ae5197ad2a036bf45e5ec6e12d0640d2d082d")
         );
 
         let pending = builder.register().await.unwrap();

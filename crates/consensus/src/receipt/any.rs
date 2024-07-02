@@ -61,8 +61,8 @@ impl<T> AnyReceiptEnvelope<T> {
     }
 
     /// Returns the cumulative gas used at this receipt.
-    pub const fn cumulative_gas_used(&self) -> u128 {
-        self.inner.receipt.cumulative_gas_used
+    pub const fn cumulative_energy_used(&self) -> u128 {
+        self.inner.receipt.cumulative_energy_used
     }
 
     /// Return the receipt logs.
@@ -83,8 +83,8 @@ impl<T> TxReceipt<T> for AnyReceiptEnvelope<T> {
     }
 
     /// Returns the cumulative gas used at this receipt.
-    fn cumulative_gas_used(&self) -> u128 {
-        self.inner.receipt.cumulative_gas_used
+    fn cumulative_energy_used(&self) -> u128 {
+        self.inner.receipt.cumulative_energy_used
     }
 
     /// Return the receipt logs.

@@ -167,6 +167,7 @@ mod test {
             .to(cAddress!("cb7175017a3fa2d4dc29489bfc01ec2e60b140e1c019"))
             .value(U256::from(100));
         tx.set_energy_price(energy_price);
+        tx.set_network_id(1);
         // .max_fee_per_gas(energy_price + 1)
         // .max_priority_fee_per_gas(energy_price + 1);
         let pending = provider.send_transaction(tx).await.unwrap();

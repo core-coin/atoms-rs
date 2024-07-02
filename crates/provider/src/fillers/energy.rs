@@ -92,86 +92,86 @@ impl EnergyFiller {
         Ok(EnergyFillable::Legacy { energy_limit, energy_price })
     }
 
-    async fn prepare_1559<P, T, N>(
-        &self,
-        provider: &P,
-        tx: &N::TransactionRequest,
-    ) -> TransportResult<EnergyFillable>
-    where
-        P: Provider<T, N>,
-        T: Transport + Clone,
-        N: Network,
-    {
-        let energy_limit_fut = if let Some(energy_limit) = tx.energy_limit() {
-            async move { Ok(energy_limit) }.left_future()
-        } else {
-            async { provider.estimate_energy(tx, Default::default()).await }.right_future()
-        };
+    // async fn prepare_1559<P, T, N>(
+    //     &self,
+    //     provider: &P,
+    //     tx: &N::TransactionRequest,
+    // ) -> TransportResult<EnergyFillable>
+    // where
+    //     P: Provider<T, N>,
+    //     T: Transport + Clone,
+    //     N: Network,
+    // {
+    //     let energy_limit_fut = if let Some(energy_limit) = tx.energy_limit() {
+    //         async move { Ok(energy_limit) }.left_future()
+    //     } else {
+    //         async { provider.estimate_energy(tx, Default::default()).await }.right_future()
+    //     };
 
-        let eip1559_fees_fut = if let (
-            Some(max_fee_per_energy),
-            Some(max_priority_fee_per_energy),
-        ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
-        {
-            async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
-                .left_future()
-        } else {
-            async { provider.estimate_eip1559_fees(None).await }.right_future()
-        };
+    //     let eip1559_fees_fut = if let (
+    //         Some(max_fee_per_energy),
+    //         Some(max_priority_fee_per_energy),
+    //     ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
+    //     {
+    //         async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
+    //             .left_future()
+    //     } else {
+    //         async { provider.estimate_eip1559_fees(None).await }.right_future()
+    //     };
 
-        let (energy_limit, estimate) = futures::try_join!(energy_limit_fut, eip1559_fees_fut)?;
+    //     let (energy_limit, estimate) = futures::try_join!(energy_limit_fut, eip1559_fees_fut)?;
 
-        Ok(EnergyFillable::Eip1559 { energy_limit, estimate })
-    }
+    //     Ok(EnergyFillable::Eip1559 { energy_limit, estimate })
+    // }
 
-    async fn prepare_4844<P, T, N>(
-        &self,
-        provider: &P,
-        tx: &N::TransactionRequest,
-    ) -> TransportResult<EnergyFillable>
-    where
-        P: Provider<T, N>,
-        T: Transport + Clone,
-        N: Network,
-    {
-        let energy_limit_fut = if let Some(energy_limit) = tx.energy_limit() {
-            async move { Ok(energy_limit) }.left_future()
-        } else {
-            async { provider.estimate_energy(tx, Default::default()).await }.right_future()
-        };
+    //     async fn prepare_4844<P, T, N>(
+    //         &self,
+    //         provider: &P,
+    //         tx: &N::TransactionRequest,
+    //     ) -> TransportResult<EnergyFillable>
+    //     where
+    //         P: Provider<T, N>,
+    //         T: Transport + Clone,
+    //         N: Network,
+    //     {
+    //         let energy_limit_fut = if let Some(energy_limit) = tx.energy_limit() {
+    //             async move { Ok(energy_limit) }.left_future()
+    //         } else {
+    //             async { provider.estimate_energy(tx, Default::default()).await }.right_future()
+    //         };
 
-        let eip1559_fees_fut = if let (
-            Some(max_fee_per_energy),
-            Some(max_priority_fee_per_energy),
-        ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
-        {
-            async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
-                .left_future()
-        } else {
-            async { provider.estimate_eip1559_fees(None).await }.right_future()
-        };
+    //         let eip1559_fees_fut = if let (
+    //             Some(max_fee_per_energy),
+    //             Some(max_priority_fee_per_energy),
+    //         ) = (tx.max_fee_per_gas(), tx.max_priority_fee_per_gas())
+    //         {
+    //             async move { Ok(Eip1559Estimation { max_fee_per_energy, max_priority_fee_per_energy }) }
+    //                 .left_future()
+    //         } else {
+    //             async { provider.estimate_eip1559_fees(None).await }.right_future()
+    //         };
 
-        let max_fee_per_blob_energy_fut =
-            if let Some(max_fee_per_blob_energy) = tx.max_fee_per_gas() {
-                async move { Ok(max_fee_per_blob_energy) }.left_future()
-            } else {
-                async {
-                    provider
-                        .get_block_by_number(BlockNumberOrTag::Latest, false)
-                        .await?
-                        .ok_or(RpcError::NullResp)?
-                        .header
-                        .next_block_blob_fee()
-                        .ok_or(RpcError::UnsupportedFeature("eip4844"))
-                }
-                .right_future()
-            };
+    //         let max_fee_per_blob_energy_fut =
+    //             if let Some(max_fee_per_blob_energy) = tx.max_fee_per_gas() {
+    //                 async move { Ok(max_fee_per_blob_energy) }.left_future()
+    //             } else {
+    //                 async {
+    //                     provider
+    //                         .get_block_by_number(BlockNumberOrTag::Latest, false)
+    //                         .await?
+    //                         .ok_or(RpcError::NullResp)?
+    //                         .header
+    //                         .next_block_blob_fee()
+    //                         .ok_or(RpcError::UnsupportedFeature("eip4844"))
+    //                 }
+    //                 .right_future()
+    //             };
 
-        let (energy_limit, estimate, max_fee_per_blob_energy) =
-            futures::try_join!(energy_limit_fut, eip1559_fees_fut, max_fee_per_blob_energy_fut)?;
+    //         let (energy_limit, estimate, max_fee_per_blob_energy) =
+    //             futures::try_join!(energy_limit_fut, eip1559_fees_fut, max_fee_per_blob_energy_fut)?;
 
-        Ok(EnergyFillable::Eip4844 { energy_limit, estimate, max_fee_per_blob_energy })
-    }
+    //         Ok(EnergyFillable::Eip4844 { energy_limit, estimate, max_fee_per_blob_energy })
+    //     }
 }
 
 impl<N: Network> TxFiller<N> for EnergyFiller {
@@ -184,22 +184,22 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
         }
 
         // 4844
-        if tx.max_fee_per_blob_gas().is_some()
-            && tx.max_fee_per_gas().is_some()
-            && tx.max_priority_fee_per_gas().is_some()
-            && tx.energy_limit().is_some()
-        {
-            return FillerControlFlow::Finished;
-        }
+        // if tx.max_fee_per_blob_gas().is_some()
+        //     && tx.max_fee_per_gas().is_some()
+        //     && tx.max_priority_fee_per_gas().is_some()
+        //     && tx.energy_limit().is_some()
+        // {
+        //     return FillerControlFlow::Finished;
+        // }
 
-        // eip1559
-        if tx.blob_sidecar().is_none()
-            && tx.max_fee_per_gas().is_some()
-            && tx.max_priority_fee_per_gas().is_some()
-            && tx.energy_limit().is_some()
-        {
-            return FillerControlFlow::Finished;
-        }
+        // // eip1559
+        // if tx.blob_sidecar().is_none()
+        //     && tx.max_fee_per_gas().is_some()
+        //     && tx.max_priority_fee_per_gas().is_some()
+        //     && tx.energy_limit().is_some()
+        // {
+        //     return FillerControlFlow::Finished;
+        // }
 
         FillerControlFlow::Ready
     }
@@ -213,18 +213,7 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
         P: Provider<T, N>,
         T: Transport + Clone,
     {
-        if tx.energy_price().is_some()  {
-            self.prepare_legacy(provider, tx).await
-        } else if tx.blob_sidecar().is_some() {
-            self.prepare_4844(provider, tx).await
-        } else {
-            match self.prepare_1559(provider, tx).await {
-                // fallback to legacy
-                Ok(estimate) => Ok(estimate),
-                Err(RpcError::UnsupportedFeature(_)) => self.prepare_legacy(provider, tx).await,
-                Err(e) => Err(e),
-            }
-        }
+        self.prepare_legacy(provider, tx).await
     }
 
     async fn fill(
@@ -267,7 +256,7 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_primitives::{address, cAddress, U256};
+    use alloy_primitives::{cAddress, U256};
     use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]
@@ -279,7 +268,7 @@ mod tests {
             from: Some(from),
             value: Some(U256::from(100)),
             to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            network_id: Some(31337),
+            network_id: 1,
             ..Default::default()
         };
 
@@ -311,29 +300,5 @@ mod tests {
         let receipt = tx.get_receipt().await.unwrap();
 
         assert_eq!(receipt.energy_used, 0x5208);
-    }
-
-    #[tokio::test]
-    async fn non_eip1559_network() {
-        let provider = ProviderBuilder::new()
-            .filler(crate::fillers::EnergyFiller)
-            .filler(crate::fillers::NonceFiller::default())
-            .filler(crate::fillers::NetworkIdFiller::default())
-            .on_anvil();
-
-        let tx = TransactionRequest {
-            from: Some(cAddress!("0000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")),
-            value: Some(U256::from(100)),
-            to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
-            // access list forces legacy energysing
-            // access_list: Some(vec![Default::default()].into()),
-            ..Default::default()
-        };
-
-        let tx = provider.send_transaction(tx).await.unwrap();
-
-        let receipt = tx.get_receipt().await.unwrap();
-
-        // assert_eq!(receipt.effective_gas_price, 2000000000);
     }
 }

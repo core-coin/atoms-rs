@@ -23,7 +23,7 @@ pub struct Receipt<T = Log> {
     pub status: bool,
     /// Gas used
     #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
-    pub cumulative_gas_used: u128,
+    pub cumulative_energy_used: u128,
     /// Log send from contracts.
     pub logs: Vec<T>,
 }
@@ -57,8 +57,8 @@ where
         self.bloom_slow()
     }
 
-    fn cumulative_gas_used(&self) -> u128 {
-        self.cumulative_gas_used
+    fn cumulative_energy_used(&self) -> u128 {
+        self.cumulative_energy_used
     }
 
     fn logs(&self) -> &[T] {
@@ -104,8 +104,8 @@ impl<T> TxReceipt<T> for ReceiptWithBloom<T> {
         Some(self.logs_bloom)
     }
 
-    fn cumulative_gas_used(&self) -> u128 {
-        self.receipt.cumulative_gas_used
+    fn cumulative_energy_used(&self) -> u128 {
+        self.receipt.cumulative_energy_used
     }
 
     fn logs(&self) -> &[T] {
@@ -133,14 +133,14 @@ impl<T: Encodable> ReceiptWithBloom<T> {
     fn encode_fields(&self, out: &mut dyn BufMut) {
         self.receipt_rlp_header().encode(out);
         self.receipt.status.encode(out);
-        self.receipt.cumulative_gas_used.encode(out);
+        self.receipt.cumulative_energy_used.encode(out);
         self.logs_bloom.encode(out);
         self.receipt.logs.encode(out);
     }
 
     fn payload_len(&self) -> usize {
         self.receipt.status.length()
-            + self.receipt.cumulative_gas_used.length()
+            + self.receipt.cumulative_energy_used.length()
             + self.logs_bloom.length()
             + self.receipt.logs.length()
     }
@@ -175,7 +175,8 @@ impl<T> ReceiptWithBloom<T> {
         let bloom = Decodable::decode(b)?;
         let logs = Decodable::decode(b)?;
 
-        let receipt = Receipt { status: success, cumulative_gas_used, logs };
+        let receipt =
+            Receipt { status: success, cumulative_energy_used: cumulative_gas_used, logs };
 
         let this = Self { receipt, logs_bloom: bloom };
         let consumed = started_len - b.len();
@@ -197,7 +198,7 @@ impl<T: Encodable> Encodable for ReceiptWithBloom<T> {
 
     fn length(&self) -> usize {
         let payload_length = self.receipt.status.length()
-            + self.receipt.cumulative_gas_used.length()
+            + self.receipt.cumulative_energy_used.length()
             + self.logs_bloom.length()
             + self.receipt.logs.length();
         payload_length + length_of_length(payload_length)
