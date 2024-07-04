@@ -1,9 +1,7 @@
-use crate::{
-    BuildResult, Ethereum, Network, NetworkSigner, TransactionBuilder, TransactionBuilderError,
-};
+use crate::{BuildResult, Ethereum, NetworkSigner, TransactionBuilder, TransactionBuilderError};
 use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
-use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
-use alloy_rpc_types::{request::TransactionRequest, AccessList};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
+use alloy_rpc_types::{request::TransactionRequest, TransactionInput};
 use alloy_signer::Signature;
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
@@ -28,7 +26,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
     }
 
     fn set_input<T: Into<Bytes>>(&mut self, input: T) {
-        self.input.input = Some(input.into());
+        self.input = TransactionInput { data: Some(input.into()), input: None };
     }
 
     fn from(&self) -> Option<IcanAddress> {
@@ -198,9 +196,10 @@ mod tests {
             panic!("wrong variant")
         };
 
-        assert_eq!(errors.len(), 3);
+        assert_eq!(errors.len(), 4);
         assert!(errors.contains(&"to"));
         assert!(errors.contains(&"nonce"));
         assert!(errors.contains(&"energy_limit"));
+        assert!(errors.contains(&"network_id"));
     }
 }

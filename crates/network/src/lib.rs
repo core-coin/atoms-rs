@@ -55,7 +55,7 @@ pub trait Network: Debug + Clone + Copy + Sized + Send + Sync + 'static {
     // -- Consensus types --
 
     /// The network receipt envelope type.
-    type ReceiptEnvelope: Eip2718Envelope + TxReceipt;
+    type ReceiptEnvelope: TxReceipt;
 
     /// The network header type.
     type Header;

@@ -18,10 +18,10 @@ use thiserror::Error;
 use url::Url;
 
 /// How long we will wait for gocore to indicate that it is ready.
-const GOCORE_STARTUP_TIMEOUT: Duration = Duration::from_secs(10);
+const GOCORE_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
 
 /// Timeout for waiting for gocore to add a peer.
-const GOCORE_DIAL_LOOP_TIMEOUT: Duration = Duration::from_secs(20);
+const GOCORE_DIAL_LOOP_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// The exposed APIs
 const API: &str = "xcb,net,web3,txpool,admin,personal,miner,debug";
@@ -466,8 +466,7 @@ impl Gocore {
             self.inner_disable_discovery();
         }
 
-
-        // Gocore doesn't support authrpc 
+        // Gocore doesn't support authrpc
 
         // // Set the port for authenticated APIs
         // let authrpc_port = self.authrpc_port.unwrap_or_else(&mut unused_port);

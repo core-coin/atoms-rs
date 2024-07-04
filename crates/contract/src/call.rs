@@ -2,7 +2,7 @@ use crate::{CallDecoder, Error, EthCall, Result};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt};
 use alloy_json_abi::Function;
 use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
-use alloy_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, U256};
+use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_provider::{PendingTransactionBuilder, Provider};
 use alloy_rpc_types::{state::StateOverride, AccessList, BlockId};
 use alloy_sol_types::SolCall;
@@ -52,7 +52,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// ```no_run
 /// # async fn test<P: alloy_contract::private::Provider>(provider: P) -> Result<(), Box<dyn std::error::Error>> {
 /// use alloy_contract::SolCallBuilder;
-/// use alloy_primitives::{Address, U256};
+/// use alloy_primitives::{IcanAddress, U256};
 /// use alloy_sol_types::sol;
 ///
 /// sol! {
@@ -65,7 +65,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// # stringify!(
 /// let provider = ...;
 /// # );
-/// let address = Address::ZERO;
+/// let address = IcanAddress::ZERO;
 /// let contract = MyContract::new(address, &provider);
 ///
 /// // Through `contract.<function_name>(args...)`
@@ -87,7 +87,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 ///
 /// ```no_run
 /// # async fn test<P: alloy_contract::private::Provider>(provider: P, dynamic_abi: alloy_json_abi::JsonAbi) -> Result<(), Box<dyn std::error::Error>> {
-/// use alloy_primitives::{Address, Bytes, U256};
+/// use alloy_primitives::{IcanAddress, Bytes, U256};
 /// use alloy_dyn_abi::DynSolValue;
 /// use alloy_contract::{CallBuilder, ContractInstance, DynCallBuilder, Interface, RawCallBuilder};
 ///
@@ -99,7 +99,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// # stringify!(
 /// let provider = ...;
 /// # );
-/// let address = Address::ZERO;
+/// let address = IcanAddress::ZERO;
 /// let contract: ContractInstance<_, _, _> = interface.connect(address, &provider);
 ///
 /// // Build and call the function:
@@ -540,7 +540,9 @@ mod tests {
     use super::*;
     use alloy_network::Ethereum;
     use alloy_node_bindings::{Anvil, AnvilInstance};
-    use alloy_primitives::{address, b256, bytes, cAddress, hex, utils::parse_units, B256};
+    use alloy_primitives::{
+        address, b256, bytes, cAddress, hex, utils::parse_units, Address, B256,
+    };
     use alloy_provider::{
         layers::AnvilProvider, Provider, ProviderBuilder, ReqwestProvider, RootProvider,
         WalletProvider,
@@ -549,7 +551,7 @@ mod tests {
     use alloy_rpc_types::AccessListItem;
     use alloy_sol_types::sol;
     use alloy_transport_http::Http;
-    use reqwest::Client;
+    use reqwest::{Client, Url};
 
     #[test]
     fn empty_constructor() {
@@ -567,8 +569,8 @@ mod tests {
 
     sol! {
         // Solc: 0.8.24+commit.e11b9ed9.Linux.g++
-        // Command: solc a.sol --bin --via-ir --optimize --optimize-runs 1
-        #[sol(rpc, bytecode = "60803461006357601f61014838819003918201601f19168301916001600160401b038311848410176100675780849260209460405283398101031261006357518015158091036100635760ff80195f54169116175f5560405160cc908161007c8239f35b5f80fd5b634e487b7160e01b5f52604160045260245ffdfe60808060405260043610156011575f80fd5b5f3560e01c9081638bf1799f14607a575063b09a261614602f575f80fd5b346076576040366003190112607657602435801515810360765715606f57604060015b81516004356001600160a01b0316815260ff919091166020820152f35b60405f6052565b5f80fd5b346076575f36600319011260765760209060ff5f541615158152f3fea264697066735822122043709781c9bdc30c530978abf5db25a4b4ccfebf989baafd2ba404519a7f7e8264736f6c63430008180033")]
+        // Command: ylem a.sol --bin --optimize --optimize-runs 1
+        #[sol(rpc, bytecode = "608060405234801561001057600080fd5b506040516101ac3803806101ac83398101604081905261002f91610045565b6000805460ff191691151591909117905561006c565b600060208284031215610056578081fd5b81518015158114610065578182fd5b9392505050565b6101318061007b6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80637fe45f4e146037578063b117ffa6146058575b600080fd5b60005460439060ff1681565b60405190151581526020015b60405180910390f35b6067606336600460a5565b6085565b604080516001600160b01b039093168352602083019190915201604f565b600080838360935760006096565b60015b90925060ff1690509250929050565b6000806040838503121560b6578182fd5b823591506020830135801515811460cb578182fd5b80915050925092905056fea26469706673582212200ea2bbf5c9db4fbfc298faab31c5289f6641dc875867ed916014b4510ec4853264736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
         contract MyContract {
             bool public myState;
 
@@ -577,15 +579,15 @@ mod tests {
             }
 
             function doStuff(uint a, bool b) external pure returns(address c, bytes32 d) {
-                return (address(uint160(a)), bytes32(uint256(b ? 1 : 0)));
+                return (address(uint176(a)), bytes32(uint256(b ? 1 : 0)));
             }
         }
     }
 
     sol! {
         // Solc: 0.8.24+commit.e11b9ed9.Linux.g++
-        // Command: solc counter.sol --bin --via-ir --optimize --optimize-runs 1
-        #[sol(rpc, bytecode = "608080604052346100155760d4908161001a8239f35b5f80fdfe60808060405260043610156011575f80fd5b5f3560e01c90816361bc221a14607e575063d09de08a14602f575f80fd5b34607a575f366003190112607a575f546001600160801b038082166001018181116066576001600160801b03199092169116175f55005b634e487b7160e01b5f52601160045260245ffd5b5f80fd5b34607a575f366003190112607a575f546001600160801b03168152602090f3fea26469706673582212208b360e442c4bb2a4bbdec007ee24588c7a88e0aa52ac39efac748e5e23eff69064736f6c63430008180033")]
+        // Command: ylem counter.sol --bin --optimize --optimize-runs 1
+        #[sol(rpc, bytecode = "608060405234801561001057600080fd5b50610140806100206000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80636d701db8146037578063bc1ecb8e146065575b600080fd5b6000546049906001600160801b031681565b6040516001600160801b03909116815260200160405180910390f35b606b606d565b005b6000805460019190819060899084906001600160801b031660af565b92506101000a8154816001600160801b0302191690836001600160801b03160217905550565b60006001600160801b0382811684821680830382111560dc57634b1f2ce360e01b84526011600452602484fd5b0194935050505056fea2646970667358221220008f79d64885516e4359c52ada4057f5591d397b06e28eedc1c1a6ad416e91d164736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
         contract Counter {
             uint128 public counter;
 
@@ -611,11 +613,7 @@ mod tests {
     #[test]
     fn change_chain_id() {
         let call_builder = build_call_builder().chain_id(1337);
-        assert_eq!(
-            call_builder.request.network_id,
-            1337,
-            "chain_id of request should be '1337'"
-        );
+        assert_eq!(call_builder.request.network_id, 1337, "chain_id of request should be '1337'");
     }
 
     #[test]
@@ -673,7 +671,7 @@ mod tests {
         assert_eq!(
             *call_builder.calldata(),
             bytes!(
-                "b09a2616"
+                "b117ffa6"
                 "0000000000000000000000000000000000000000000000000000000000000000"
                 "0000000000000000000000000000000000000000000000000000000000000001"
             ),
@@ -735,14 +733,11 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn deploy_and_call_with_priority() {
-        let provider = ProviderBuilder::new().on_anvil();
+        let provider = ProviderBuilder::new().with_recommended_fillers().on_anvil_with_signer();
         let counter_contract = Counter::deploy(provider.clone()).await.unwrap();
-        let max_fee_per_gas: U256 = parse_units("50", "gwei").unwrap().into();
-        let max_priority_fee_per_gas: U256 = parse_units("0.1", "gwei").unwrap().into();
         let receipt = counter_contract
             .increment()
-            .max_fee_per_gas(max_fee_per_gas.to())
-            .max_priority_fee_per_gas(max_priority_fee_per_gas.to())
+            .gas_price(1000)
             .send()
             .await
             .expect("Could not send transaction")
@@ -756,16 +751,9 @@ mod tests {
             .expect("failed to fetch tx")
             .expect("tx not included");
         assert_eq!(
-            transaction.max_fee_per_gas.expect("max_fee_per_gas of the transaction should be set"),
-            max_fee_per_gas.to(),
-            "max_fee_per_gas of the transaction should be set to the right value"
+            transaction.energy_price.expect("energy_price of the transaction should be set"),
+            1000,
+            "energy_price of the transaction should be set to the right value"
         );
-        assert_eq!(
-            transaction
-                .max_priority_fee_per_gas
-                .expect("max_priority_fee_per_gas of the transaction should be set"),
-            max_priority_fee_per_gas.to(),
-            "max_priority_fee_per_gas of the transaction should be set to the right value"
-        )
     }
 }
