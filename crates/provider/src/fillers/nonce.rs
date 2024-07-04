@@ -146,6 +146,7 @@ mod tests {
             to: Some(cAddress!("0000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045").into()),
             energy_price: Some(20e9 as u128),
             energy: Some(21000),
+            network_id: 1,
             ..Default::default()
         };
 

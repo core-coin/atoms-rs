@@ -221,6 +221,9 @@ impl TransactionRequest {
         if self.energy_price.is_none() {
             missing.push("energy_price");
         }
+        if self.network_id == 0 {
+            missing.push("network_id");
+        }
         missing
     }
 
@@ -312,20 +315,20 @@ impl TransactionInput {
 }
 
 impl From<Vec<u8>> for TransactionInput {
-    fn from(input: Vec<u8>) -> Self {
-        Self { input: Some(input.into()), data: None }
+    fn from(data: Vec<u8>) -> Self {
+        Self { input: None, data: Some(data.into()) }
     }
 }
 
 impl From<Bytes> for TransactionInput {
-    fn from(input: Bytes) -> Self {
-        Self { input: Some(input), data: None }
+    fn from(data: Bytes) -> Self {
+        Self { input: None, data: Some(data) }
     }
 }
 
 impl From<Option<Bytes>> for TransactionInput {
-    fn from(input: Option<Bytes>) -> Self {
-        Self { input, data: None }
+    fn from(data: Option<Bytes>) -> Self {
+        Self { input: None, data: data }
     }
 }
 

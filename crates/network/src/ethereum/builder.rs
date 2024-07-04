@@ -132,15 +132,15 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
         // value and data may be None. If they are, they will be set to default.
         // gas fields and nonce may be None, if they are, they will be populated
         // with default values by the RPC server
-        self.from.is_some()
+        self.from.is_some() && self.network_id != 0
     }
 
     fn can_build(&self) -> bool {
         // value and data may be none. If they are, they will be set to default
         // values.
 
-        // chain_id and from may be none.
-        let common = self.energy.is_some() && self.nonce.is_some();
+        // from may be none.
+        let common = self.energy.is_some() && self.nonce.is_some() && self.network_id != 0;
         let legacy = self.energy_price.is_some();
         let eip2930 = legacy;
 
@@ -154,10 +154,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 
     fn build_unsigned(self) -> BuildResult<TypedTransaction, Ethereum> {
         if let Err(missing) = self.complete_legacy() {
-            return Err((
-                self,
-                TransactionBuilderError::InvalidTransactionRequest(missing),
-            ));
+            return Err((self, TransactionBuilderError::InvalidTransactionRequest(missing)));
         }
         Ok(self.build_typed_tx().expect("checked by complete_legacy"))
     }

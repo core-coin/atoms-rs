@@ -1,4 +1,6 @@
+use alloy_consensus::{Signed, TxLegacy};
 use alloy_network::Network;
+use alloy_signer::Signature;
 
 /// A transaction that can be sent. This is either a builder or an envelope.
 ///
@@ -13,7 +15,7 @@ pub enum SendableTx<N: Network> {
     /// A transaction that is not yet signed.
     Builder(N::TransactionRequest),
     /// A transaction that is signed and fully constructed.
-    Envelope(N::TxEnvelope),
+    Signed(Signed<TxLegacy, Signature>),
 }
 
 impl<N: Network> SendableTx<N> {
@@ -40,13 +42,13 @@ impl<N: Network> SendableTx<N> {
 
     /// Check if the transaction is an envelope.
     pub const fn is_envelope(&self) -> bool {
-        matches!(self, Self::Envelope(_))
+        matches!(self, Self::Signed(_))
     }
 
     /// Fallible cast to a built transaction envelope.
-    pub const fn as_envelope(&self) -> Option<&N::TxEnvelope> {
+    pub const fn as_envelope(&self) -> Option<&Signed<TxLegacy, Signature>> {
         match self {
-            Self::Envelope(tx) => Some(tx),
+            Self::Signed(tx) => Some(tx),
             _ => None,
         }
     }
