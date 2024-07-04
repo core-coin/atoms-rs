@@ -16,7 +16,7 @@ that returns a `CallBuilder` for that function. See its documentation for more d
 # async fn test() -> Result<(), Box<dyn std::error::Error>> {
 use alloy_contract::SolCallBuilder;
 use alloy_network::Ethereum;
-use alloy_primitives::{Address, U256};
+use alloy_primitives::{IcanAddress, U256};
 use alloy_provider::ProviderBuilder;
 use alloy_sol_types::sol;
 
@@ -36,11 +36,11 @@ let provider = ProviderBuilder::new().with_recommended_fillers().on_builtin("htt
 
 // If `#[sol(bytecode = "0x...")]` is provided, the contract can be deployed with `MyContract::deploy`,
 // and a new instance will be created.
-let constructor_arg = Address::ZERO;
+let constructor_arg = IcanAddress::ZERO;
 let contract = MyContract::deploy(&provider, constructor_arg).await?;
 
 // Otherwise, or if already deployed, a new contract instance can be created with `MyContract::new`.
-let address = Address::ZERO;
+let address = IcanAddress::ZERO;
 let contract = MyContract::new(address, &provider);
 
 // Build a call to the `doStuff` function and configure it.

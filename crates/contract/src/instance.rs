@@ -2,7 +2,7 @@ use crate::{CallBuilder, Event, Interface, Result};
 use alloy_dyn_abi::DynSolValue;
 use alloy_json_abi::{Function, JsonAbi};
 use alloy_network::{Ethereum, Network};
-use alloy_primitives::{Address, Selector};
+use alloy_primitives::{IcanAddress, Selector};
 use alloy_provider::Provider;
 use alloy_rpc_types::Filter;
 use alloy_sol_types::SolEvent;
@@ -15,7 +15,7 @@ use std::marker::PhantomData;
 /// an address, which is used to connect to it so that it may receive messages (transactions).
 #[derive(Clone)]
 pub struct ContractInstance<T, P, N = Ethereum> {
-    address: Address,
+    address: IcanAddress,
     provider: P,
     interface: Interface,
     transport: PhantomData<T>,
@@ -25,25 +25,25 @@ pub struct ContractInstance<T, P, N = Ethereum> {
 impl<T, P, N> ContractInstance<T, P, N> {
     /// Creates a new contract from the provided address, provider, and interface.
     #[inline]
-    pub const fn new(address: Address, provider: P, interface: Interface) -> Self {
+    pub const fn new(address: IcanAddress, provider: P, interface: Interface) -> Self {
         Self { address, provider, interface, transport: PhantomData, network: PhantomData }
     }
 
     /// Returns a reference to the contract's address.
     #[inline]
-    pub const fn address(&self) -> &Address {
+    pub const fn address(&self) -> &IcanAddress {
         &self.address
     }
 
     /// Sets the contract's address.
     #[inline]
-    pub fn set_address(&mut self, address: Address) {
+    pub fn set_address(&mut self, address: IcanAddress) {
         self.address = address;
     }
 
     /// Returns a new contract instance at `address`.
     #[inline]
-    pub fn at(mut self, address: Address) -> ContractInstance<T, P, N> {
+    pub fn at(mut self, address: IcanAddress) -> ContractInstance<T, P, N> {
         self.set_address(address);
         self
     }
