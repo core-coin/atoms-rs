@@ -1,5 +1,5 @@
 use crate::{managers::InFlight, RawSubscription};
-use alloy_primitives::U256;
+use base_primitives::U256;
 use std::fmt;
 use tokio::sync::oneshot;
 

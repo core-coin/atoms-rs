@@ -15,7 +15,7 @@
 #![deny(unused_must_use, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use alloy_primitives::{TxHash, B256, U256};
+use base_primitives::{TxHash, B256, U256};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 

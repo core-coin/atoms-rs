@@ -2,11 +2,11 @@ use crate::{CallBuilder, Event, Interface, Result};
 use alloy_dyn_abi::DynSolValue;
 use alloy_json_abi::{Function, JsonAbi};
 use alloy_network::{Ethereum, Network};
-use alloy_primitives::{IcanAddress, Selector};
 use alloy_provider::Provider;
 use alloy_rpc_types::Filter;
-use alloy_sol_types::SolEvent;
 use alloy_transport::Transport;
+use base_primitives::{IcanAddress, Selector};
+use base_ylm_types::YlmEvent;
 use std::marker::PhantomData;
 
 /// A handle to an Ethereum contract at a specific address.
@@ -101,7 +101,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P,
     }
 
     /// Returns an [`Event`] builder with the provided filter.
-    pub fn event<E: SolEvent>(&self, filter: Filter) -> Event<T, &P, E, N> {
+    pub fn event<E: YlmEvent>(&self, filter: Filter) -> Event<T, &P, E, N> {
         Event::new(&self.provider, filter)
     }
 }

@@ -1,4 +1,4 @@
-use alloy_primitives::{Bloom, Log};
+use base_primitives::{Bloom, Log};
 
 mod any;
 pub use any::AnyReceiptEnvelope;
@@ -31,8 +31,8 @@ pub trait TxReceipt<T = Log> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_primitives::{b256, bytes, cAddress, hex, Bytes, LogData};
     use alloy_rlp::{Decodable, Encodable};
+    use base_primitives::{b256, bytes, cAddress, hex, Bytes, LogData};
 
     // Test vector from: https://eips.ethereum.org/EIPS/eip-2481
     #[test]

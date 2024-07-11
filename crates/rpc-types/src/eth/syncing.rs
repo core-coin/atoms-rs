@@ -1,4 +1,4 @@
-use alloy_primitives::{U256, U64};
+use base_primitives::{U256, U64};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::BTreeMap;
 use libgoldilocks::VerifyingKey;

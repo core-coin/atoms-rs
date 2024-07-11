@@ -16,9 +16,9 @@ that returns a `CallBuilder` for that function. See its documentation for more d
 # async fn test() -> Result<(), Box<dyn std::error::Error>> {
 use alloy_contract::SolCallBuilder;
 use alloy_network::Ethereum;
-use alloy_primitives::{IcanAddress, U256};
+use base_primitives::{IcanAddress, U256};
 use alloy_provider::ProviderBuilder;
-use alloy_sol_types::sol;
+use base_ylm_types::sol;
 
 sol! {
     #[sol(rpc)] // <-- Important! Generates the necessary `MyContract` struct and function methods.

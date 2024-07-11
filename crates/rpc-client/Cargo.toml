@@ -25,7 +25,7 @@ tokio-stream = { workspace = true, features = ["sync"] }
 tower.workspace = true
 tracing.workspace = true
 
-alloy-primitives = { workspace = true, optional = true }
+base-primitives = { workspace = true, optional = true }
 alloy-pubsub = { workspace = true, optional = true }
 alloy-transport-ws = { workspace = true, optional = true }
 
@@ -39,7 +39,7 @@ url = { workspace = true, optional = true }
 alloy-transport-ipc = { workspace = true, optional = true }
 
 [dev-dependencies]
-alloy-primitives.workspace = true
+base-primitives.workspace = true
 alloy-node-bindings.workspace = true
 alloy-transport-ipc = { workspace = true, features = ["mock"] }
 alloy-transport-ws.workspace = true
@@ -51,6 +51,6 @@ futures-util.workspace = true
 default = ["reqwest"]
 reqwest = ["dep:url", "dep:reqwest", "alloy-transport-http/reqwest"]
 hyper = ["dep:url", "dep:hyper-util", "alloy-transport-http/hyper"]
-pubsub = ["dep:alloy-pubsub", "dep:alloy-primitives"]
+pubsub = ["dep:alloy-pubsub", "dep:base-primitives"]
 ws = ["pubsub", "dep:alloy-transport-ws", "dep:url"]
 ipc = ["pubsub", "dep:alloy-transport-ipc"]

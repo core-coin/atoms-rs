@@ -7,7 +7,7 @@
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
-use alloy_primitives::{Address, B256, U256};
+use base_primitives::{Address, B256, U256};
 use core::{mem, ops::Deref};
 
 /// A list of addresses and storage keys that the transaction plans to access.

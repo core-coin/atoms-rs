@@ -180,7 +180,7 @@ impl PartialEq for Wallet<SigningKey> {
 mod tests {
     use super::*;
     use crate::SignerSync;
-    use alloy_primitives::cAddress;
+    use base_primitives::cAddress;
 
     #[cfg(feature = "keystore")]
     use tempfile::tempdir;
@@ -235,7 +235,7 @@ mod tests {
     #[test]
     #[cfg(feature = "keystore")]
     fn encrypted_json_keystore_from_pk() {
-        use alloy_primitives::hex;
+        use base_primitives::hex;
 
         // create and store an encrypted JSON keystore in this directory
         let dir = tempdir().unwrap();
@@ -261,7 +261,7 @@ mod tests {
     #[test]
     fn signs_msg() {
         let message = "Some data";
-        let hash = alloy_primitives::utils::eip191_hash_message(message);
+        let hash = base_primitives::utils::eip191_hash_message(message);
         let key = Wallet::<SigningKey>::random_with(&mut rand::thread_rng(), 1);
         let address = key.address;
 
@@ -281,8 +281,8 @@ mod tests {
     #[cfg(feature = "eip712")]
     fn typed_data() {
         use alloy_dyn_abi::eip712::TypedData;
-        use alloy_primitives::{keccak256, Address, I256, U256};
-        use alloy_sol_types::{eip712_domain, sol, SolStruct};
+        use base_primitives::{keccak256, Address, I256, U256};
+        use base_ylm_types::{eip712_domain, sol, SolStruct};
         use serde::Serialize;
 
         sol! {

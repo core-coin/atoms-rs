@@ -1,5 +1,5 @@
 use alloy_network::Network;
-use alloy_primitives::{BlockHash, B256};
+use base_primitives::{BlockHash, B256};
 use alloy_transport::{Transport, TransportResult};
 
 use crate::Provider;

@@ -8,7 +8,7 @@ use crate::{
 use alloy_eips::eip2718::Encodable2718;
 use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
 use alloy_network::{Ethereum, Network};
-use alloy_primitives::{
+use base_primitives::{
     hex, BlockHash, BlockNumber, Bytes, IcanAddress, StorageKey, StorageValue, TxHash, B256, U128,
     U256, U64,
 };
@@ -202,7 +202,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// ```no_run
     /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
-    /// use alloy_primitives::sha3;
+    /// use base_primitives::sha3;
     /// use alloy_rpc_types::Filter;
     ///
     /// let signature = sha3("Transfer(address,address,uint256)".as_bytes());
@@ -344,7 +344,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ///
     /// ```no_run
     /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
-    /// use alloy_primitives::{cAddress, b256};
+    /// use base_primitives::{cAddress, b256};
     /// use alloy_rpc_types::Filter;
     /// use futures::StreamExt;
     ///
@@ -935,7 +935,7 @@ mod tests {
     use crate::{ProviderBuilder, WalletProvider};
     use alloy_network::TransactionBuilder;
     use alloy_node_bindings::Anvil;
-    use alloy_primitives::{address, b256, bytes, cAddress};
+    use base_primitives::{address, b256, bytes, cAddress};
     use alloy_rpc_types::request::TransactionRequest;
 
     fn init_tracing() {

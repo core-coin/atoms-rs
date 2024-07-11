@@ -7,7 +7,7 @@ pub use alloy_eips::{
     calc_blob_gasprice, calc_excess_blob_gas, BlockHashOrNumber, BlockId, BlockNumHash,
     BlockNumberOrTag, ForkBlock, RpcBlockHash,
 };
-use alloy_primitives::{Address, Bloom, Bytes, IcanAddress, B256, B64, U256, U64};
+use base_primitives::{Address, Bloom, Bytes, IcanAddress, B256, B64, U256, U64};
 use serde::{ser::Error, Deserialize, Serialize, Serializer};
 use std::{collections::BTreeMap, ops::Deref};
 

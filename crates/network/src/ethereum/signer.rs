@@ -1,6 +1,6 @@
 use crate::{Network, NetworkSigner, TxSigner};
 use alloy_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
-use alloy_primitives::IcanAddress;
+use base_primitives::IcanAddress;
 use alloy_signer::Signature;
 use async_trait::async_trait;
 use std::{collections::BTreeMap, sync::Arc};

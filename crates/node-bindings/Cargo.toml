@@ -12,9 +12,8 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-primitives = { workspace = true, features = ["std", "k256", "serde"] }
+base-primitives = { workspace = true, features = ["std", "serde"] }
 alloy-genesis.workspace = true
-k256.workspace = true
 libgoldilocks.workspace = true
 serde_json = { workspace = true, features = ["std"] }
 tempfile.workspace = true

@@ -5,8 +5,8 @@
 #[cfg(not(feature = "std"))]
 use crate::alloc::{vec, vec::Vec};
 
-use alloy_primitives::{sha3, Sealed, B256};
 use alloy_rlp::{Buf, BufMut, Header, EMPTY_STRING_CODE};
+use base_primitives::{sha3, Sealed, B256};
 use core::{
     fmt,
     fmt::{Display, Formatter},

@@ -1,5 +1,5 @@
 use crate::{common::Id, RpcParam};
-use alloy_primitives::{sha3, B256};
+use base_primitives::{sha3, B256};
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Serialize};
 use serde_json::value::RawValue;
 use std::borrow::Cow;

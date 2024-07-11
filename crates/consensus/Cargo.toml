@@ -12,11 +12,11 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-primitives = { workspace = true, features = ["rlp"] }
+base-primitives = { workspace = true, features = ["rlp"] }
 alloy-rlp.workspace = true
 alloy-eips.workspace = true
 alloy-serde = { workspace = true, optional = true }
-alloy-sol-types.workspace = true
+base-ylm-types.workspace = true
 
 # kzg
 c-kzg = { workspace = true, features = ["serde"], optional = true }
@@ -30,20 +30,18 @@ proptest-derive = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
-alloy-primitives = { workspace = true, features = ["arbitrary", "rand"] }
+base-primitives = { workspace = true, features = ["arbitrary", "rand"] }
 alloy-signer.workspace = true
 
 arbitrary = { workspace = true, features = ["derive"] }
 proptest = { workspace = true }
 proptest-derive = { workspace = true }
-k256.workspace = true
 tokio = { workspace = true, features = ["macros"] }
 serde_json.workspace = true
 
 [features]
 default = ["std"]
 std = ["alloy-eips/std", "c-kzg?/std"]
-k256 = ["alloy-primitives/k256"]
 kzg = ["dep:c-kzg", "alloy-eips/kzg", "std"]
 arbitrary = [
     "std",
@@ -54,7 +52,7 @@ arbitrary = [
 ]
 serde = [
     "dep:serde",
-    "alloy-primitives/serde",
+    "base-primitives/serde",
     "dep:alloy-serde",
     "alloy-eips/serde",
 ]

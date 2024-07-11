@@ -67,7 +67,7 @@
 // mod tests {
 //     use super::*;
 //     use crate::SignerSync;
-//     use alloy_primitives::{address, hex};
+//     use base_primitives::{address, hex};
 
 //     #[test]
 //     fn from_key() {

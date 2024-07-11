@@ -32,7 +32,7 @@ impl Network for AnyNetwork {
 }
 
 impl ReceiptResponse for AnyTransactionReceipt {
-    fn contract_address(&self) -> Option<alloy_primitives::IcanAddress> {
+    fn contract_address(&self) -> Option<base_primitives::IcanAddress> {
         self.contract_address
     }
 }

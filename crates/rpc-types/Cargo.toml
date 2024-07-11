@@ -14,7 +14,7 @@ exclude.workspace = true
 [dependencies]
 # ethereum
 alloy-rlp = { workspace = true, features = ["arrayvec", "derive"] }
-alloy-primitives = { workspace = true, features = ["rlp", "serde", "std"] }
+base-primitives = { workspace = true, features = ["rlp", "serde", "std"] }
 alloy-serde.workspace = true
 alloy-genesis.workspace = true
 libgoldilocks.workspace = true
@@ -36,22 +36,21 @@ proptest-derive = { version = "0.4", optional = true }
 
 # jsonrpsee
 jsonrpsee-types = { version = "0.22", optional = true }
-alloy-sol-types.workspace = true
+base-ylm-types.workspace = true
 
 [features]
 arbitrary = [
     "dep:arbitrary",
     "dep:proptest-derive",
     "dep:proptest",
-    "alloy-primitives/arbitrary",
+    "base-primitives/arbitrary",
     "alloy-eips/arbitrary",
 ]
 jsonrpsee-types = ["dep:jsonrpsee-types"]
-ssz = ["alloy-primitives/ssz", "alloy-eips/ssz"]
-k256 = ["alloy-consensus/k256"]
+ssz = ["base-primitives/ssz", "alloy-eips/ssz"]
 
 [dev-dependencies]
-alloy-primitives = { workspace = true, features = [
+base-primitives = { workspace = true, features = [
     "rand",
     "rlp",
     "serde",

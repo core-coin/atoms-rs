@@ -12,18 +12,17 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-primitives = { workspace = true, features = ["std"] }
+base-primitives = { workspace = true, features = ["std"] }
 
 async-trait.workspace = true
 auto_impl.workspace = true
 elliptic-curve.workspace = true
-k256.workspace = true
 libgoldilocks.workspace = true
 thiserror.workspace = true
 
 # eip712
-alloy-sol-types = { workspace = true, optional = true, features = ["std"] }
-alloy-dyn-abi = { workspace = true, optional = true, features = ["std", "eip712"] }
+base-ylm-types = { workspace = true, optional = true, features = ["std"] }
+base-dyn-abi = { workspace = true, optional = true, features = ["std", "eip712"] }
 
 [dev-dependencies]
 alloy-consensus = { workspace = true, features = ["std"] }
@@ -36,4 +35,4 @@ tempfile.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [features]
-eip712 = ["dep:alloy-sol-types", "dep:alloy-dyn-abi"]
+eip712 = ["dep:base-ylm-types", "dep:base-dyn-abi"]

@@ -1,4 +1,4 @@
-use alloy_primitives::B256;
+use base_primitives::B256;
 use futures::{ready, Stream, StreamExt};
 use serde::de::DeserializeOwned;
 use serde_json::value::RawValue;

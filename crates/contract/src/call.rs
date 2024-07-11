@@ -2,11 +2,11 @@ use crate::{CallDecoder, Error, EthCall, Result};
 use alloy_dyn_abi::{DynSolValue, JsonAbiExt};
 use alloy_json_abi::Function;
 use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
-use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_provider::{PendingTransactionBuilder, Provider};
 use alloy_rpc_types::{state::StateOverride, AccessList, BlockId};
-use alloy_sol_types::SolCall;
+use base_ylm_types::SolCall;
 use alloy_transport::Transport;
+use base_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use std::{
     future::{Future, IntoFuture},
     marker::PhantomData,
@@ -52,8 +52,8 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// ```no_run
 /// # async fn test<P: alloy_contract::private::Provider>(provider: P) -> Result<(), Box<dyn std::error::Error>> {
 /// use alloy_contract::SolCallBuilder;
-/// use alloy_primitives::{IcanAddress, U256};
-/// use alloy_sol_types::sol;
+/// use base_primitives::{IcanAddress, U256};
+/// use base_ylm_types::sol;
 ///
 /// sol! {
 ///     #[sol(rpc)] // <-- Important!
@@ -87,7 +87,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 ///
 /// ```no_run
 /// # async fn test<P: alloy_contract::private::Provider>(provider: P, dynamic_abi: alloy_json_abi::JsonAbi) -> Result<(), Box<dyn std::error::Error>> {
-/// use alloy_primitives::{IcanAddress, Bytes, U256};
+/// use base_primitives::{IcanAddress, Bytes, U256};
 /// use alloy_dyn_abi::DynSolValue;
 /// use alloy_contract::{CallBuilder, ContractInstance, DynCallBuilder, Interface, RawCallBuilder};
 ///
@@ -117,7 +117,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// # }
 /// ```
 ///
-/// [sol]: alloy_sol_types::sol
+/// [sol]: base_ylm_types::sol
 #[derive(Clone)]
 #[must_use = "call builders do nothing unless you `.call`, `.send`, or `.await` them"]
 pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
@@ -195,7 +195,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> RawCallBuilder<T, P, N
     /// Decode a return value from a constructor:
     ///
     /// ```no_run
-    /// # use alloy_sol_types::sol;
+    /// # use base_ylm_types::sol;
     /// sol! {
     ///     // NOTE: This contract is not meant to be deployed on-chain, but rather
     ///     // used in a static call with its creation code as the call data.
@@ -540,17 +540,15 @@ mod tests {
     use super::*;
     use alloy_network::Ethereum;
     use alloy_node_bindings::{Anvil, AnvilInstance};
-    use alloy_primitives::{
-        address, b256, bytes, cAddress, hex, utils::parse_units, Address, B256,
-    };
     use alloy_provider::{
         layers::AnvilProvider, Provider, ProviderBuilder, ReqwestProvider, RootProvider,
         WalletProvider,
     };
     use alloy_rpc_client::RpcClient;
     use alloy_rpc_types::AccessListItem;
-    use alloy_sol_types::sol;
+    use base_ylm_types::sol;
     use alloy_transport_http::Http;
+    use base_primitives::{address, b256, bytes, cAddress, hex, utils::parse_units, Address, B256};
     use reqwest::{Client, Url};
 
     #[test]

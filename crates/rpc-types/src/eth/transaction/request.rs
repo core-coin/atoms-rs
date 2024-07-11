@@ -2,7 +2,7 @@
 
 use crate::Transaction;
 use alloy_consensus::{TxLegacy, TypedTransaction};
-use alloy_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, B256, U256};
+use base_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, B256, U256};
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 
@@ -372,7 +372,7 @@ pub struct TransactionInputError;
 mod tests {
     use super::*;
     use crate::WithOtherFields;
-    use alloy_primitives::b256;
+    use base_primitives::b256;
 
     // <https://github.com/paradigmxyz/reth/issues/6670>
     #[test]

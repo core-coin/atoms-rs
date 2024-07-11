@@ -17,7 +17,7 @@
 #[macro_use]
 extern crate tracing;
 
-use alloy_primitives::U256;
+use base_primitives::U256;
 
 pub mod anvil;
 pub use anvil::{Anvil, AnvilInstance};

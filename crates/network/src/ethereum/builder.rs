@@ -1,6 +1,6 @@
 use crate::{BuildResult, Ethereum, NetworkSigner, TransactionBuilder, TransactionBuilderError};
 use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
-use alloy_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
+use base_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
 use alloy_rpc_types::{request::TransactionRequest, TransactionInput};
 use alloy_signer::Signature;
 
@@ -169,7 +169,7 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 mod tests {
     use crate::{TransactionBuilder, TransactionBuilderError};
     use alloy_consensus::{TxLegacy, TypedTransaction};
-    use alloy_primitives::{Address, IcanAddress};
+    use base_primitives::{Address, IcanAddress};
     use alloy_rpc_types::{AccessList, TransactionRequest};
 
     #[test]

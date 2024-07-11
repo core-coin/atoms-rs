@@ -4,7 +4,7 @@
 
 #![allow(unknown_lints, non_local_definitions)]
 
-use alloy_primitives::{Address, U256};
+use base_primitives::{Address, U256};
 
 /// Multiplier for converting gwei to wei.
 pub const GWEI_TO_WEI: u64 = 1_000_000_000;

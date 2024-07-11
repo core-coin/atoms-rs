@@ -18,10 +18,10 @@
 /* --------------------------------------- Core re-exports -------------------------------------- */
 
 // This should generally not be used by downstream crates as we re-export everything else
-// individually. It is acceptable to use this if an item has been added to `alloy-core`
+// individually. It is acceptable to use this if an item has been added to `base-core`
 // and it has not been added to the re-exports below.
 #[doc(hidden)]
-pub use alloy_core as core;
+pub use base_core as core;
 
 #[doc(inline)]
 pub use self::core::primitives;
@@ -36,12 +36,12 @@ pub use self::core::dyn_abi;
 #[doc(inline)]
 pub use self::core::json_abi;
 
-#[cfg(feature = "sol-types")]
+#[cfg(feature = "ylm-types")]
 #[doc(inline)]
 pub use self::core::sol_types;
 
 // Show this re-export in docs instead of the wrapper below.
-#[cfg(all(doc, feature = "sol-types"))]
+#[cfg(all(doc, feature = "ylm-types"))]
 #[doc(no_inline)]
 pub use sol_types::sol;
 
@@ -52,12 +52,12 @@ pub use self::core::rlp;
 /// [`sol!`](sol_types::sol!) `macro_rules!` wrapper to set import attributes.
 ///
 /// See [`sol!`](sol_types::sol!) for the actual macro documentation.
-#[cfg(all(not(doc), feature = "sol-types"))] // Show the actual macro in docs.
+#[cfg(all(not(doc), feature = "ylm-types"))] // Show the actual macro in docs.
 #[macro_export]
 macro_rules! sol {
     ($($t:tt)*) => {
         $crate::sol_types::sol! {
-            #![sol(alloy_sol_types = $crate::sol_types, alloy_contract = $crate::contract)]
+            #![sol(base_ylm_types = $crate::sol_types, alloy_contract = $crate::contract)]
             $($t)*
         }
     };

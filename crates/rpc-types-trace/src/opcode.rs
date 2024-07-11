@@ -1,6 +1,6 @@
 //! Types for opcode tracing.
 
-use alloy_primitives::B256;
+use base_primitives::B256;
 use serde::{Deserialize, Serialize};
 
 /// Opcode energy usage for a transaction.

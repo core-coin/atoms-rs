@@ -1,7 +1,7 @@
 //! This module extends the Ethereum JSON-RPC provider with the Debug namespace's RPC methods.
 use crate::Provider;
 use alloy_network::Network;
-use alloy_primitives::{TxHash, B256};
+use base_primitives::{TxHash, B256};
 use alloy_rpc_types::{BlockNumberOrTag, TransactionRequest};
 use alloy_rpc_types_trace::gocore::{
     GocoreDebugTracingCallOptions, GocoreDebugTracingOptions, GocoreTrace, TraceResult,
@@ -148,7 +148,7 @@ mod test {
 
     use super::*;
     use alloy_network::TransactionBuilder;
-    use alloy_primitives::{cAddress, hex::FromHex, Bytes, U256};
+    use base_primitives::{cAddress, hex::FromHex, Bytes, U256};
     use alloy_rpc_types::TransactionInput;
 
     fn init_tracing() {

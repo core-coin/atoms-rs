@@ -1,5 +1,5 @@
 use crate::{Response, ResponsePayload};
-use alloy_primitives::U256;
+use base_primitives::U256;
 use serde::{
     de::{MapAccess, Visitor},
     Deserialize, Serialize,

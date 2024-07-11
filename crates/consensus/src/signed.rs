@@ -1,5 +1,5 @@
 use crate::transaction::SignableTransaction;
-use alloy_primitives::{Signature, B256};
+use base_primitives::{Signature, B256};
 
 /// A transaction with a signature and hash seal.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -51,13 +51,12 @@ impl<T: SignableTransaction<Sig>, Sig> Signed<T, Sig> {
     }
 }
 
-#[cfg(feature = "k256")]
 impl<T: SignableTransaction<Signature>> Signed<T, Signature> {
     /// Recover the signer of the transaction
     pub fn recover_signer(
         &self,
         network_id: u64,
-    ) -> Result<alloy_primitives::IcanAddress, alloy_primitives::SignatureError> {
+    ) -> Result<base_primitives::IcanAddress, base_primitives::SignatureError> {
         let sighash = self.tx.signature_hash();
         self.signature.recover_address_from_prehash(&sighash, network_id)
     }

@@ -23,7 +23,7 @@ pub use signer::{Signer, SignerSync};
 
 pub mod utils;
 
-pub use alloy_primitives::Signature;
+pub use base_primitives::Signature;
 
 /// Utility to get and set the network ID on a transaction and the resulting signature within a
 /// signer's `sign_transaction`.

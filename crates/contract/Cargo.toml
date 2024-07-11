@@ -17,10 +17,10 @@ alloy-provider.workspace = true
 alloy-rpc-types.workspace = true
 alloy-transport.workspace = true
 
-alloy-dyn-abi = { workspace = true, features = ["std"] }
-alloy-json-abi.workspace = true
-alloy-primitives.workspace = true
-alloy-sol-types.workspace = true
+base-dyn-abi = { workspace = true, features = ["std"] }
+base-json-abi.workspace = true
+base-primitives.workspace = true
+base-ylm-types.workspace = true
 
 futures-util.workspace = true
 futures.workspace = true

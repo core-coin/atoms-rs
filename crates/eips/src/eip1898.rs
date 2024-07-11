@@ -1,7 +1,7 @@
 //! [EIP-1898]: https://eips.ethereum.org/EIPS/eip-1898
 
-use alloy_primitives::{hex::FromHexError, ruint::ParseError, BlockHash, BlockNumber, B256, U64};
 use alloy_rlp::{bytes, Decodable, Encodable, Error as RlpError};
+use base_primitives::{hex::FromHexError, ruint::ParseError, BlockHash, BlockNumber, B256, U64};
 use core::{
     fmt::{self, Debug, Display, Formatter},
     num::ParseIntError,
@@ -700,7 +700,7 @@ impl fmt::Display for BlockHashOrNumber {
 pub struct ParseBlockHashOrNumberError {
     input: alloc::string::String,
     parse_int_error: ParseIntError,
-    hex_error: alloy_primitives::hex::FromHexError,
+    hex_error: base_primitives::hex::FromHexError,
 }
 
 impl fmt::Display for ParseBlockHashOrNumberError {

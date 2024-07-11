@@ -3,10 +3,10 @@ use alloy_eips::{
     eip1559::{calc_next_block_base_fee, BaseFeeParams},
     eip4844::{calc_blob_gasprice, calc_excess_blob_gas},
 };
-use alloy_primitives::{b256, sha3, Address, BlockNumber, Bloom, Bytes, B256, B64, U256};
 use alloy_rlp::{
     length_of_length, Buf, BufMut, Decodable, Encodable, EMPTY_LIST_CODE, EMPTY_STRING_CODE,
 };
+use base_primitives::{b256, sha3, Address, BlockNumber, Bloom, Bytes, B256, B64, U256};
 use core::mem;
 
 #[cfg(not(feature = "std"))]

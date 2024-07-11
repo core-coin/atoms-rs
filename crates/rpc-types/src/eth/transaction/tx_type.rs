@@ -1,4 +1,4 @@
-use alloy_primitives::U8;
+use base_primitives::U8;
 use serde::{Deserialize, Serialize};
 
 /// Identifier for legacy transaction, however a legacy tx is technically not

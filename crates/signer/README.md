@@ -40,7 +40,7 @@ Sign a transaction:
 
 ```rust
 use alloy_consensus::TxLegacy;
-use alloy_primitives::{U256, cAddress, bytes};
+use base_primitives::{U256, cAddress, bytes};
 use alloy_signer::{Signer, SignerSync};
 use alloy_network::{TxSignerSync};
 use libgoldilocks::SigningKey;

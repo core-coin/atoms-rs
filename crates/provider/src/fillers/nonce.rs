@@ -4,7 +4,7 @@ use crate::{
     Provider,
 };
 use alloy_network::{Network, TransactionBuilder};
-use alloy_primitives::IcanAddress;
+use base_primitives::IcanAddress;
 use alloy_transport::{Transport, TransportResult};
 use dashmap::DashMap;
 use std::sync::Arc;
@@ -116,7 +116,7 @@ impl NonceFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_primitives::{cAddress, U256};
+    use base_primitives::{cAddress, U256};
     use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]

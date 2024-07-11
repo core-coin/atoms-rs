@@ -17,9 +17,9 @@
 
 use alloy_consensus::SignableTransaction;
 use alloy_network::{TxSigner, TxSignerSync};
-use alloy_primitives::{ChainId, IcanAddress, Signature, B256};
 use alloy_signer::{sign_transaction_with_network_id, Error, Result, Signer, SignerSync};
 use async_trait::async_trait;
+use base_primitives::{ChainId, IcanAddress, Signature, B256};
 use libgoldilocks::{PrehashSigner, SigningKey};
 use std::fmt;
 
@@ -45,10 +45,6 @@ pub use coins_bip39;
 /// A wallet instantiated with a locally stored private key
 pub type LocalWallet = Wallet<SigningKey>;
 
-/// A wallet instantiated with a YubiHSM
-#[cfg(feature = "yubihsm")]
-pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
-
 /// An Ethereum private-public key pair which can be used for signing messages.
 ///
 /// # Examples
@@ -57,7 +53,7 @@ pub type YubiWallet = Wallet<yubihsm::ecdsa::Signer<k256::Secp256k1>>;
 ///
 /// The wallet can be used to produce ECDSA [`Signature`] objects, which can be
 /// then verified. Note that this uses
-/// [`eip191_hash_message`](alloy_primitives::eip191_hash_message) under the hood which will
+/// [`eip191_hash_message`](base_primitives::eip191_hash_message) under the hood which will
 /// prefix the message being hashed with the `Ethereum Signed Message` domain separator.
 ///
 /// ```
@@ -206,7 +202,7 @@ where
 mod test {
     use super::*;
     use alloy_consensus::TxLegacy;
-    use alloy_primitives::{cAddress, U256};
+    use base_primitives::{cAddress, U256};
 
     #[tokio::test]
     async fn signs_tx() {

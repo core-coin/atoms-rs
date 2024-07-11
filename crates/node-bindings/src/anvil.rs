@@ -1,6 +1,6 @@
 //! Utilities for launching an Anvil instance.
 
-use alloy_primitives::{hex, IcanAddress};
+use base_primitives::{hex, IcanAddress};
 use libgoldilocks::SigningKey;
 use std::{
     io::{BufRead, BufReader},
