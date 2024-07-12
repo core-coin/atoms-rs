@@ -12,7 +12,7 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-primitives.workspace = true
+base-primitives.workspace = true
 alloy-serde.workspace = true
 
 # serde
@@ -21,4 +21,4 @@ serde_json.workspace = true
 
 [features]
 default = ["std"]
-std = ["alloy-primitives/std", "alloy-serde/std", "serde/std"]
+std = ["base-primitives/std", "alloy-serde/std", "serde/std"]

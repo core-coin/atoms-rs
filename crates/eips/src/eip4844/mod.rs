@@ -13,7 +13,7 @@ pub mod trusted_setup_points;
 mod sidecar;
 pub use sidecar::*;
 
-use alloy_primitives::{b256, FixedBytes, B256, U256};
+use base_primitives::{b256, FixedBytes, B256, U256};
 
 /// The modulus of the BLS group used in the KZG commitment scheme. All field
 /// elements contained in a blob MUST be STRICTLY LESS than this value.

@@ -13,7 +13,7 @@ exclude.workspace = true
 
 [dependencies]
 # core
-alloy-core = { workspace = true, default-features = false }
+base-core = { workspace = true, default-features = false }
 
 # alloy
 alloy-consensus = { workspace = true, default-features = false, optional = true }
@@ -59,7 +59,7 @@ default = ["std", "reqwest"]
 
 # std
 std = [
-    "alloy-core/std",
+    "base-core/std",
     "alloy-eips?/std",
     "alloy-genesis?/std",
     "alloy-serde?/std",
@@ -85,7 +85,7 @@ hyper = [
 
 # general
 consensus = ["dep:alloy-consensus"]
-contract = ["dep:alloy-contract", "dyn-abi", "json-abi", "json", "sol-types"]
+contract = ["dep:alloy-contract", "dyn-abi", "json-abi", "json", "ylm-types"]
 eips = ["dep:alloy-eips"]
 genesis = ["dep:alloy-genesis"]
 network = ["dep:alloy-network"]
@@ -138,30 +138,29 @@ transport-ws = ["transports", "pubsub", "dep:alloy-transport-ws"]
 
 # ---------------------------------------- Core re-exports --------------------------------------- #
 
-dyn-abi = ["alloy-core/dyn-abi"]
-json-abi = ["alloy-core/json-abi"]
-json = ["alloy-core/json"]
-sol-types = ["alloy-core/sol-types"]
+dyn-abi = ["base-core/dyn-abi"]
+json-abi = ["base-core/json-abi"]
+json = ["base-core/json"]
+ylm-types = ["base-core/ylm-types"]
 
-tiny-keccak = ["alloy-core/tiny-keccak"]
-native-keccak = ["alloy-core/native-keccak"]
+tiny-keccak = ["base-core/tiny-keccak"]
+native-keccak = ["base-core/native-keccak"]
 
-postgres = ["alloy-core/postgres"]
-getrandom = ["alloy-core/getrandom"]
-rand = ["alloy-core/rand"]
-rlp = ["alloy-core/rlp"]
-serde = ["alloy-core/serde", "alloy-eips?/serde", "alloy-serde"]
-ssz = ["alloy-core/ssz", "alloy-rpc-types?/ssz"]
+postgres = ["base-core/postgres"]
+getrandom = ["base-core/getrandom"]
+rand = ["base-core/rand"]
+rlp = ["base-core/rlp"]
+serde = ["base-core/serde", "alloy-eips?/serde", "alloy-serde"]
+ssz = ["base-core/ssz", "alloy-rpc-types?/ssz"]
 arbitrary = [
-    "alloy-core/arbitrary",
+    "base-core/arbitrary",
     "alloy-consensus?/arbitrary",
     "alloy-eips?/arbitrary",
     "alloy-rpc-types?/arbitrary",
 ]
-k256 = ["alloy-core/k256", "alloy-consensus?/k256", "alloy-network?/k256"]
 kzg = ["alloy-consensus?/kzg"]
 eip712 = [
-    "alloy-core/eip712",
+    "base-core/eip712",
     "alloy-signer?/eip712",
     # TODO: https://github.com/alloy-rs/alloy/issues/201
     # "alloy-signer-trezor?/eip712",

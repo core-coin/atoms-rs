@@ -2,7 +2,7 @@
 
 use crate::unused_port;
 use alloy_genesis::{CliqueConfig, Genesis};
-use alloy_primitives::{hex, IcanAddress, B256};
+use base_primitives::{hex, IcanAddress, B256};
 use libgoldilocks::SigningKey;
 use std::{
     borrow::Cow,

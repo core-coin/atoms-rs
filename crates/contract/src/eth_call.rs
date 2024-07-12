@@ -3,10 +3,10 @@ use std::{future::IntoFuture, marker::PhantomData};
 use alloy_dyn_abi::{DynSolValue, FunctionExt};
 use alloy_json_abi::Function;
 use alloy_network::Network;
-use alloy_primitives::Bytes;
 use alloy_rpc_types::{state::StateOverride, BlockId};
-use alloy_sol_types::SolCall;
+use base_ylm_types::SolCall;
 use alloy_transport::Transport;
+use base_primitives::Bytes;
 
 use crate::{Error, Result};
 

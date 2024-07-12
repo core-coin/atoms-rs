@@ -1,8 +1,8 @@
 //! Numeric serde helpers.
 
-/// serde functions for handling `u8` via [U8](alloy_primitives::U8)
+/// serde functions for handling `u8` via [U8](base_primitives::U8)
 pub mod u8_via_ruint {
-    use alloy_primitives::U8;
+    use base_primitives::U8;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes an `u8` from [U8] accepting a hex quantity string with optional 0x prefix
@@ -19,9 +19,9 @@ pub mod u8_via_ruint {
     }
 }
 
-/// serde functions for handling `Option<u8>` via [U8](alloy_primitives::U8)
+/// serde functions for handling `Option<u8>` via [U8](base_primitives::U8)
 pub mod u8_opt_via_ruint {
-    use alloy_primitives::U8;
+    use base_primitives::U8;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Serializes u64 as hex string
@@ -41,9 +41,9 @@ pub mod u8_opt_via_ruint {
     }
 }
 
-/// serde functions for handling `u64` via [U64](alloy_primitives::U64)
+/// serde functions for handling `u64` via [U64](base_primitives::U64)
 pub mod u64_via_ruint {
-    use alloy_primitives::U64;
+    use base_primitives::U64;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes an `u64` from [U64] accepting a hex quantity string with optional 0x prefix
@@ -60,9 +60,9 @@ pub mod u64_via_ruint {
     }
 }
 
-/// serde functions for handling `Option<u64>` via [U64](alloy_primitives::U64)
+/// serde functions for handling `Option<u64>` via [U64](base_primitives::U64)
 pub mod u64_opt_via_ruint {
-    use alloy_primitives::U64;
+    use base_primitives::U64;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Serializes u64 as hex string
@@ -83,9 +83,9 @@ pub mod u64_opt_via_ruint {
     }
 }
 
-/// serde functions for handling primitive `u128` via [U128](alloy_primitives::U128)
+/// serde functions for handling primitive `u128` via [U128](base_primitives::U128)
 pub mod u128_via_ruint {
-    use alloy_primitives::U128;
+    use base_primitives::U128;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes an `u128` accepting a hex quantity string with optional 0x prefix or
@@ -103,9 +103,9 @@ pub mod u128_via_ruint {
     }
 }
 
-/// serde functions for handling primitive optional `u128` via [U128](alloy_primitives::U128)
+/// serde functions for handling primitive optional `u128` via [U128](base_primitives::U128)
 pub mod u128_opt_via_ruint {
-    use alloy_primitives::U128;
+    use base_primitives::U128;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes an `Option<u128>` accepting a hex quantity string with optional 0x prefix or
@@ -129,11 +129,11 @@ pub mod u128_opt_via_ruint {
     }
 }
 
-/// serde functions for handling `Vec<u128>` via [U128](alloy_primitives::U128)
+/// serde functions for handling `Vec<u128>` via [U128](base_primitives::U128)
 pub mod u128_vec_via_ruint {
     #[cfg(not(feature = "std"))]
     use alloc::vec::Vec;
-    use alloy_primitives::U128;
+    use base_primitives::U128;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes an `u128` accepting a hex quantity string with optional 0x prefix or
@@ -153,9 +153,9 @@ pub mod u128_vec_via_ruint {
     }
 }
 
-/// serde functions for handling `Vec<Vec<u128>>` via [U128](alloy_primitives::U128)
+/// serde functions for handling `Vec<Vec<u128>>` via [U128](base_primitives::U128)
 pub mod u128_vec_vec_opt_via_ruint {
-    use alloy_primitives::U128;
+    use base_primitives::U128;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     #[cfg(not(feature = "std"))]

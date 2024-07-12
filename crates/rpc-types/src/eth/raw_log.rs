@@ -1,6 +1,6 @@
 //! Ethereum log object.
 
-use alloy_primitives::{Bloom, Bytes, IcanAddress, B256};
+use base_primitives::{Bloom, Bytes, IcanAddress, B256};
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 
 /// Ethereum Log

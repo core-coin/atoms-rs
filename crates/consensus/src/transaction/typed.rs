@@ -1,8 +1,5 @@
-use crate::{
-    Transaction,
-     transaction::TxLegacy,
-};
-use alloy_primitives::TxKind;
+use crate::{transaction::TxLegacy, Transaction};
+use base_primitives::TxKind;
 
 /// The TypedTransaction enum represents all Ethereum transaction request types.
 ///
@@ -36,7 +33,7 @@ impl TypedTransaction {
 }
 
 impl Transaction for TypedTransaction {
-    fn chain_id(&self) -> alloy_primitives::ChainId {
+    fn chain_id(&self) -> base_primitives::ChainId {
         match self {
             Self::Legacy(tx) => tx.chain_id(),
         }
@@ -72,7 +69,7 @@ impl Transaction for TypedTransaction {
         }
     }
 
-    fn value(&self) -> alloy_primitives::U256 {
+    fn value(&self) -> base_primitives::U256 {
         match self {
             Self::Legacy(tx) => tx.value(),
         }

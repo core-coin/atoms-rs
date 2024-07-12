@@ -14,10 +14,9 @@ exclude.workspace = true
 [dependencies]
 alloy-consensus = { workspace = true, features = ["std"] }
 alloy-network.workspace = true
-alloy-primitives.workspace = true
+base-primitives.workspace = true
 alloy-signer.workspace = true
 
-k256.workspace = true
 libgoldilocks.workspace = true
 rand.workspace = true
 thiserror.workspace = true

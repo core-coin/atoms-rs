@@ -6,7 +6,7 @@
 
 #![allow(unknown_lints, non_local_definitions)]
 
-use alloy_primitives::{address, Address, FixedBytes, B256};
+use base_primitives::{address, Address, FixedBytes, B256};
 
 /// Mainnet deposit contract address.
 pub const MAINNET_DEPOSIT_CONTRACT_ADDRESS: Address =

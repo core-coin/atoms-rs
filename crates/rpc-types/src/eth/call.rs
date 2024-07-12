@@ -1,5 +1,5 @@
 use crate::{request::TransactionRequest, BlockId, BlockOverrides};
-use alloy_primitives::Bytes;
+use base_primitives::Bytes;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Bundle of transactions

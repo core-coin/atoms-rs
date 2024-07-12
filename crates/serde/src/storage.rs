@@ -2,7 +2,7 @@
 use alloc::string::{String, ToString};
 use alloc::{collections::BTreeMap, fmt::Write};
 
-use alloy_primitives::{Bytes, B256, U256};
+use base_primitives::{Bytes, B256, U256};
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// A storage key type that can be serialized to and from a hex string up to 32 bytes. Used for

@@ -2,7 +2,7 @@
 //!
 //! [EIP-4788]: https://eips.ethereum.org/EIPS/eip-4788
 
-use alloy_primitives::{address, bytes, Address, Bytes};
+use base_primitives::{address, bytes, Address, Bytes};
 
 /// The caller to be used when calling the EIP-4788 beacon roots contract at the beginning of the
 /// block.

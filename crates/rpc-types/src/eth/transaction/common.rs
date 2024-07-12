@@ -2,7 +2,7 @@
 //! when working with RPC types, such as [Transaction]
 
 use crate::Transaction;
-use alloy_primitives::{TxHash, B256};
+use base_primitives::{TxHash, B256};
 
 /// Additional fields in the context of a block that contains this transaction.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]

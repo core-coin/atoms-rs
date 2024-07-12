@@ -1,4 +1,4 @@
-use alloy_primitives::hex;
+use base_primitives::hex;
 use thiserror::Error;
 
 /// Error thrown by [`Wallet`](crate::Wallet).

@@ -1,6 +1,6 @@
 /// Serde serialization and deserialization for [`bool`] as `0x0` or `0x1`.
 pub mod quantity_bool {
-    use alloy_primitives::aliases::U1;
+    use base_primitives::aliases::U1;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     /// Deserializes a [`bool`] via a [U1] quantity.

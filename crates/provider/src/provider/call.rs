@@ -2,7 +2,7 @@ use std::{borrow::Cow, future::Future, task::Poll};
 
 use alloy_eips::BlockId;
 use alloy_network::Network;
-use alloy_primitives::Bytes;
+use base_primitives::Bytes;
 use alloy_rpc_client::{RpcCall, WeakClient};
 use alloy_rpc_types::state::StateOverride;
 use alloy_transport::{Transport, TransportErrorKind, TransportResult};

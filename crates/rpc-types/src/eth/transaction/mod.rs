@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use crate::eth::other::OtherFields;
 use alloy_consensus::{SignableTransaction, Signed, TxLegacy};
-use alloy_primitives::{Bytes, IcanAddress, Signature, TxKind, B256, U256};
+use base_primitives::{Bytes, IcanAddress, Signature, TxKind, B256, U256};
 
 use serde::{Deserialize, Serialize};
 

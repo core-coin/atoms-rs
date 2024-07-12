@@ -256,7 +256,7 @@ impl<N: Network> TxFiller<N> for EnergyFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_primitives::{cAddress, U256};
+    use base_primitives::{cAddress, U256};
     use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]

@@ -18,7 +18,7 @@
 use alloy_consensus::{SignableTransaction, TxReceipt};
 use alloy_eips::eip2718::{Eip2718Envelope, Eip2718Error};
 use alloy_json_rpc::RpcObject;
-use alloy_primitives::IcanAddress;
+use base_primitives::IcanAddress;
 use alloy_signer::Signature;
 use core::fmt::{Debug, Display};
 

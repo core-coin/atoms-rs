@@ -1,8 +1,8 @@
 use core::borrow::Borrow;
 
 use super::TxReceipt;
-use alloy_primitives::{Bloom, Log};
 use alloy_rlp::{length_of_length, BufMut, Decodable, Encodable};
+use base_primitives::{Bloom, Log};
 
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;

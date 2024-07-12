@@ -1,18 +1,18 @@
 use std::ops::{Deref, DerefMut};
 
 use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
-use alloy_primitives::Bytes;
+use base_primitives::Bytes;
 use alloy_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
 use alloy_signer::Signature;
 
 use crate::{any::AnyNetwork, BuildResult, Network, TransactionBuilder, TransactionBuilderError};
 
 impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
-    fn network_id(&self) -> alloy_primitives::ChainId {
+    fn network_id(&self) -> base_primitives::ChainId {
         self.deref().network_id()
     }
 
-    fn set_network_id(&mut self, chain_id: alloy_primitives::ChainId) {
+    fn set_network_id(&mut self, chain_id: base_primitives::ChainId) {
         self.deref_mut().set_network_id(chain_id)
     }
 
@@ -24,7 +24,7 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_nonce(nonce)
     }
 
-    fn input(&self) -> Option<&alloy_primitives::Bytes> {
+    fn input(&self) -> Option<&base_primitives::Bytes> {
         self.deref().input()
     }
 
@@ -32,15 +32,15 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().set_input(input);
     }
 
-    fn from(&self) -> Option<alloy_primitives::IcanAddress> {
+    fn from(&self) -> Option<base_primitives::IcanAddress> {
         self.deref().from()
     }
 
-    fn set_from(&mut self, from: alloy_primitives::IcanAddress) {
+    fn set_from(&mut self, from: base_primitives::IcanAddress) {
         self.deref_mut().set_from(from);
     }
 
-    fn kind(&self) -> Option<alloy_primitives::TxKind> {
+    fn kind(&self) -> Option<base_primitives::TxKind> {
         self.deref().kind()
     }
 
@@ -48,23 +48,23 @@ impl TransactionBuilder<AnyNetwork> for WithOtherFields<TransactionRequest> {
         self.deref_mut().clear_kind()
     }
 
-    fn set_kind(&mut self, kind: alloy_primitives::TxKind) {
+    fn set_kind(&mut self, kind: base_primitives::TxKind) {
         self.deref_mut().set_kind(kind)
     }
 
-    fn value(&self) -> Option<alloy_primitives::U256> {
+    fn value(&self) -> Option<base_primitives::U256> {
         self.deref().value()
     }
 
-    fn set_value(&mut self, value: alloy_primitives::U256) {
+    fn set_value(&mut self, value: base_primitives::U256) {
         self.deref_mut().set_value(value)
     }
 
-    // fn signature(&self) -> Option<alloy_primitives::B1368> {
+    // fn signature(&self) -> Option<base_primitives::B1368> {
     //     self.deref().signature()
     // }
 
-    // fn set_signature(&mut self, signature: alloy_primitives::B1368) {
+    // fn set_signature(&mut self, signature: base_primitives::B1368) {
     //     self.deref_mut().set_signature(signature)
     // }
 

@@ -1,10 +1,10 @@
 use crate::Error;
 use alloy_network::Ethereum;
-use alloy_primitives::{Address, IcanAddress, LogData};
 use alloy_provider::{FilterPollerBuilder, Network, Provider};
 use alloy_rpc_types::{Filter, Log};
-use alloy_sol_types::SolEvent;
 use alloy_transport::{Transport, TransportResult};
+use base_primitives::{Address, IcanAddress, LogData};
+use base_ylm_types::YlmEvent;
 use futures::Stream;
 use futures_util::StreamExt;
 use std::{fmt, marker::PhantomData};
@@ -30,7 +30,7 @@ impl<T, P: fmt::Debug, E, N> fmt::Debug for Event<T, P, E, N> {
 }
 
 #[doc(hidden)]
-impl<'a, T: Transport + Clone, P: Provider<T, N>, E: SolEvent, N: Network> Event<T, &'a P, E, N> {
+impl<'a, T: Transport + Clone, P: Provider<T, N>, E: YlmEvent, N: Network> Event<T, &'a P, E, N> {
     // `sol!` macro constructor, see `#[sol(rpc)]`. Not public API.
     // NOTE: please avoid changing this function due to its use in the `sol!` macro.
     pub fn new_sol(provider: &'a P, address: &IcanAddress) -> Self {
@@ -44,7 +44,7 @@ impl<'a, T: Transport + Clone, P: Provider<T, N>, E: SolEvent, N: Network> Event
     }
 }
 
-impl<T: Transport + Clone, P: Provider<T, N>, E: SolEvent, N: Network> Event<T, P, E, N> {
+impl<T: Transport + Clone, P: Provider<T, N>, E: YlmEvent, N: Network> Event<T, P, E, N> {
     /// Creates a new event with the provided provider and filter.
     #[allow(clippy::missing_const_for_fn)]
     pub fn new(provider: P, filter: Filter) -> Self {
@@ -128,11 +128,11 @@ impl<T, E> From<FilterPollerBuilder<T, Log>> for EventPoller<T, E> {
     }
 }
 
-impl<T: Transport + Clone, E: SolEvent> EventPoller<T, E> {
+impl<T: Transport + Clone, E: YlmEvent> EventPoller<T, E> {
     /// Starts the poller and returns a stream that yields the decoded event and the raw log.
     ///
     /// Note that this stream will not return `None` until the provider is dropped.
-    pub fn into_stream(self) -> impl Stream<Item = alloy_sol_types::Result<(E, Log)>> + Unpin {
+    pub fn into_stream(self) -> impl Stream<Item = base_ylm_types::Result<(E, Log)>> + Unpin {
         self.poller
             .into_stream()
             .flat_map(futures_util::stream::iter)
@@ -140,7 +140,7 @@ impl<T: Transport + Clone, E: SolEvent> EventPoller<T, E> {
     }
 }
 
-fn decode_log<E: SolEvent>(log: &Log) -> alloy_sol_types::Result<E> {
+fn decode_log<E: YlmEvent>(log: &Log) -> base_ylm_types::Result<E> {
     let log_data: &LogData = log.as_ref();
 
     E::decode_raw_log(log_data.topics().iter().copied(), &log_data.data, false)
@@ -189,9 +189,9 @@ pub(crate) mod subscription {
         }
     }
 
-    impl<E: SolEvent> EventSubscription<E> {
+    impl<E: YlmEvent> EventSubscription<E> {
         /// Converts the subscription into a stream.
-        pub fn into_stream(self) -> impl Stream<Item = alloy_sol_types::Result<(E, Log)>> + Unpin {
+        pub fn into_stream(self) -> impl Stream<Item = base_ylm_types::Result<(E, Log)>> + Unpin {
             self.sub.into_stream().map(|log| decode_log(&log).map(|e| (e, log)))
         }
     }
@@ -200,8 +200,8 @@ pub(crate) mod subscription {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloy_primitives::U256;
-    use alloy_sol_types::sol;
+    use base_primitives::U256;
+    use base_ylm_types::sol;
 
     sol! {
         // ylem v0.8.24; solc a.sol --optimize --bin

@@ -15,10 +15,10 @@ exclude.workspace = true
 alloy-consensus = { workspace = true, features = ["std"] }
 alloy-eips = { workspace = true, features = ["serde"] }
 alloy-json-rpc.workspace = true
-alloy-primitives.workspace = true
+base-primitives.workspace = true
 alloy-rpc-types.workspace = true
 alloy-signer.workspace = true
-alloy-sol-types.workspace = true
+base-ylm-types.workspace = true
 
 async-trait.workspace = true
 futures-utils-wasm.workspace = true
@@ -27,6 +27,3 @@ thiserror.workspace = true
 [dev-dependencies]
 alloy-signer-wallet.workspace = true
 tokio.workspace = true
-
-[features]
-k256 = ["alloy-primitives/k256", "alloy-consensus/k256"]

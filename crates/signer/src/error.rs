@@ -1,4 +1,4 @@
-use alloy_primitives::hex;
+use base_primitives::hex;
 use std::fmt;
 use thiserror::Error;
 
@@ -28,7 +28,7 @@ pub enum Error {
     HexError(#[from] hex::FromHexError),
     /// Signature error.
     #[error(transparent)]
-    SignatureError(#[from] alloy_primitives::SignatureError),
+    SignatureError(#[from] base_primitives::SignatureError),
     /// Generic error.
     #[error(transparent)]
     Other(#[from] Box<dyn std::error::Error + Send + Sync + 'static>),

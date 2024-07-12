@@ -13,7 +13,7 @@ exclude.workspace = true
 
 [dependencies]
 alloy-json-rpc.workspace = true
-alloy-primitives.workspace = true
+base-primitives.workspace = true
 alloy-transport.workspace = true
 
 bimap.workspace = true

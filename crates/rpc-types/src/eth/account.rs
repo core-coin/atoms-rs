@@ -1,4 +1,4 @@
-use alloy_primitives::{Address, Bytes, IcanAddress, B256, U256, U64};
+use base_primitives::{Address, Bytes, IcanAddress, B256, U256, U64};
 use alloy_serde::storage::JsonStorageKey;
 use serde::{Deserialize, Serialize};
 use libgoldilocks::VerifyingKey;

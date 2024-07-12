@@ -12,7 +12,7 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-primitives = { workspace = true, features = ["serde"] }
+base-primitives = { workspace = true, features = ["serde"] }
 alloy-serde.workspace = true
 
 serde.workspace = true

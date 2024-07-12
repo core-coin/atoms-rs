@@ -2,7 +2,7 @@
 
 use crate::{Log, WithOtherFields};
 use alloy_consensus::{AnyReceiptEnvelope, ReceiptWithBloom};
-use alloy_primitives::{Address, IcanAddress, B256};
+use base_primitives::{Address, IcanAddress, B256};
 use serde::{Deserialize, Serialize};
 
 /// Transaction receipt
@@ -92,7 +92,7 @@ pub type AnyTransactionReceipt = WithOtherFields<TransactionReceipt>;
 mod test {
     use super::*;
     use alloy_consensus::{Receipt, ReceiptWithBloom};
-    use alloy_primitives::{address, b256, bloom, cAddress, Bloom};
+    use base_primitives::{address, b256, bloom, cAddress, Bloom};
     use arbitrary::Arbitrary;
     use rand::Rng;
 

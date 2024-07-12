@@ -1,6 +1,6 @@
 use alloy_dyn_abi::Error as AbiError;
-use alloy_primitives::Selector;
 use alloy_transport::TransportError;
+use base_primitives::Selector;
 use thiserror::Error;
 
 /// Dynamic contract result type.
@@ -29,9 +29,9 @@ pub enum Error {
     TransportError(#[from] TransportError),
 }
 
-impl From<alloy_sol_types::Error> for Error {
+impl From<base_ylm_types::Error> for Error {
     #[inline]
-    fn from(e: alloy_sol_types::Error) -> Self {
+    fn from(e: base_ylm_types::Error) -> Self {
         Self::AbiError(e.into())
     }
 }

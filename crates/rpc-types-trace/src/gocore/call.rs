@@ -1,6 +1,6 @@
 //! Geth call tracer types.
 
-use alloy_primitives::{Bytes, IcanAddress, B256, U256};
+use base_primitives::{Bytes, IcanAddress, B256, U256};
 use serde::{Deserialize, Serialize};
 
 /// The response object for `debug_traceTransaction` with `"tracer": "callTracer"`.

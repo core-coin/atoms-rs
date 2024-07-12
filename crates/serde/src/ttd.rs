@@ -1,6 +1,6 @@
 //! Json U256 serde helpers.
 
-use alloy_primitives::U256;
+use base_primitives::U256;
 use serde::{de::Error, Deserialize, Deserializer};
 use serde_json::Value;
 
@@ -64,7 +64,7 @@ where
 mod test {
     #[cfg(not(feature = "std"))]
     use alloc::{vec, vec::Vec};
-    use alloy_primitives::U256;
+    use base_primitives::U256;
     use serde::{Deserialize, Serialize};
 
     #[test]

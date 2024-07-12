@@ -3,7 +3,7 @@ use crate::{
     Provider,
 };
 use alloy_network::{Ethereum, Network, NetworkSigner};
-use alloy_primitives::IcanAddress;
+use base_primitives::IcanAddress;
 use alloy_transport::Transport;
 
 /// Trait for Providers, Fill stacks, etc, which contain [`NetworkSigner`].

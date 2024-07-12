@@ -1,4 +1,4 @@
-use alloy_primitives::U256;
+use base_primitives::U256;
 
 /// The default Ethereum block gas limit.
 ///

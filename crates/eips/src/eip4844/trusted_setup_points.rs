@@ -1,4 +1,4 @@
-use alloy_primitives::hex;
+use base_primitives::hex;
 use core::fmt;
 use derive_more::{AsMut, AsRef, Deref, DerefMut};
 
