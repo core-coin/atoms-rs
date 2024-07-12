@@ -1,6 +1,6 @@
 use crate::WeakClient;
-use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
-use alloy_transport::{utils::Spawnable, Transport};
+use atoms_json_rpc::{RpcError, RpcParam, RpcReturn};
+use atoms_transport::{utils::Spawnable, Transport};
 use futures::{Stream, StreamExt};
 use serde::Serialize;
 use serde_json::value::RawValue;
@@ -39,9 +39,9 @@ const MAX_RETRIES: usize = 3;
 /// Poll `xcb_blockNumber` every 5 seconds:
 ///
 /// ```no_run
-/// # async fn example<T: alloy_transport::Transport + Clone>(client: alloy_rpc_client::RpcClient<T>) -> Result<(), Box<dyn std::error::Error>> {
+/// # async fn example<T: atoms_transport::Transport + Clone>(client: atoms_rpc_client::RpcClient<T>) -> Result<(), Box<dyn std::error::Error>> {
 /// use base_primitives::U64;
-/// use alloy_rpc_client::PollerBuilder;
+/// use atoms_rpc_client::PollerBuilder;
 /// use futures_util::StreamExt;
 ///
 /// let poller: PollerBuilder<_, (), U64> = client

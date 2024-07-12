@@ -8,10 +8,10 @@ use crate::{
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BaseFeeParams {
     /// The base_fee_max_change_denominator from EIP-1559
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::num::u128_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::num::u128_via_ruint"))]
     pub max_change_denominator: u128,
     /// The elasticity multiplier from EIP-1559
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::num::u128_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::num::u128_via_ruint"))]
     pub elasticity_multiplier: u128,
 }
 
@@ -21,7 +21,7 @@ impl BaseFeeParams {
         BaseFeeParams { max_change_denominator, elasticity_multiplier }
     }
 
-    /// Get the base fee parameters for Ethereum mainnet
+    /// Get the base fee parameters for Core mainnet
     pub const fn ethereum() -> BaseFeeParams {
         BaseFeeParams {
             max_change_denominator: DEFAULT_BASE_FEE_MAX_CHANGE_DENOMINATOR as u128,

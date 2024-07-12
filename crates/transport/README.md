@@ -1,15 +1,15 @@
-# alloy-transport
+# atoms-transport
 
 <!-- TODO: More links and real doctests -->
 
-Low-level Ethereum JSON-RPC transport abstraction.
+Low-level Core JSON-RPC transport abstraction.
 
 This crate handles RPC connection and request management. It builds an
 `RpcClient` on top of the [tower `Service`] abstraction, and provides
 futures for simple and batch RPC requests as well as a unified `TransportError`
 type.
 
-[alloy-provider]: ../provider/
+[atoms-provider]: ../provider/
 [tower `Service`]: https://docs.rs/tower/latest/tower/trait.Service.html
 
 ## Usage

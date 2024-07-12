@@ -128,7 +128,7 @@ pub enum AnvilError {
 /// # Example
 ///
 /// ```no_run
-/// use alloy_node_bindings::Anvil;
+/// use atoms_node_bindings::Anvil;
 ///
 /// let port = 8545u16;
 /// let url = format!("http://localhost:{}", port).to_string();
@@ -163,7 +163,7 @@ impl Anvil {
     /// # Example
     ///
     /// ```
-    /// # use alloy_node_bindings::Anvil;
+    /// # use atoms_node_bindings::Anvil;
     /// fn a() {
     ///  let anvil = Anvil::default().spawn();
     ///
@@ -179,7 +179,7 @@ impl Anvil {
     /// # Example
     ///
     /// ```
-    /// # use alloy_node_bindings::Anvil;
+    /// # use atoms_node_bindings::Anvil;
     /// fn a() {
     ///  let anvil = Anvil::at("~/.foundry/bin/anvil").spawn();
     ///
@@ -238,7 +238,7 @@ impl Anvil {
         self
     }
 
-    /// Sets the `fork` argument to fork from another currently running Ethereum client
+    /// Sets the `fork` argument to fork from another currently running Core client
     /// at a given block. Input should be the HTTP location and port of the other client,
     /// e.g. `http://localhost:8545`. You can optionally specify the block to fork from
     /// using an @ sign: `http://localhost:8545@1599200`

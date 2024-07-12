@@ -1,3 +1,3 @@
-# alloy-transport-http
+# atoms-transport-http
 
 HTTP transport implementation.

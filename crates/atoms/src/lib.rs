@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -38,26 +38,26 @@ pub use self::core::json_abi;
 
 #[cfg(feature = "ylm-types")]
 #[doc(inline)]
-pub use self::core::sol_types;
+pub use self::core::ylm_types;
 
 // Show this re-export in docs instead of the wrapper below.
 #[cfg(all(doc, feature = "ylm-types"))]
 #[doc(no_inline)]
-pub use sol_types::sol;
+pub use ylm_types::ylm;
 
 #[cfg(feature = "rlp")]
 #[doc(inline)]
 pub use self::core::rlp;
 
-/// [`sol!`](sol_types::sol!) `macro_rules!` wrapper to set import attributes.
+/// [`ylm!`](ylm_types::ylm!) `macro_rules!` wrapper to set import attributes.
 ///
-/// See [`sol!`](sol_types::sol!) for the actual macro documentation.
+/// See [`ylm!`](ylm_types::ylm!) for the actual macro documentation.
 #[cfg(all(not(doc), feature = "ylm-types"))] // Show the actual macro in docs.
 #[macro_export]
-macro_rules! sol {
+macro_rules! ylm {
     ($($t:tt)*) => {
-        $crate::sol_types::sol! {
-            #![sol(base_ylm_types = $crate::sol_types, alloy_contract = $crate::contract)]
+        $crate::ylm_types::ylm! {
+            #![ylm(base_ylm_types = $crate::ylm_types, base_contract = $crate::contract)]
             $($t)*
         }
     };
@@ -73,138 +73,138 @@ use hyper as _;
 
 #[cfg(feature = "contract")]
 #[doc(inline)]
-pub use alloy_contract as contract;
+pub use base_contract as contract;
 
 #[cfg(feature = "consensus")]
 #[doc(inline)]
-pub use alloy_consensus as consensus;
+pub use atoms_consensus as consensus;
 
 #[cfg(feature = "eips")]
 #[doc(inline)]
-pub use alloy_eips as eips;
+pub use atoms_eips as eips;
 
 #[cfg(feature = "network")]
 #[doc(inline)]
-pub use alloy_network as network;
+pub use atoms_network as network;
 
 #[cfg(feature = "genesis")]
 #[doc(inline)]
-pub use alloy_genesis as genesis;
+pub use atoms_genesis as genesis;
 
 #[cfg(feature = "node-bindings")]
 #[doc(inline)]
-pub use alloy_node_bindings as node_bindings;
+pub use atoms_node_bindings as node_bindings;
 
-/// Interface with an Ethereum blockchain.
+/// Interface with an Core blockchain.
 ///
-/// See [`alloy_provider`] for more details.
+/// See [`atoms_provider`] for more details.
 #[cfg(feature = "providers")]
 pub mod providers {
     #[doc(inline)]
-    pub use alloy_provider::*;
+    pub use atoms_provider::*;
 }
 
-/// Ethereum JSON-RPC publish-subscribe tower service and type definitions.
+/// Core JSON-RPC publish-subscribe tower service and type definitions.
 ///
 /// You will likely not need to use this module;
 /// see the [`providers`] module for high-level usage of pubsub.
 ///
-/// See [`alloy_pubsub`] for more details.
+/// See [`atoms_pubsub`] for more details.
 #[doc = "\n"] // Empty doc line `///` gets deleted by rustfmt.
 #[cfg_attr(feature = "providers", doc = "[`providers`]: crate::providers")]
 #[cfg_attr(
     not(feature = "providers"),
-    doc = "[`providers`]: https://github.com/alloy-rs/alloy/tree/main/crates/provider"
+    doc = "[`providers`]: https://github.com/core-coin/atoms-rs/tree/main/crates/provider"
 )]
 #[cfg(feature = "pubsub")]
 pub mod pubsub {
     #[doc(inline)]
-    pub use alloy_pubsub::*;
+    pub use atoms_pubsub::*;
 }
 
-/// Ethereum JSON-RPC client and types.
+/// Core JSON-RPC client and types.
 #[cfg(feature = "rpc")]
 pub mod rpc {
     #[cfg(feature = "rpc-client")]
     #[doc(inline)]
-    pub use alloy_rpc_client as client;
+    pub use atoms_rpc_client as client;
 
     #[cfg(feature = "json-rpc")]
     #[doc(inline)]
-    pub use alloy_json_rpc as json_rpc;
+    pub use atoms_json_rpc as json_rpc;
 
-    /// Ethereum JSON-RPC type definitions.
+    /// Core JSON-RPC type definitions.
     #[cfg(feature = "rpc-types")]
     pub mod types {
         #[cfg(feature = "rpc-types-eth")]
         #[doc(inline)]
-        pub use alloy_rpc_types as eth;
+        pub use atoms_rpc_types as eth;
 
         #[cfg(feature = "rpc-types-trace")]
         #[doc(inline)]
-        pub use alloy_rpc_types_trace as trace;
+        pub use atoms_rpc_types_trace as trace;
     }
 }
 
 #[cfg(feature = "serde")]
 #[doc(inline)]
-pub use alloy_serde as serde;
+pub use atoms_serde as serde;
 
-/// Ethereum signer abstraction and implementations.
+/// Core signer abstraction and implementations.
 ///
-/// See [`alloy_signer`] for more details.
+/// See [`atoms_signer`] for more details.
 #[cfg(feature = "signers")]
 pub mod signers {
     #[doc(inline)]
-    pub use alloy_signer::*;
+    pub use atoms_signer::*;
 
     #[cfg(feature = "signer-aws")]
     #[doc(inline)]
-    pub use alloy_signer_aws as aws;
+    pub use atoms_signer_aws as aws;
 
     #[cfg(feature = "signer-gcp")]
     #[doc(inline)]
-    pub use alloy_signer_gcp as gcp;
+    pub use atoms_signer_gcp as gcp;
 
     #[cfg(feature = "signer-ledger")]
     #[doc(inline)]
-    pub use alloy_signer_ledger as ledger;
+    pub use atoms_signer_ledger as ledger;
 
     #[cfg(feature = "signer-trezor")]
     #[doc(inline)]
-    pub use alloy_signer_trezor as trezor;
+    pub use atoms_signer_trezor as trezor;
 
     #[cfg(feature = "signer-wallet")]
     #[doc(inline)]
-    pub use alloy_signer_wallet as wallet;
+    pub use atoms_signer_wallet as wallet;
 }
 
-/// Low-level Ethereum JSON-RPC transport abstraction and implementations.
+/// Low-level Core JSON-RPC transport abstraction and implementations.
 ///
 /// You will likely not need to use this module;
 /// see the [`providers`] module for high-level usage of transports.
 ///
-/// See [`alloy_transport`] for more details.
+/// See [`atoms_transport`] for more details.
 #[doc = "\n"] // Empty doc line `///` gets deleted by rustfmt.
 #[cfg_attr(feature = "providers", doc = "[`providers`]: crate::providers")]
 #[cfg_attr(
     not(feature = "providers"),
-    doc = "[`providers`]: https://github.com/alloy-rs/alloy/tree/main/crates/provider"
+    doc = "[`providers`]: https://github.com/core-coin/atoms-rs/tree/main/crates/provider"
 )]
 #[cfg(feature = "transports")]
 pub mod transports {
     #[doc(inline)]
-    pub use alloy_transport::*;
+    pub use atoms_transport::*;
 
     #[cfg(feature = "transport-http")]
     #[doc(inline)]
-    pub use alloy_transport_http as http;
+    pub use atoms_transport_http as http;
 
     #[cfg(feature = "transport-ipc")]
     #[doc(inline)]
-    pub use alloy_transport_ipc as ipc;
+    pub use atoms_transport_ipc as ipc;
 
     #[cfg(feature = "transport-ws")]
     #[doc(inline)]
-    pub use alloy_transport_ws as ws;
+    pub use atoms_transport_ws as ws;
 }

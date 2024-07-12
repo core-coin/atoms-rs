@@ -1,5 +1,5 @@
-use alloy_dyn_abi::Error as AbiError;
-use alloy_transport::TransportError;
+use base_dyn_abi::Error as AbiError;
+use atoms_transport::TransportError;
 use base_primitives::Selector;
 use thiserror::Error;
 

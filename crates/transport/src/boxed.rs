@@ -1,5 +1,5 @@
 use crate::{Transport, TransportError, TransportFut};
-use alloy_json_rpc::{RequestPacket, ResponsePacket};
+use atoms_json_rpc::{RequestPacket, ResponsePacket};
 use std::fmt;
 use tower::Service;
 

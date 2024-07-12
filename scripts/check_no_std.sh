@@ -2,10 +2,10 @@
 set -eo pipefail
 
 no_std_packages=(
-    alloy-eips
-    alloy-genesis
-    alloy-serde
-    alloy-consensus
+    atoms-eips
+    atoms-genesis
+    atoms-serde
+    atoms-consensus
 )
 
 for package in "${no_std_packages[@]}"; do

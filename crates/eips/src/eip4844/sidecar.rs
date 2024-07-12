@@ -3,8 +3,8 @@
 use crate::eip4844::{
     kzg_to_versioned_hash, Blob, Bytes48, BYTES_PER_BLOB, BYTES_PER_COMMITMENT, BYTES_PER_PROOF,
 };
-use base_primitives::{bytes::BufMut, B256};
 use alloy_rlp::{Decodable, Encodable};
+use base_primitives::{bytes::BufMut, B256};
 
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;

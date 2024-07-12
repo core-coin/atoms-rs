@@ -1,4 +1,4 @@
-//! Ethereum protocol-related constants
+//! Coretocol-related constants
 use base_primitives::{b256, B256};
 
 /// The first four bytes of the call data for a function call specifies the function to be called.
@@ -19,7 +19,7 @@ pub const ETH_TO_WEI: u128 = FINNEY_TO_WEI * 1000;
 /// Multiplier for converting mgas to gas.
 pub const MGAS_TO_GAS: u64 = 1_000_000u64;
 
-/// The Ethereum mainnet genesis hash.
+/// The Core mainnet genesis hash.
 pub const MAINNET_GENESIS_HASH: B256 =
     b256!("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3");
 

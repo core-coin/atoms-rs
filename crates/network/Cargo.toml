@@ -1,6 +1,6 @@
 [package]
-name = "alloy-network"
-description = "Ethereum blockchain RPC behavior abstraction"
+name = "atoms-network"
+description = "Core blockchain RPC behavior abstraction"
 
 version.workspace = true
 edition.workspace = true
@@ -12,12 +12,12 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-consensus = { workspace = true, features = ["std"] }
-alloy-eips = { workspace = true, features = ["serde"] }
-alloy-json-rpc.workspace = true
+atoms-consensus = { workspace = true, features = ["std"] }
+atoms-eips = { workspace = true, features = ["serde"] }
+atoms-json-rpc.workspace = true
 base-primitives.workspace = true
-alloy-rpc-types.workspace = true
-alloy-signer.workspace = true
+atoms-rpc-types.workspace = true
+atoms-signer.workspace = true
 base-ylm-types.workspace = true
 
 async-trait.workspace = true
@@ -25,5 +25,5 @@ futures-utils-wasm.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
-alloy-signer-wallet.workspace = true
+atoms-signer-wallet.workspace = true
 tokio.workspace = true

@@ -1,5 +1,5 @@
 [package]
-name = "alloy-transport-http"
+name = "atoms-transport-http"
 description = "HTTP transport implementation"
 
 version.workspace = true
@@ -12,8 +12,8 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-json-rpc = { workspace = true, optional = true }
-alloy-transport.workspace = true
+atoms-json-rpc = { workspace = true, optional = true }
+atoms-transport.workspace = true
 
 url.workspace = true
 serde_json = { workspace = true, optional = true }
@@ -29,12 +29,12 @@ hyper-util = { workspace = true, features = ["full"], optional = true }
 
 [features]
 default = ["reqwest", "reqwest-default-tls"]
-reqwest = ["dep:reqwest", "dep:alloy-json-rpc", "dep:serde_json", "dep:tower", "dep:tracing"]
+reqwest = ["dep:reqwest", "dep:atoms-json-rpc", "dep:serde_json", "dep:tower", "dep:tracing"]
 hyper = [
     "dep:hyper",
     "dep:hyper-util",
     "dep:http-body-util",
-    "dep:alloy-json-rpc",
+    "dep:atoms-json-rpc",
     "dep:serde_json",
     "dep:tower",
     "dep:tracing"

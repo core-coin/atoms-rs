@@ -1,4 +1,4 @@
-use alloy_json_rpc::PubSubItem;
+use atoms_json_rpc::PubSubItem;
 use serde_json::value::RawValue;
 use tokio::sync::{
     mpsc,

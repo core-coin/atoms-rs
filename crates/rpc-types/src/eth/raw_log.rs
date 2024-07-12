@@ -1,9 +1,9 @@
-//! Ethereum log object.
+//! Core log object.
 
-use base_primitives::{Bloom, Bytes, IcanAddress, B256};
 use alloy_rlp::{RlpDecodable, RlpEncodable};
+use base_primitives::{Bloom, Bytes, IcanAddress, B256};
 
-/// Ethereum Log
+/// Core Log
 #[derive(Clone, Debug, Default, PartialEq, Eq, RlpDecodable, RlpEncodable)]
 pub struct Log {
     /// Contract that emitted this log.

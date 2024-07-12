@@ -1,3 +1,3 @@
-# alloy-transport-ws
+# atoms-transport-ws
 
 Websocket transport implementation.

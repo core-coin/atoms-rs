@@ -5,20 +5,20 @@ use crate::{
     PendingTransaction, PendingTransactionBuilder, PendingTransactionConfig, RootProvider,
     SendableTx, XcbCall,
 };
-use alloy_eips::eip2718::Encodable2718;
-use alloy_json_rpc::{RpcError, RpcParam, RpcReturn};
-use alloy_network::{Ethereum, Network};
+use atoms_eips::eip2718::Encodable2718;
+use atoms_json_rpc::{RpcError, RpcParam, RpcReturn};
+use atoms_rpc_client::{ClientRef, PollerBuilder, WeakClient};
+use atoms_rpc_types::{
+    AccessListWithGasUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
+    FeeHistory, Filter, FilterChanges, Log, SyncStatus,
+};
+use atoms_rpc_types_trace::parity::{LocalizedTransactionTrace, TraceResults, TraceType};
+use atoms_transport::{BoxTransport, Transport, TransportErrorKind, TransportResult};
+use atoms_network::{Ethereum, Network};
 use base_primitives::{
     hex, BlockHash, BlockNumber, Bytes, IcanAddress, StorageKey, StorageValue, TxHash, B256, U128,
     U256, U64,
 };
-use alloy_rpc_client::{ClientRef, PollerBuilder, WeakClient};
-use alloy_rpc_types::{
-    AccessListWithGasUsed, Block, BlockId, BlockNumberOrTag, EIP1186AccountProofResponse,
-    FeeHistory, Filter, FilterChanges, Log, SyncStatus,
-};
-use alloy_rpc_types_trace::parity::{LocalizedTransactionTrace, TraceResults, TraceType};
-use alloy_transport::{BoxTransport, Transport, TransportErrorKind, TransportResult};
 use serde_json::value::RawValue;
 use std::borrow::Cow;
 
@@ -36,7 +36,7 @@ pub type FilterPollerBuilder<T, R> = PollerBuilder<T, (U256,), Vec<R>>;
 ///
 /// **IMPORTANT:** this is currently only available when `T` is `PubSubFrontend` or `BoxedClient`
 /// over `PubSubFrontend` due to an internal limitation. This means that layering transports will
-/// always disable subscription support. See [issue #296](https://github.com/alloy-rs/alloy/issues/296).
+/// always disable subscription support. See [issue #296](https://github.com/core-coin/atoms-rs/issues/296).
 ///
 /// The provider supports `pubsub` subscriptions to new block headers and pending transactions. This
 /// is only available on `pubsub` clients, such as Websockets or IPC.
@@ -94,7 +94,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let sub = provider.subscribe_blocks().await?;
@@ -106,7 +106,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # }
     /// ```
     #[cfg(feature = "pubsub")]
-    async fn subscribe_blocks(&self) -> TransportResult<alloy_pubsub::Subscription<Block>> {
+    async fn subscribe_blocks(&self) -> TransportResult<atoms_pubsub::Subscription<Block>> {
         self.root().pubsub_frontend()?;
         let id = self.client().request("xcb_subscribe", ("newHeads",)).await?;
         self.root().get_subscription(id).await
@@ -126,7 +126,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let sub = provider.subscribe_pending_transactions().await?;
@@ -140,7 +140,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     #[cfg(feature = "pubsub")]
     async fn subscribe_pending_transactions(
         &self,
-    ) -> TransportResult<alloy_pubsub::Subscription<B256>> {
+    ) -> TransportResult<atoms_pubsub::Subscription<B256>> {
         self.root().pubsub_frontend()?;
         let id = self.client().request("xcb_subscribe", ("newPendingTransactions",)).await?;
         self.root().get_subscription(id).await
@@ -165,7 +165,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let sub = provider.subscribe_full_pending_transactions().await?;
@@ -179,7 +179,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     #[cfg(feature = "pubsub")]
     async fn subscribe_full_pending_transactions(
         &self,
-    ) -> TransportResult<alloy_pubsub::Subscription<N::TransactionResponse>> {
+    ) -> TransportResult<atoms_pubsub::Subscription<N::TransactionResponse>> {
         self.root().pubsub_frontend()?;
         let id = self.client().request("xcb_subscribe", ("newPendingTransactions", true)).await?;
         self.root().get_subscription(id).await
@@ -200,10 +200,10 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     /// use base_primitives::sha3;
-    /// use alloy_rpc_types::Filter;
+    /// use atoms_rpc_types::Filter;
     ///
     /// let signature = sha3("Transfer(address,address,uint256)".as_bytes());
     ///
@@ -219,7 +219,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     async fn subscribe_logs(
         &self,
         filter: &Filter,
-    ) -> TransportResult<alloy_pubsub::Subscription<Log>> {
+    ) -> TransportResult<atoms_pubsub::Subscription<Log>> {
         self.root().pubsub_frontend()?;
         let id = self.client().request("xcb_subscribe", ("logs", filter)).await?;
         self.root().get_subscription(id).await
@@ -228,7 +228,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// Subscribe to an RPC event.
     #[cfg(feature = "pubsub")]
     #[auto_impl(keep_default_for(&, &mut, Rc, Arc, Box))]
-    async fn subscribe<P, R>(&self, params: P) -> TransportResult<alloy_pubsub::Subscription<R>>
+    async fn subscribe<P, R>(&self, params: P) -> TransportResult<atoms_pubsub::Subscription<R>>
     where
         P: RpcParam,
         R: RpcReturn,
@@ -256,7 +256,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// Get the next 5 blocks:
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let poller = provider.watch_blocks().await?;
@@ -283,7 +283,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// Get the next 5 pending transaction hashes:
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let poller = provider.watch_pending_transactions().await?;
@@ -314,7 +314,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// Get the next 5 pending transaction bodies:
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use futures::StreamExt;
     ///
     /// let poller = provider.watch_full_pending_transactions().await?;
@@ -343,9 +343,9 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// Get the next 5 USDC transfer logs:
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
     /// use base_primitives::{cAddress, b256};
-    /// use alloy_rpc_types::Filter;
+    /// use atoms_rpc_types::Filter;
     /// use futures::StreamExt;
     ///
     /// let address = cAddress!("0000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48");
@@ -457,7 +457,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// See [`PendingTransactionBuilder`](crate::PendingTransactionBuilder) for more examples.
     ///
     /// ```no_run
-    /// # async fn example<N: alloy_network::Network>(provider: impl alloy_provider::Provider, tx: alloy_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example<N: atoms_network::Network>(provider: impl atoms_provider::Provider, tx: atoms_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
     /// let tx_hash = provider.send_transaction(tx)
     ///     .await?
     ///     .with_required_confirmations(2)
@@ -489,7 +489,7 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     ) -> TransportResult<PendingTransactionBuilder<'_, T, N>> {
         match tx {
             SendableTx::Builder(mut tx) => {
-                alloy_network::TransactionBuilder::prep_for_submission(&mut tx);
+                atoms_network::TransactionBuilder::prep_for_submission(&mut tx);
                 let tx_hash = self.client().request("xcb_sendTransaction", (tx,)).await?;
                 Ok(PendingTransactionBuilder::new(self.root(), tx_hash))
             }
@@ -662,20 +662,20 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// or block ID is provided, the call will be executed on the latest block
     /// with the current state.
     ///
-    /// [`StateOverride`]: alloy_rpc_types::state::StateOverride
+    /// [`StateOverride`]: atoms_rpc_types::state::StateOverride
     ///
     /// ## Example
     ///
     /// ```
-    /// # use alloy_provider::Provider;
-    /// # use alloy_eips::BlockId;
-    /// # use alloy_rpc_types::state::StateOverride;
-    /// # use alloy_transport::BoxTransport;
+    /// # use atoms_provider::Provider;
+    /// # use atoms_eips::BlockId;
+    /// # use atoms_rpc_types::state::StateOverride;
+    /// # use atoms_transport::BoxTransport;
     /// # async fn example<P: Provider<BoxTransport>>(
     /// #    provider: P,
     /// #    my_overrides: StateOverride
     /// # ) -> Result<(), Box<dyn std::error::Error>> {
-    /// # let tx = alloy_rpc_types::transaction::TransactionRequest::default();
+    /// # let tx = atoms_rpc_types::transaction::TransactionRequest::default();
     /// // Execute a call on the latest block, with no state overrides
     /// let output = provider.call(&tx).await?;
     /// // Execute a call with a block ID.
@@ -847,8 +847,8 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
-    /// use alloy_rpc_types::BlockNumberOrTag;
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// use atoms_rpc_types::BlockNumberOrTag;
     ///
     /// // No parameters: `()`
     /// let block_number = provider.raw_request("xcb_blockNumber".into(), ()).await?;
@@ -875,8 +875,8 @@ pub trait Provider<T: Transport + Clone = BoxTransport, N: Network = Ethereum>:
     /// # Examples
     ///
     /// ```no_run
-    /// # async fn example(provider: impl alloy_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
-    /// use alloy_rpc_types::BlockNumberOrTag;
+    /// # async fn example(provider: impl atoms_provider::Provider) -> Result<(), Box<dyn std::error::Error>> {
+    /// use atoms_rpc_types::BlockNumberOrTag;
     ///
     /// // No parameters: `()`
     /// let params = serde_json::value::to_raw_value(&())?;
@@ -933,10 +933,10 @@ impl<T: Transport + Clone, N: Network> Provider<T, N> for RootProvider<T, N> {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
-    use alloy_network::TransactionBuilder;
-    use alloy_node_bindings::Anvil;
+    use atoms_node_bindings::Anvil;
+    use atoms_rpc_types::request::TransactionRequest;
+    use atoms_network::TransactionBuilder;
     use base_primitives::{address, b256, bytes, cAddress};
-    use alloy_rpc_types::request::TransactionRequest;
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt::try_init();
@@ -950,7 +950,7 @@ mod tests {
 
         // These blocks are not necessary.
         {
-            let refdyn = &provider as &dyn Provider<alloy_transport_http::Http<reqwest::Client>, _>;
+            let refdyn = &provider as &dyn Provider<atoms_transport_http::Http<reqwest::Client>, _>;
             let num = refdyn.get_block_number().await.unwrap();
             assert_eq!(0, num);
         }
@@ -964,7 +964,7 @@ mod tests {
 
         // Note the `Http` arg, vs no arg (defaulting to `BoxedTransport`) below.
         {
-            let refdyn = &provider as &dyn Provider<alloy_transport_http::Http<reqwest::Client>, _>;
+            let refdyn = &provider as &dyn Provider<atoms_transport_http::Http<reqwest::Client>, _>;
             let num = refdyn.get_block_number().await.unwrap();
             assert_eq!(0, num);
         }
@@ -986,7 +986,7 @@ mod tests {
         let provider = ProviderBuilder::new().on_anvil_with_config(|a| a.block_time(1));
 
         let err = provider.subscribe_blocks().await.unwrap_err();
-        let alloy_json_rpc::RpcError::Transport(TransportErrorKind::PubsubUnavailable) = err else {
+        let atoms_json_rpc::RpcError::Transport(TransportErrorKind::PubsubUnavailable) = err else {
             panic!("{err:?}");
         };
     }
@@ -998,8 +998,8 @@ mod tests {
 
         init_tracing();
         let anvil = Anvil::new().block_time(1).spawn();
-        let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
-        let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
+        let ws = atoms_rpc_client::WsConnect::new(anvil.ws_endpoint());
+        let client = atoms_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
         let provider = RootProvider::<_, Ethereum>::new(client);
 
         let sub = provider.subscribe_blocks().await.unwrap();
@@ -1019,8 +1019,8 @@ mod tests {
 
         init_tracing();
         let anvil = Anvil::new().block_time(1).spawn();
-        let ws = alloy_rpc_client::WsConnect::new(anvil.ws_endpoint());
-        let client = alloy_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
+        let ws = atoms_rpc_client::WsConnect::new(anvil.ws_endpoint());
+        let client = atoms_rpc_client::RpcClient::connect_pubsub(ws).await.unwrap();
         let provider = RootProvider::<_, Ethereum>::new(client);
         let provider = provider.boxed();
 
@@ -1041,8 +1041,8 @@ mod tests {
 
         init_tracing();
         let url = "wss://xcbws-devin.coreblockchain.net";
-        let ws = alloy_rpc_client::WsConnect::new(url);
-        let Ok(client) = alloy_rpc_client::RpcClient::connect_pubsub(ws).await else { return };
+        let ws = atoms_rpc_client::WsConnect::new(url);
+        let Ok(client) = atoms_rpc_client::RpcClient::connect_pubsub(ws).await else { return };
         let provider = RootProvider::<_, Ethereum>::new(client);
         let sub = provider.subscribe_blocks().await.unwrap();
         let mut stream = sub.into_stream().take(1);

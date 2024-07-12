@@ -3,9 +3,9 @@ use crate::{
     provider::SendableTx,
     Provider,
 };
-use alloy_network::{Network, TransactionBuilder};
+use atoms_network::{Network, TransactionBuilder};
+use atoms_transport::{Transport, TransportResult};
 use base_primitives::IcanAddress;
-use alloy_transport::{Transport, TransportResult};
 use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -27,9 +27,9 @@ use tokio::sync::Mutex;
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
-/// # use alloy_rpc_types::TransactionRequest;
-/// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
+/// # use atoms_network::{NetworkSigner, EthereumSigner, Ethereum};
+/// # use atoms_rpc_types::TransactionRequest;
+/// # use atoms_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
 /// let provider = ProviderBuilder::new()
 ///     .with_nonce_management()
@@ -116,8 +116,8 @@ impl NonceFiller {
 mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
+    use atoms_rpc_types::TransactionRequest;
     use base_primitives::{cAddress, U256};
-    use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]
     async fn no_nonce_if_sender_unset() {

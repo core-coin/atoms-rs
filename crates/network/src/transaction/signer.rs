@@ -1,8 +1,8 @@
 use crate::{Network, TransactionBuilder};
-use alloy_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
-use base_primitives::IcanAddress;
-use alloy_signer::Signature;
 use async_trait::async_trait;
+use atoms_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
+use base_primitives::IcanAddress;
+use atoms_signer::Signature;
 use futures_utils_wasm::impl_future;
 
 /// A signer capable of signing any transaction for the given network.
@@ -35,13 +35,13 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
         &self,
         sender: IcanAddress,
         tx: TypedTransaction,
-    ) -> alloy_signer::Result<Signed<TxLegacy, Signature>>;
+    ) -> atoms_signer::Result<Signed<TxLegacy, Signature>>;
 
     /// Asynchronously sign an unsigned transaction.
     fn sign_transaction(
         &self,
         tx: TypedTransaction,
-    ) -> impl_future!(<Output = alloy_signer::Result<Signed<TxLegacy, Signature>>>) {
+    ) -> impl_future!(<Output = atoms_signer::Result<Signed<TxLegacy, Signature>>>) {
         self.sign_transaction_from(self.default_signer_address(), tx)
     }
 
@@ -50,9 +50,9 @@ pub trait NetworkSigner<N: Network>: std::fmt::Debug + Send + Sync {
     async fn sign_request(
         &self,
         request: N::TransactionRequest,
-    ) -> alloy_signer::Result<Signed<TxLegacy, Signature>> {
+    ) -> atoms_signer::Result<Signed<TxLegacy, Signature>> {
         let sender = request.from().unwrap_or_else(|| self.default_signer_address());
-        let tx = request.build_unsigned().map_err(|(_, e)| alloy_signer::Error::other(e))?;
+        let tx = request.build_unsigned().map_err(|(_, e)| atoms_signer::Error::other(e))?;
         self.sign_transaction_from(sender, tx).await
     }
 }
@@ -81,7 +81,7 @@ pub trait TxSigner<Signature> {
     async fn sign_transaction(
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
-    ) -> alloy_signer::Result<Signature>;
+    ) -> atoms_signer::Result<Signature>;
 }
 
 /// Synchronous transaction signer,  capable of signing any [`SignableTransaction`] for the given
@@ -107,5 +107,5 @@ pub trait TxSignerSync<Signature> {
     fn sign_transaction_sync(
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
-    ) -> alloy_signer::Result<Signature>;
+    ) -> atoms_signer::Result<Signature>;
 }

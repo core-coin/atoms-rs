@@ -1,6 +1,6 @@
 use super::WsBackend;
-use alloy_pubsub::PubSubConnect;
-use alloy_transport::{utils::Spawnable, TransportErrorKind, TransportResult};
+use atoms_pubsub::PubSubConnect;
+use atoms_transport::{utils::Spawnable, TransportErrorKind, TransportResult};
 use futures::{
     sink::SinkExt,
     stream::{Fuse, StreamExt},
@@ -17,14 +17,14 @@ pub struct WsConnect {
 
 impl PubSubConnect for WsConnect {
     fn is_local(&self) -> bool {
-        alloy_transport::utils::guess_local_url(&self.url)
+        atoms_transport::utils::guess_local_url(&self.url)
     }
 
-    async fn connect(&self) -> TransportResult<alloy_pubsub::ConnectionHandle> {
+    async fn connect(&self) -> TransportResult<atoms_pubsub::ConnectionHandle> {
         let socket =
             WsMeta::connect(&self.url, None).await.map_err(TransportErrorKind::custom)?.1.fuse();
 
-        let (handle, interface) = alloy_pubsub::ConnectionHandle::new();
+        let (handle, interface) = atoms_pubsub::ConnectionHandle::new();
         let backend = WsBackend { socket, interface };
 
         backend.spawn();

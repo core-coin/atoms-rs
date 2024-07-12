@@ -1,11 +1,11 @@
 use crate::{CallBuilder, Event, Interface, Result};
-use alloy_dyn_abi::DynSolValue;
-use alloy_json_abi::{Function, JsonAbi};
-use alloy_network::{Ethereum, Network};
-use alloy_provider::Provider;
-use alloy_rpc_types::Filter;
-use alloy_transport::Transport;
+use atoms_rpc_types::Filter;
+use atoms_transport::Transport;
+use base_dyn_abi::DynYlmValue;
+use base_json_abi::{Function, JsonAbi};
+use atoms_network::{Ethereum, Network};
 use base_primitives::{IcanAddress, Selector};
+use atoms_provider::Provider;
 use base_ylm_types::YlmEvent;
 use std::marker::PhantomData;
 
@@ -84,7 +84,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P,
     pub fn function(
         &self,
         name: &str,
-        args: &[DynSolValue],
+        args: &[DynYlmValue],
     ) -> Result<CallBuilder<T, &P, Function, N>> {
         let function = self.interface.get_from_name(name)?;
         CallBuilder::new_dyn(&self.provider, function, args)
@@ -94,7 +94,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> ContractInstance<T, P,
     pub fn function_from_selector(
         &self,
         selector: &Selector,
-        args: &[DynSolValue],
+        args: &[DynYlmValue],
     ) -> Result<CallBuilder<T, &P, Function, N>> {
         let function = self.interface.get_from_selector(selector)?;
         CallBuilder::new_dyn(&self.provider, function, args)

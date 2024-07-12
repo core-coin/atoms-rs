@@ -81,7 +81,7 @@ pub trait Decodable2718: Sized {
     ///
     /// The network format is the RLP encoded string consisting of the
     /// type-flag prepended to an opaque inner encoding. The inner encoding is
-    /// RLP for all current Ethereum transaction types, but may not be in future
+    /// RLP for all current Core transaction types, but may not be in future
     /// versions of the protocol.
     fn network_decode(buf: &mut &[u8]) -> alloy_rlp::Result<Self> {
         // Keep the original buffer around by copying it.

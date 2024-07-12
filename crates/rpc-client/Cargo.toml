@@ -1,6 +1,6 @@
 [package]
-name = "alloy-rpc-client"
-description = "Low-level Ethereum JSON-RPC client implementation"
+name = "atoms-rpc-client"
+description = "Low-level Core JSON-RPC client implementation"
 
 version.workspace = true
 edition.workspace = true
@@ -12,9 +12,9 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-json-rpc.workspace = true
-alloy-transport-http.workspace = true
-alloy-transport.workspace = true
+atoms-json-rpc.workspace = true
+atoms-transport-http.workspace = true
+atoms-transport.workspace = true
 
 futures.workspace = true
 pin-project.workspace = true
@@ -26,8 +26,8 @@ tower.workspace = true
 tracing.workspace = true
 
 base-primitives = { workspace = true, optional = true }
-alloy-pubsub = { workspace = true, optional = true }
-alloy-transport-ws = { workspace = true, optional = true }
+atoms-pubsub = { workspace = true, optional = true }
+atoms-transport-ws = { workspace = true, optional = true }
 
 reqwest = { workspace = true, optional = true }
 
@@ -36,21 +36,21 @@ hyper-util = { workspace = true, optional = true }
 url = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-alloy-transport-ipc = { workspace = true, optional = true }
+atoms-transport-ipc = { workspace = true, optional = true }
 
 [dev-dependencies]
 base-primitives.workspace = true
-alloy-node-bindings.workspace = true
-alloy-transport-ipc = { workspace = true, features = ["mock"] }
-alloy-transport-ws.workspace = true
+atoms-node-bindings.workspace = true
+atoms-transport-ipc = { workspace = true, features = ["mock"] }
+atoms-transport-ws.workspace = true
 
 tempfile = "3"
 futures-util.workspace = true
 
 [features]
 default = ["reqwest"]
-reqwest = ["dep:url", "dep:reqwest", "alloy-transport-http/reqwest"]
-hyper = ["dep:url", "dep:hyper-util", "alloy-transport-http/hyper"]
-pubsub = ["dep:alloy-pubsub", "dep:base-primitives"]
-ws = ["pubsub", "dep:alloy-transport-ws", "dep:url"]
-ipc = ["pubsub", "dep:alloy-transport-ipc"]
+reqwest = ["dep:url", "dep:reqwest", "atoms-transport-http/reqwest"]
+hyper = ["dep:url", "dep:hyper-util", "atoms-transport-http/hyper"]
+pubsub = ["dep:atoms-pubsub", "dep:base-primitives"]
+ws = ["pubsub", "dep:atoms-transport-ws", "dep:url"]
+ipc = ["pubsub", "dep:atoms-transport-ipc"]

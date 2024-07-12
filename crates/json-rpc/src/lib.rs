@@ -7,9 +7,9 @@
 //! If you find yourself importing this crate, and you are not implementing a
 //! JSON-RPC client or transport, you are likely at the wrong layer of
 //! abstraction. If you want to _use_ a JSON-RPC client, consider using the
-//! [`alloy-transports`] crate.
+//! [`atoms-transports`] crate.
 //!
-//! [`alloy-transports`]: https://docs.rs/alloy-transports/latest/alloy-transports
+//! [`atoms-transports`]: https://docs.rs/atoms-transports/latest/atoms-transports
 //!
 //! ## Usage
 //!
@@ -67,8 +67,8 @@
 //! [`RpcResult<U>`].
 
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,

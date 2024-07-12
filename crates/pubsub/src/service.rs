@@ -4,9 +4,9 @@ use crate::{
     managers::{InFlight, RequestManager, SubscriptionManager},
     PubSubConnect, PubSubFrontend, RawSubscription,
 };
-use alloy_json_rpc::{Id, PubSubItem, Request, Response, ResponsePayload};
+use atoms_json_rpc::{Id, PubSubItem, Request, Response, ResponsePayload};
 use base_primitives::U256;
-use alloy_transport::{
+use atoms_transport::{
     utils::{to_json_raw_value, Spawnable},
     TransportErrorKind, TransportResult,
 };

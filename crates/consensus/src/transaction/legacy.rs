@@ -12,10 +12,10 @@ use alloc::vec::Vec;
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct TxLegacy {
     /// Added as EIP-155: Simple replay attack protection
-    #[cfg_attr(feature = "serde", serde(default, with = "alloy_serde::u64_via_ruint",))]
+    #[cfg_attr(feature = "serde", serde(default, with = "atoms_serde::u64_via_ruint",))]
     pub network_id: ChainId,
     /// A scalar value equal to the number of transactions sent by the sender; formally Tn.
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u64_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::u64_via_ruint"))]
     pub nonce: u64,
     /// A scalar value equal to the number of
     /// Ore to be paid per unit of energy for all computation
@@ -24,14 +24,14 @@ pub struct TxLegacy {
     /// As core circulation is around 120mil xcb as of 2022 that is around
     /// 120000000000000000000000000 ore we are safe to use u128 as its max number is:
     /// 340282366920938463463374607431768211455
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::u128_via_ruint"))]
     pub energy_price: u128,
     /// A scalar value equal to the maximum
     /// amount of energy that should be used in executing
     /// this transaction. This is paid up-front, before any
     /// computation is done and may not be increased
     /// later; formally Tg.
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::u128_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::u128_via_ruint"))]
     pub energy_limit: u128,
     /// The 160-bit address of the message call’s recipient or, for a contract creation
     /// transaction, ∅, used here to denote the only member of B0 ; formally Tt.
@@ -283,31 +283,28 @@ impl Decodable for TxLegacy {
 
 #[cfg(test)]
 mod tests {
+    use core::str::FromStr;
+
     use crate::{SignableTransaction, TxLegacy};
-    use base_primitives::{address, b256, hex, Address, Signature, TxKind, B256, U256};
+    use base_primitives::{address, b256, cAddress, hex, Address, IcanAddress, Signature, TxKind, B256, U256};
 
     #[test]
     fn recover_signer_legacy() {
-        let signer: Address = hex!("398137383b3d25c92898c656696e41950e47316b").into();
+        let signer: IcanAddress = hex!("0000398137383b3d25c92898c656696e41950e47316b").into();
         let hash: B256 =
             hex!("bb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0").into();
 
         let tx = TxLegacy {
-            chain_id: Some(1),
+            network_id: 1,
             nonce: 0x18,
-            gas_price: 0xfa56ea00,
-            gas_limit: 119902,
-            to: TxKind::Call(hex!("06012c8cf97bead5deae237070f9587f8e7a266d").into()),
+            energy_price: 0xfa56ea00,
+            energy_limit: 119902,
+            to: TxKind::Call(hex!("000006012c8cf97bead5deae237070f9587f8e7a266d").into()),
             value: U256::from(0x1c6bf526340000u64),
             input:  hex!("f7d8c88300000000000000000000000000000000000000000000000000000000000cee6100000000000000000000000000000000000000000000000000000000000ac3e1").into(),
         };
 
-        let sig = Signature::from_scalars_and_parity(
-            b256!("2a378831cf81d99a3f06a18ae1b6ca366817ab4d88a70053c41d7a8f0368e031"),
-            b256!("450d831a05b6e418724436c05c155e0a1b7b921015d0fbc2f667aed709ac4fb5"),
-            37,
-        )
-        .unwrap();
+        let sig = Signature::from_str("").unwrap();
 
         let signed_tx = tx.into_signed(sig);
 
@@ -316,7 +313,7 @@ mod tests {
     }
 
     #[test]
-    // Test vector from https://github.com/alloy-rs/alloy/issues/125
+    // Test vector from https://github.com/core-coin/atoms-rs/issues/125
     fn decode_legacy_and_recover_signer() {
         let raw_tx = "f9015482078b8505d21dba0083022ef1947a250d5630b4cf539739df2c5dacb4c659f2488d880c46549a521b13d8b8e47ff36ab50000000000000000000000000000000000000000000066ab5a608bd00a23f2fe000000000000000000000000000000000000000000000000000000000000008000000000000000000000000048c04ed5691981c42154c6167398f95e8f38a7ff00000000000000000000000000000000000000000000000000000000632ceac70000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006c6ee5e31d828de241282b9606c8e98ea48526e225a0c9077369501641a92ef7399ff81c21639ed4fd8fc69cb793cfa1dbfab342e10aa0615facb2f1bcf3274a354cfe384a38d0cc008a11c2dd23a69111bc6930ba27a8";
 
@@ -326,9 +323,9 @@ mod tests {
         .unwrap();
 
         let recovered = tx.recover_signer(1).unwrap();
-        let expected = address!("a12e1462d0ceD572f396F58B6E2D03894cD7C8a4");
+        let expected = cAddress!("0000a12e1462d0ceD572f396F58B6E2D03894cD7C8a4");
 
-        assert_eq!(tx.tx().chain_id, Some(1), "Expected same chain id");
+        assert_eq!(tx.tx().network_id, 1, "Expected same chain id");
         assert_eq!(expected, recovered, "Expected same signer");
     }
 }

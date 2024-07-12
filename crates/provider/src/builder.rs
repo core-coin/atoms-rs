@@ -6,9 +6,9 @@ use crate::{
     provider::SendableTx,
     Provider, RootProvider,
 };
-use alloy_network::{Ethereum, Network};
-use alloy_rpc_client::{BuiltInConnectionString, ClientBuilder, RpcClient};
-use alloy_transport::{BoxTransport, Transport, TransportError, TransportResult};
+use atoms_rpc_client::{BuiltInConnectionString, ClientBuilder, RpcClient};
+use atoms_transport::{BoxTransport, Transport, TransportError, TransportResult};
+use atoms_network::{Ethereum, Network};
 use libgoldilocks::SigningKey;
 use std::marker::PhantomData;
 
@@ -266,15 +266,15 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
     #[cfg(feature = "ws")]
     pub async fn on_ws(
         self,
-        connect: alloy_transport_ws::WsConnect,
+        connect: atoms_transport_ws::WsConnect,
     ) -> Result<F::Provider, TransportError>
     where
         L: ProviderLayer<
-            RootProvider<alloy_pubsub::PubSubFrontend, N>,
-            alloy_pubsub::PubSubFrontend,
+            RootProvider<atoms_pubsub::PubSubFrontend, N>,
+            atoms_pubsub::PubSubFrontend,
             N,
         >,
-        F: TxFiller<N> + ProviderLayer<L::Provider, alloy_pubsub::PubSubFrontend, N>,
+        F: TxFiller<N> + ProviderLayer<L::Provider, atoms_pubsub::PubSubFrontend, N>,
         N: Network,
     {
         let client = ClientBuilder::default().ws(connect).await?;
@@ -285,16 +285,16 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
     #[cfg(feature = "ipc")]
     pub async fn on_ipc<T>(
         self,
-        connect: alloy_transport_ipc::IpcConnect<T>,
+        connect: atoms_transport_ipc::IpcConnect<T>,
     ) -> Result<F::Provider, TransportError>
     where
-        alloy_transport_ipc::IpcConnect<T>: alloy_pubsub::PubSubConnect,
+        atoms_transport_ipc::IpcConnect<T>: atoms_pubsub::PubSubConnect,
         L: ProviderLayer<
-            RootProvider<alloy_pubsub::PubSubFrontend, N>,
-            alloy_pubsub::PubSubFrontend,
+            RootProvider<atoms_pubsub::PubSubFrontend, N>,
+            atoms_pubsub::PubSubFrontend,
             N,
         >,
-        F: TxFiller<N> + ProviderLayer<L::Provider, alloy_pubsub::PubSubFrontend, N>,
+        F: TxFiller<N> + ProviderLayer<L::Provider, atoms_pubsub::PubSubFrontend, N>,
         N: Network,
     {
         let client = ClientBuilder::default().ipc(connect).await?;
@@ -305,8 +305,8 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
     #[cfg(any(test, feature = "reqwest"))]
     pub fn on_http(self, url: reqwest::Url) -> F::Provider
     where
-        L: ProviderLayer<crate::ReqwestProvider<N>, alloy_transport_http::Http<reqwest::Client>, N>,
-        F: TxFiller<N> + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, N>,
+        L: ProviderLayer<crate::ReqwestProvider<N>, atoms_transport_http::Http<reqwest::Client>, N>,
+        F: TxFiller<N> + ProviderLayer<L::Provider, atoms_transport_http::Http<reqwest::Client>, N>,
         N: Network,
     {
         let client = ClientBuilder::default().http(url);
@@ -319,13 +319,13 @@ impl<L, F, N> ProviderBuilder<L, F, N> {
     where
         L: ProviderLayer<
             crate::HyperProvider<N>,
-            alloy_transport_http::Http<alloy_transport_http::HyperClient>,
+            atoms_transport_http::Http<atoms_transport_http::HyperClient>,
             N,
         >,
         F: TxFiller<N>
             + ProviderLayer<
                 L::Provider,
-                alloy_transport_http::Http<alloy_transport_http::HyperClient>,
+                atoms_transport_http::Http<atoms_transport_http::HyperClient>,
                 N,
             >,
         N: Network,
@@ -343,13 +343,13 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
     pub fn on_anvil(self) -> F::Provider
     where
         F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+            + ProviderLayer<L::Provider, atoms_transport_http::Http<reqwest::Client>, Ethereum>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
-                crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
-                alloy_transport_http::Http<reqwest::Client>,
+                crate::provider::RootProvider<atoms_transport_http::Http<reqwest::Client>>,
+                atoms_transport_http::Http<reqwest::Client>,
             >,
-            alloy_transport_http::Http<reqwest::Client>,
+            atoms_transport_http::Http<reqwest::Client>,
         >,
     {
         self.on_anvil_with_config(std::convert::identity)
@@ -360,19 +360,19 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
     /// use in tests.
     pub fn on_anvil_with_signer(
         self,
-    ) -> <JoinFill<F, SignerFiller<alloy_network::EthereumSigner>> as ProviderLayer<
+    ) -> <JoinFill<F, SignerFiller<atoms_network::CoreSigner>> as ProviderLayer<
         L::Provider,
-        alloy_transport_http::Http<reqwest::Client>,
+        atoms_transport_http::Http<reqwest::Client>,
     >>::Provider
     where
         F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+            + ProviderLayer<L::Provider, atoms_transport_http::Http<reqwest::Client>, Ethereum>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
-                crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
-                alloy_transport_http::Http<reqwest::Client>,
+                crate::provider::RootProvider<atoms_transport_http::Http<reqwest::Client>>,
+                atoms_transport_http::Http<reqwest::Client>,
             >,
-            alloy_transport_http::Http<reqwest::Client>,
+            atoms_transport_http::Http<reqwest::Client>,
         >,
     {
         self.on_anvil_with_signer_and_config(std::convert::identity)
@@ -382,17 +382,17 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
     /// given function is used to configure the anvil instance.
     pub fn on_anvil_with_config(
         self,
-        f: impl FnOnce(alloy_node_bindings::Anvil) -> alloy_node_bindings::Anvil,
+        f: impl FnOnce(atoms_node_bindings::Anvil) -> atoms_node_bindings::Anvil,
     ) -> F::Provider
     where
         F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+            + ProviderLayer<L::Provider, atoms_transport_http::Http<reqwest::Client>, Ethereum>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
-                crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
-                alloy_transport_http::Http<reqwest::Client>,
+                crate::provider::RootProvider<atoms_transport_http::Http<reqwest::Client>>,
+                atoms_transport_http::Http<reqwest::Client>,
             >,
-            alloy_transport_http::Http<reqwest::Client>,
+            atoms_transport_http::Http<reqwest::Client>,
         >,
     {
         let anvil_layer = crate::layers::AnvilLayer::from(f(Default::default()));
@@ -407,31 +407,31 @@ impl<L, F> ProviderBuilder<L, F, Ethereum> {
     /// use in tests.
     pub fn on_anvil_with_signer_and_config(
         self,
-        f: impl FnOnce(alloy_node_bindings::Anvil) -> alloy_node_bindings::Anvil,
-    ) -> <JoinFill<F, SignerFiller<alloy_network::EthereumSigner>> as ProviderLayer<
+        f: impl FnOnce(atoms_node_bindings::Anvil) -> atoms_node_bindings::Anvil,
+    ) -> <JoinFill<F, SignerFiller<atoms_network::CoreSigner>> as ProviderLayer<
         L::Provider,
-        alloy_transport_http::Http<reqwest::Client>,
+        atoms_transport_http::Http<reqwest::Client>,
     >>::Provider
     where
         F: TxFiller<Ethereum>
-            + ProviderLayer<L::Provider, alloy_transport_http::Http<reqwest::Client>, Ethereum>,
+            + ProviderLayer<L::Provider, atoms_transport_http::Http<reqwest::Client>, Ethereum>,
         L: crate::builder::ProviderLayer<
             crate::layers::AnvilProvider<
-                crate::provider::RootProvider<alloy_transport_http::Http<reqwest::Client>>,
-                alloy_transport_http::Http<reqwest::Client>,
+                crate::provider::RootProvider<atoms_transport_http::Http<reqwest::Client>>,
+                atoms_transport_http::Http<reqwest::Client>,
             >,
-            alloy_transport_http::Http<reqwest::Client>,
+            atoms_transport_http::Http<reqwest::Client>,
         >,
     {
         let anvil_layer = crate::layers::AnvilLayer::from(f(Default::default()));
         let url = anvil_layer.endpoint_url();
 
-        let wallet = alloy_signer_wallet::Wallet::from_signing_key(
+        let wallet = atoms_signer_wallet::Wallet::from_signing_key(
             SigningKey::from(anvil_layer.instance().keys()[0].clone()),
             1,
         );
 
-        let signer = crate::network::EthereumSigner::from(wallet);
+        let signer = crate::network::CoreSigner::from(wallet);
 
         self.signer(signer).layer(anvil_layer).on_http(url)
     }

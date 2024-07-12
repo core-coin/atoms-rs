@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -15,10 +15,10 @@
 #![deny(unused_must_use, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use alloy_consensus::SignableTransaction;
-use alloy_network::{TxSigner, TxSignerSync};
-use alloy_signer::{sign_transaction_with_network_id, Error, Result, Signer, SignerSync};
 use async_trait::async_trait;
+use atoms_consensus::SignableTransaction;
+use atoms_network::{TxSigner, TxSignerSync};
+use atoms_signer::{sign_transaction_with_network_id, Error, Result, Signer, SignerSync};
 use base_primitives::{ChainId, IcanAddress, Signature, B256};
 use libgoldilocks::{PrehashSigner, SigningKey};
 use std::fmt;
@@ -45,7 +45,7 @@ pub use coins_bip39;
 /// A wallet instantiated with a locally stored private key
 pub type LocalWallet = Wallet<SigningKey>;
 
-/// An Ethereum private-public key pair which can be used for signing messages.
+/// An Core private-public key pair which can be used for signing messages.
 ///
 /// # Examples
 ///
@@ -54,12 +54,12 @@ pub type LocalWallet = Wallet<SigningKey>;
 /// The wallet can be used to produce ECDSA [`Signature`] objects, which can be
 /// then verified. Note that this uses
 /// [`eip191_hash_message`](base_primitives::eip191_hash_message) under the hood which will
-/// prefix the message being hashed with the `Ethereum Signed Message` domain separator.
+/// prefix the message being hashed with the `Core Signed Message` domain separator.
 ///
 /// ```
-/// use alloy_signer::{Signer, SignerSync};
+/// use atoms_signer::{Signer, SignerSync};
 ///
-/// let wallet = alloy_signer_wallet::LocalWallet::random(1);
+/// let wallet = atoms_signer_wallet::LocalWallet::random(1);
 ///
 /// // Optionally, the wallet's chain id can be set, in order to use EIP-155
 /// // replay protection with different chains
@@ -177,7 +177,7 @@ where
     async fn sign_transaction(
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
-    ) -> alloy_signer::Result<Signature> {
+    ) -> atoms_signer::Result<Signature> {
         sign_transaction_with_network_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
     }
 }
@@ -193,7 +193,7 @@ where
     fn sign_transaction_sync(
         &self,
         tx: &mut dyn SignableTransaction<Signature>,
-    ) -> alloy_signer::Result<Signature> {
+    ) -> atoms_signer::Result<Signature> {
         sign_transaction_with_network_id!(self, tx, self.sign_hash_sync(&tx.signature_hash()))
     }
 }
@@ -201,7 +201,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use alloy_consensus::TxLegacy;
+    use atoms_consensus::TxLegacy;
     use base_primitives::{cAddress, U256};
 
     #[tokio::test]
@@ -261,7 +261,7 @@ mod test {
         // Errors on mismatch.
         tx.network_id = 2;
         let error = sign_tx_test(&mut tx, 1).await.unwrap_err();
-        let expected_error = alloy_signer::Error::TransactionNetworkIdMismatch { signer: 1, tx: 2 };
+        let expected_error = atoms_signer::Error::TransactionNetworkIdMismatch { signer: 1, tx: 2 };
         assert_eq!(error.to_string(), expected_error.to_string());
     }
 }

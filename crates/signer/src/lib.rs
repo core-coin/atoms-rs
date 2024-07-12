@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -37,7 +37,7 @@ macro_rules! sign_transaction_with_network_id {
     ($signer:expr, $tx:expr, $sign:expr) => {{
         if let network_id = $signer.network_id() {
             if !$tx.set_chain_id_checked(network_id) {
-                return Err(alloy_signer::Error::TransactionNetworkIdMismatch {
+                return Err(atoms_signer::Error::TransactionNetworkIdMismatch {
                     signer: network_id,
                     // we can only end up here if the tx has a network id
                     tx: $tx.chain_id(),
@@ -45,7 +45,7 @@ macro_rules! sign_transaction_with_network_id {
             }
         }
 
-        let mut sig = $sign.map_err(alloy_signer::Error::other)?;
+        let mut sig = $sign.map_err(atoms_signer::Error::other)?;
 
         Ok(sig)
     }};

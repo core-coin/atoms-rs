@@ -1,7 +1,7 @@
 use crate::{provider::SendableTx, Provider};
-use alloy_json_rpc::RpcError;
-use alloy_network::{Network, NetworkSigner, TransactionBuilder};
-use alloy_transport::{Transport, TransportResult};
+use atoms_json_rpc::RpcError;
+use atoms_network::{Network, NetworkSigner, TransactionBuilder};
+use atoms_transport::{Transport, TransportResult};
 
 use super::{FillerControlFlow, TxFiller};
 
@@ -14,9 +14,9 @@ use super::{FillerControlFlow, TxFiller};
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
-/// # use alloy_rpc_types::TransactionRequest;
-/// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
+/// # use atoms_network::{NetworkSigner, EthereumSigner, Ethereum};
+/// # use atoms_rpc_types::TransactionRequest;
+/// # use atoms_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
 /// let provider = ProviderBuilder::new()
 ///     .signer(signer)
@@ -107,8 +107,8 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{Provider, ProviderBuilder};
+    use atoms_rpc_types::TransactionRequest;
     use base_primitives::{address, b256, cAddress, U256};
-    use alloy_rpc_types::TransactionRequest;
 
     #[tokio::test]
     async fn poc() {

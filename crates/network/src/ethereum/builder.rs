@@ -1,8 +1,8 @@
 use crate::{BuildResult, Ethereum, NetworkSigner, TransactionBuilder, TransactionBuilderError};
-use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
+use atoms_consensus::{Signed, TxLegacy, TypedTransaction};
 use base_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
-use alloy_rpc_types::{request::TransactionRequest, TransactionInput};
-use alloy_signer::Signature;
+use atoms_rpc_types::{request::TransactionRequest, TransactionInput};
+use atoms_signer::Signature;
 
 impl TransactionBuilder<Ethereum> for TransactionRequest {
     fn network_id(&self) -> ChainId {
@@ -168,9 +168,9 @@ impl TransactionBuilder<Ethereum> for TransactionRequest {
 #[cfg(test)]
 mod tests {
     use crate::{TransactionBuilder, TransactionBuilderError};
-    use alloy_consensus::{TxLegacy, TypedTransaction};
+    use atoms_consensus::{TxLegacy, TypedTransaction};
     use base_primitives::{Address, IcanAddress};
-    use alloy_rpc_types::{AccessList, TransactionRequest};
+    use atoms_rpc_types::{AccessList, TransactionRequest};
 
     #[test]
     fn from_legacy_to_tx_req() {

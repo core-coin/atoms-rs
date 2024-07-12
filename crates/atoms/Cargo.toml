@@ -1,0 +1,167 @@
+[package]
+name = "atoms"
+description = "Connect applications to blockchains"
+
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+exclude.workspace = true
+
+[dependencies]
+# base-rs
+base-core = { workspace = true, default-features = false }
+
+# atoms-rs
+atoms-consensus = { workspace = true, default-features = false, optional = true }
+base-contract = { workspace = true, default-features = false, optional = true }
+atoms-eips = { workspace = true, default-features = false, optional = true }
+atoms-genesis = { workspace = true, default-features = false, optional = true }
+atoms-network = { workspace = true, default-features = false, optional = true }
+atoms-node-bindings = { workspace = true, default-features = false, optional = true }
+
+# providers
+atoms-provider = { workspace = true, default-features = false, optional = true }
+
+# pubsub
+atoms-pubsub = { workspace = true, default-features = false, optional = true }
+
+# rpc
+atoms-json-rpc = { workspace = true, default-features = false, optional = true }
+atoms-rpc-client = { workspace = true, default-features = false, optional = true }
+atoms-rpc-types-trace = { workspace = true, default-features = false, optional = true }
+atoms-rpc-types = { workspace = true, default-features = false, optional = true }
+
+# serde
+atoms-serde = { workspace = true, default-features = false, optional = true }
+
+# signer
+atoms-signer = { workspace = true, default-features = false, optional = true }
+atoms-signer-wallet = { workspace = true, default-features = false, optional = true }
+
+# transport
+atoms-transport = { workspace = true, default-features = false, optional = true }
+atoms-transport-http = { workspace = true, default-features = false, optional = true }
+atoms-transport-ipc = { workspace = true, default-features = false, optional = true }
+atoms-transport-ws = { workspace = true, default-features = false, optional = true }
+
+# optional
+reqwest = { workspace = true, optional = true }
+hyper = { workspace = true, optional = true }
+
+# ----------------------------------------- Configuration ---------------------------------------- #
+
+[features]
+default = ["std", "reqwest"]
+
+# std
+std = [
+    "base-core/std",
+    "atoms-eips?/std",
+    "atoms-genesis?/std",
+    "atoms-serde?/std",
+    "atoms-consensus?/std",
+]
+
+# configuration
+reqwest = [
+    "dep:reqwest",
+    "atoms-rpc-client?/reqwest",
+    "atoms-provider?/reqwest",
+    "atoms-transport-http?/reqwest",
+    "atoms-transport-http?/reqwest-default-tls",
+]
+hyper = [
+    "dep:hyper",
+    "atoms-rpc-client?/hyper",
+    "atoms-provider?/hyper",
+    "atoms-transport-http?/hyper",
+]
+
+# ---------------------------------------- Main re-exports --------------------------------------- #
+
+# general
+consensus = ["dep:atoms-consensus"]
+contract = ["dep:base-contract", "dyn-abi", "json-abi", "json", "ylm-types"]
+eips = ["dep:atoms-eips"]
+genesis = ["dep:atoms-genesis"]
+network = ["dep:atoms-network"]
+node-bindings = ["dep:atoms-node-bindings", "atoms-provider?/anvil"]
+
+# providers
+providers = ["dep:atoms-provider"]
+provider-http = ["providers", "transport-http"]
+provider-ws = ["providers", "atoms-provider?/ws", "transport-ws"]
+provider-ipc = ["providers", "atoms-provider?/ipc", "transport-ipc"]
+
+# pubsub
+pubsub = [
+    "dep:atoms-pubsub",
+    "base-contract?/pubsub",
+    "atoms-provider?/pubsub",
+    "atoms-rpc-client?/pubsub",
+]
+
+# rpc
+rpc = []
+json-rpc = ["rpc", "dep:atoms-json-rpc"]
+rpc-client = ["rpc", "dep:atoms-rpc-client"]
+rpc-client-ws = ["rpc", "atoms-rpc-client?/ws"]
+rpc-client-ipc = ["rpc", "atoms-rpc-client?/ipc"]
+rpc-types = ["rpc"]
+rpc-types-eth = ["rpc-types", "dep:atoms-rpc-types"]
+rpc-types-json = [
+    "atoms-rpc-types?/jsonrpsee-types",
+]
+rpc-types-trace = ["rpc-types", "dep:atoms-rpc-types-trace"]
+
+# signers
+signers = ["dep:atoms-signer"]
+signer-wallet = ["signers", "dep:atoms-signer-wallet"]
+signer-keystore = ["signer-wallet", "atoms-signer-wallet?/keystore"]
+signer-mnemonic = ["signer-wallet", "atoms-signer-wallet?/mnemonic"]
+signer-mnemonic-all-languages = [
+    "signer-mnemonic",
+    "atoms-signer-wallet?/mnemonic-all-languages",
+]
+signer-yubihsm = ["signer-wallet", "atoms-signer-wallet?/yubihsm"]
+
+# transports
+transports = ["dep:atoms-transport"]
+transport-http = ["transports", "dep:atoms-transport-http"]
+transport-ipc = ["transports", "pubsub", "dep:atoms-transport-ipc"]
+transport-ipc-mock = ["atoms-transport-ipc?/mock"]
+transport-ws = ["transports", "pubsub", "dep:atoms-transport-ws"]
+
+# ---------------------------------------- Core re-exports --------------------------------------- #
+
+dyn-abi = ["base-core/dyn-abi"]
+json-abi = ["base-core/json-abi"]
+json = ["base-core/json"]
+ylm-types = ["base-core/ylm-types"]
+
+tiny-keccak = ["base-core/tiny-keccak"]
+native-keccak = ["base-core/native-keccak"]
+
+postgres = ["base-core/postgres"]
+getrandom = ["base-core/getrandom"]
+rand = ["base-core/rand"]
+rlp = ["base-core/rlp"]
+serde = ["base-core/serde", "atoms-eips?/serde", "atoms-serde"]
+ssz = ["base-core/ssz", "atoms-rpc-types?/ssz"]
+arbitrary = [
+    "base-core/arbitrary",
+    "atoms-consensus?/arbitrary",
+    "atoms-eips?/arbitrary",
+    "atoms-rpc-types?/arbitrary",
+]
+kzg = ["atoms-consensus?/kzg"]
+eip712 = [
+    "base-core/eip712",
+    "atoms-signer?/eip712",
+    # TODO: https://github.com/core-coin/atoms-rs/issues/201
+    # "atoms-signer-trezor?/eip712",
+]

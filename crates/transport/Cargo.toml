@@ -1,6 +1,6 @@
 [package]
-name = "alloy-transport"
-description = "Low-level Ethereum JSON-RPC transport abstraction"
+name = "atoms-transport"
+description = "Low-level Core JSON-RPC transport abstraction"
 
 version.workspace = true
 edition.workspace = true
@@ -12,7 +12,7 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-json-rpc.workspace = true
+atoms-json-rpc.workspace = true
 
 base64.workspace = true
 futures-util.workspace = true

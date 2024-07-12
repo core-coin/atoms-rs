@@ -1,8 +1,8 @@
-use alloy_json_rpc::{
+use atoms_json_rpc::{
     transform_response, try_deserialize_ok, Request, RequestPacket, ResponsePacket, RpcParam,
     RpcResult, RpcReturn,
 };
-use alloy_transport::{RpcFut, Transport, TransportError, TransportResult};
+use atoms_transport::{RpcFut, Transport, TransportError, TransportResult};
 use core::panic;
 use serde_json::value::RawValue;
 use std::{

@@ -1,9 +1,9 @@
-//! This modules extends the Ethereum JSON-RPC provider with the Txpool namespace available in gocore.
+//! This modules extends the Core JSON-RPC provider with the Txpool namespace available in gocore.
 use crate::Provider;
-use alloy_network::{Ethereum, Network};
+use atoms_network::{Ethereum, Network};
+use atoms_rpc_types::txpool::{TxpoolContent, TxpoolContentFrom, TxpoolInspect, TxpoolStatus};
+use atoms_transport::{Transport, TransportResult};
 use base_primitives::IcanAddress;
-use alloy_rpc_types::txpool::{TxpoolContent, TxpoolContentFrom, TxpoolInspect, TxpoolStatus};
-use alloy_transport::{Transport, TransportResult};
 
 /// Gocore only Txpool namespace rpc interface.
 #[allow(unused, unreachable_pub)]
@@ -55,7 +55,7 @@ where
     }
 
     // async fn txpool_content_from(&self, from: IcanAddress) -> TransportResult<TxpoolContentFrom> {
-        // self.client().request("txpool_contentFrom", (from,)).await
+    // self.client().request("txpool_contentFrom", (from,)).await
     // }
 
     async fn txpool_inspect(&self) -> TransportResult<TxpoolInspect> {
@@ -72,7 +72,7 @@ mod tests {
     use crate::ProviderBuilder;
 
     use super::*;
-    use alloy_node_bindings::Gocore;
+    use atoms_node_bindings::Gocore;
 
     #[tokio::test]
     async fn test_txpool_content() {

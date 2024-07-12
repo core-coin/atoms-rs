@@ -1,9 +1,9 @@
 use std::ops::{Deref, DerefMut};
 
-use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
+use atoms_consensus::{Signed, TxLegacy, TypedTransaction};
 use base_primitives::Bytes;
-use alloy_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
-use alloy_signer::Signature;
+use atoms_rpc_types::{AccessList, TransactionRequest, WithOtherFields};
+use atoms_signer::Signature;
 
 use crate::{any::AnyNetwork, BuildResult, Network, TransactionBuilder, TransactionBuilderError};
 

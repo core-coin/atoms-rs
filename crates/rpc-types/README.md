@@ -1,3 +1,3 @@
-# alloy-rpc-types
+# atoms-rpc-types
 
-Ethereum RPC-related types for Alloy.
+Core RPC-related types for Alloy.

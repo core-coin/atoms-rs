@@ -1,7 +1,7 @@
 use crate::{ix::PubSubInstruction, managers::InFlight, RawSubscription};
-use alloy_json_rpc::{RequestPacket, Response, ResponsePacket, SerializedRequest};
+use atoms_json_rpc::{RequestPacket, Response, ResponsePacket, SerializedRequest};
 use base_primitives::U256;
-use alloy_transport::{TransportError, TransportErrorKind, TransportFut, TransportResult};
+use atoms_transport::{TransportError, TransportErrorKind, TransportFut, TransportResult};
 use futures::{future::try_join_all, FutureExt, TryFutureExt};
 use std::{
     future::Future,
@@ -13,7 +13,7 @@ use tokio::sync::{mpsc, oneshot};
 /// A `PubSubFrontend` is [`Transport`] composed of a channel to a running
 /// PubSub service.
 ///
-/// [`Transport`]: alloy_transport::Transport
+/// [`Transport`]: atoms_transport::Transport
 #[derive(Debug)]
 pub struct PubSubFrontend {
     tx: mpsc::UnboundedSender<PubSubInstruction>,

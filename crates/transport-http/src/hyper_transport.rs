@@ -1,6 +1,6 @@
 use crate::Http;
-use alloy_json_rpc::{RequestPacket, ResponsePacket};
-use alloy_transport::{TransportError, TransportErrorKind, TransportFut};
+use atoms_json_rpc::{RequestPacket, ResponsePacket};
+use atoms_transport::{TransportError, TransportErrorKind, TransportFut};
 use http_body_util::{BodyExt, Full};
 use hyper::{
     body::{Buf, Bytes},

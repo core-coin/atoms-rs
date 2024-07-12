@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -15,11 +15,11 @@
 #![deny(unused_must_use, rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use alloy_consensus::{SignableTransaction, TxReceipt};
-use alloy_eips::eip2718::{Eip2718Envelope, Eip2718Error};
-use alloy_json_rpc::RpcObject;
+use atoms_consensus::{SignableTransaction, TxReceipt};
+use atoms_eips::eip2718::{Eip2718Envelope, Eip2718Error};
+use atoms_json_rpc::RpcObject;
+use atoms_signer::Signature;
 use base_primitives::IcanAddress;
-use alloy_signer::Signature;
 use core::fmt::{Debug, Display};
 
 mod transaction;
@@ -29,18 +29,18 @@ pub use transaction::{
 };
 
 mod ethereum;
-pub use ethereum::{Ethereum, EthereumSigner};
+pub use ethereum::{CoreSigner, Ethereum};
 
 mod any;
 pub use any::AnyNetwork;
 
-pub use alloy_eips::eip2718;
+pub use atoms_eips::eip2718;
 
 /// A receipt response.
 ///
 /// This is distinct from [`TxReceipt`], since this is for JSON-RPC receipts.
 ///
-/// [`TxReceipt`]: alloy_consensus::TxReceipt
+/// [`TxReceipt`]: atoms_consensus::TxReceipt
 pub trait ReceiptResponse {
     /// Address of the created contract, or `None` if the transaction was not a deployment.
     fn contract_address(&self) -> Option<IcanAddress>;

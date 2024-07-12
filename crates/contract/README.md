@@ -1,4 +1,4 @@
-# alloy-contract
+# base-contract
 
 Interact with on-chain contracts.
 
@@ -8,21 +8,21 @@ See its documentation for more details.
 
 ## Usage
 
-Combined with the `sol!` macro's `#[sol(rpc)]` attribute, `CallBuilder` can be used to interact with
-on-chain contracts. The `#[sol(rpc)]` attribute generates a method for each function in a contract
+Combined with the `ylm!` macro's `#[ylm(rpc)]` attribute, `CallBuilder` can be used to interact with
+on-chain contracts. The `#[ylm(rpc)]` attribute generates a method for each function in a contract
 that returns a `CallBuilder` for that function. See its documentation for more details.
 
 ```rust,no_run
 # async fn test() -> Result<(), Box<dyn std::error::Error>> {
-use alloy_contract::SolCallBuilder;
-use alloy_network::Ethereum;
+use base_contract::YlmCallBuilder;
+use atoms_network::Ethereum;
 use base_primitives::{IcanAddress, U256};
-use alloy_provider::ProviderBuilder;
-use base_ylm_types::sol;
+use atoms_provider::ProviderBuilder;
+use base_ylm_types::ylm;
 
-sol! {
-    #[sol(rpc)] // <-- Important! Generates the necessary `MyContract` struct and function methods.
-    #[sol(bytecode = "0x1234")] // <-- Generates the `BYTECODE` static and the `deploy` method.
+ylm! {
+    #[ylm(rpc)] // <-- Important! Generates the necessary `MyContract` struct and function methods.
+    #[ylm(bytecode = "0x1234")] // <-- Generates the `BYTECODE` static and the `deploy` method.
     contract MyContract {
         constructor(address) {} // The `deploy` method will also include any constructor arguments.
 
@@ -34,7 +34,7 @@ sol! {
 // Build a provider.
 let provider = ProviderBuilder::new().with_recommended_fillers().on_builtin("http://localhost:8545").await?;
 
-// If `#[sol(bytecode = "0x...")]` is provided, the contract can be deployed with `MyContract::deploy`,
+// If `#[ylm(bytecode = "0x...")]` is provided, the contract can be deployed with `MyContract::deploy`,
 // and a new instance will be created.
 let constructor_arg = IcanAddress::ZERO;
 let contract = MyContract::deploy(&provider, constructor_arg).await?;

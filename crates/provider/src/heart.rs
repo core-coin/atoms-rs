@@ -1,11 +1,11 @@
 //! Block heartbeat and pending transaction watcher.
 
 use crate::{Provider, RootProvider};
-use alloy_json_rpc::RpcError;
-use alloy_network::Network;
+use atoms_json_rpc::RpcError;
+use atoms_network::Network;
 use base_primitives::B256;
-use alloy_rpc_types::Block;
-use alloy_transport::{utils::Spawnable, Transport, TransportErrorKind, TransportResult};
+use atoms_rpc_types::Block;
+use atoms_transport::{utils::Spawnable, Transport, TransportErrorKind, TransportResult};
 use futures::{stream::StreamExt, FutureExt, Stream};
 use std::{
     collections::{BTreeMap, HashMap},
@@ -25,7 +25,7 @@ use tokio::{
 /// Send and wait for a transaction to be confirmed 2 times, with a timeout of 60 seconds:
 ///
 /// ```no_run
-/// # async fn example<N: alloy_network::Network>(provider: impl alloy_provider::Provider, tx: alloy_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
+/// # async fn example<N: atoms_network::Network>(provider: impl atoms_provider::Provider, tx: atoms_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
 /// // Send a transaction, and configure the pending transaction.
 /// let builder = provider.send_transaction(tx)
 ///     .await?
@@ -41,7 +41,7 @@ use tokio::{
 ///
 /// This can also be more concisely written using `watch`:
 /// ```no_run
-/// # async fn example<N: alloy_network::Network>(provider: impl alloy_provider::Provider, tx: alloy_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
+/// # async fn example<N: atoms_network::Network>(provider: impl atoms_provider::Provider, tx: atoms_rpc_types::transaction::TransactionRequest) -> Result<(), Box<dyn std::error::Error>> {
 /// let tx_hash = provider.send_transaction(tx)
 ///     .await?
 ///     .with_required_confirmations(2)

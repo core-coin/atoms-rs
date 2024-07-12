@@ -1,7 +1,7 @@
 //! [`k256`] wallet implementation.
 
 use super::{Wallet, WalletError};
-use alloy_signer::utils::secret_key_to_address;
+use atoms_signer::utils::secret_key_to_address;
 use libgoldilocks::{errors::LibgoldilockErrors, SigningKey};
 use rand::{CryptoRng, Rng};
 
@@ -280,12 +280,12 @@ mod tests {
     #[test]
     #[cfg(feature = "eip712")]
     fn typed_data() {
-        use alloy_dyn_abi::eip712::TypedData;
+        use base_dyn_abi::eip712::TypedData;
         use base_primitives::{keccak256, Address, I256, U256};
-        use base_ylm_types::{eip712_domain, sol, SolStruct};
+        use base_ylm_types::{eip712_domain, ylm, YlmStruct};
         use serde::Serialize;
 
-        sol! {
+        ylm! {
             #[derive(Debug, Serialize)]
             struct FooBar {
                 int256 foo;

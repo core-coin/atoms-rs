@@ -1,7 +1,7 @@
+use atoms_serde::storage::JsonStorageKey;
 use base_primitives::{Address, Bytes, IcanAddress, B256, U256, U64};
-use alloy_serde::storage::JsonStorageKey;
-use serde::{Deserialize, Serialize};
 use libgoldilocks::VerifyingKey;
+use serde::{Deserialize, Serialize};
 
 /// Account information.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]

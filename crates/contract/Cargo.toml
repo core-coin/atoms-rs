@@ -1,5 +1,5 @@
 [package]
-name = "alloy-contract"
+name = "base-contract"
 description = "Interact with on-chain contracts"
 
 version.workspace = true
@@ -12,10 +12,10 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-network.workspace = true
-alloy-provider.workspace = true
-alloy-rpc-types.workspace = true
-alloy-transport.workspace = true
+atoms-network.workspace = true
+atoms-provider.workspace = true
+atoms-rpc-types.workspace = true
+atoms-transport.workspace = true
 
 base-dyn-abi = { workspace = true, features = ["std"] }
 base-json-abi.workspace = true
@@ -26,17 +26,17 @@ futures-util.workspace = true
 futures.workspace = true
 thiserror.workspace = true
 
-alloy-pubsub = { workspace = true, optional = true }
+atoms-pubsub = { workspace = true, optional = true }
 
 [dev-dependencies]
-alloy-rpc-client = { workspace = true, features = ["pubsub", "ws"] }
-alloy-transport-http.workspace = true
-alloy-node-bindings.workspace = true
-alloy-provider = { workspace = true, features = ["anvil"] }
+atoms-rpc-client = { workspace = true, features = ["pubsub", "ws"] }
+atoms-transport-http.workspace = true
+atoms-node-bindings.workspace = true
+atoms-provider = { workspace = true, features = ["anvil"] }
 
 reqwest.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tracing-subscriber.workspace = true
 
 [features]
-pubsub = ["alloy-provider/pubsub", "dep:alloy-pubsub"]
+pubsub = ["atoms-provider/pubsub", "dep:atoms-pubsub"]

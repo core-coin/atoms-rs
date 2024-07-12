@@ -1,12 +1,12 @@
-//! This module extends the Ethereum JSON-RPC provider with the Debug namespace's RPC methods.
+//! This module extends the Core JSON-RPC provider with the Debug namespace's RPC methods.
 use crate::Provider;
-use alloy_network::Network;
+use atoms_network::Network;
 use base_primitives::{TxHash, B256};
-use alloy_rpc_types::{BlockNumberOrTag, TransactionRequest};
-use alloy_rpc_types_trace::gocore::{
+use atoms_rpc_types::{BlockNumberOrTag, TransactionRequest};
+use atoms_rpc_types_trace::gocore::{
     GocoreDebugTracingCallOptions, GocoreDebugTracingOptions, GocoreTrace, TraceResult,
 };
-use alloy_transport::{Transport, TransportResult};
+use atoms_transport::{Transport, TransportResult};
 
 /// Debug namespace rpc interface that gives access to several non-standard RPC methods.
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
@@ -147,9 +147,9 @@ mod test {
     use crate::{ProviderBuilder, WalletProvider};
 
     use super::*;
-    use alloy_network::TransactionBuilder;
+    use atoms_network::TransactionBuilder;
     use base_primitives::{cAddress, hex::FromHex, Bytes, U256};
-    use alloy_rpc_types::TransactionInput;
+    use atoms_rpc_types::TransactionInput;
 
     fn init_tracing() {
         let _ = tracing_subscriber::fmt::try_init();

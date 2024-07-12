@@ -1,3 +1,3 @@
-# alloy-rpc-client
+# atoms-rpc-client
 
-Low-level Ethereum JSON-RPC client implementation.
+Low-level Core JSON-RPC client implementation.

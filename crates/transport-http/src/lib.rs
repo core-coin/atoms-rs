@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -35,7 +35,7 @@ pub use hyper;
 #[cfg(all(not(target_arch = "wasm32"), feature = "hyper"))]
 pub use hyper_util;
 
-use alloy_transport::utils::guess_local_url;
+use atoms_transport::utils::guess_local_url;
 use url::Url;
 
 /// An Http transport.
@@ -44,7 +44,7 @@ use url::Url;
 /// connect. It implements `Service<Box<RawValue>>`, and therefore
 /// [`Transport`].
 ///
-/// [`Transport`]: alloy_transport::Transport
+/// [`Transport`]: atoms_transport::Transport
 ///
 /// Currently supported clients are:
 #[cfg_attr(feature = "reqwest", doc = " - [`reqwest`](::reqwest::Client)")]

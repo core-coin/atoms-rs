@@ -1,5 +1,5 @@
 //! Types for the admin api
-use alloy_genesis::ChainConfig;
+use atoms_genesis::ChainConfig;
 use base_primitives::{B256, U256};
 use serde::{Deserialize, Serialize};
 use std::{

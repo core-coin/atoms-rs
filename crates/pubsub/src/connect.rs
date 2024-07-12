@@ -1,5 +1,5 @@
 use crate::{handle::ConnectionHandle, service::PubSubService, PubSubFrontend};
-use alloy_transport::{impl_future, TransportResult};
+use atoms_transport::{impl_future, TransportResult};
 
 /// Configuration objects that contain connection details for a backend.
 ///

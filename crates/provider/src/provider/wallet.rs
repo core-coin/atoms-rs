@@ -2,9 +2,9 @@ use crate::{
     fillers::{FillProvider, JoinFill, SignerFiller, TxFiller},
     Provider,
 };
-use alloy_network::{Ethereum, Network, NetworkSigner};
+use atoms_network::{Ethereum, Network, NetworkSigner};
 use base_primitives::IcanAddress;
-use alloy_transport::Transport;
+use atoms_transport::Transport;
 
 /// Trait for Providers, Fill stacks, etc, which contain [`NetworkSigner`].
 pub trait WalletProvider<N: Network = Ethereum> {

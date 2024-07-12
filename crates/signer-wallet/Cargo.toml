@@ -1,5 +1,5 @@
 [package]
-name = "alloy-signer-wallet"
+name = "atoms-signer-wallet"
 description = "sepc256k1 ECDSA and YubiHSM signer implementations"
 
 version.workspace = true
@@ -12,10 +12,10 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-consensus = { workspace = true, features = ["std"] }
-alloy-network.workspace = true
+atoms-consensus = { workspace = true, features = ["std"] }
+atoms-network.workspace = true
 base-primitives.workspace = true
-alloy-signer.workspace = true
+atoms-signer.workspace = true
 
 libgoldilocks.workspace = true
 rand.workspace = true
@@ -24,7 +24,7 @@ async-trait.workspace = true
 
 # keystore
 elliptic-curve = { workspace = true, optional = true }
-xcb-keystore = { git = "https://github.com/core-coin/xcb-keystore-rs.git" , version = "0.5.0", default-features = false, optional = true }
+xcb-keystore = { git = "https://github.com/core-coin/xcb-keystore-rs.git", default-features = false, optional = true }
 
 # mnemonic
 coins-bip32 = { version = "0.8.7", default-features = false, optional = true }
@@ -37,8 +37,8 @@ yubihsm = { version = "0.42", features = ["secp256k1", "http", "usb"], optional 
 
 [dev-dependencies]
 serde.workspace = true
-alloy-consensus = { workspace = true, features = ["std"] }
-alloy-network.workspace = true
+atoms-consensus = { workspace = true, features = ["std"] }
+atoms-network.workspace = true
 assert_matches.workspace = true
 serde_json.workspace = true
 tempfile.workspace = true

@@ -1,6 +1,6 @@
 use base_primitives::U256;
 
-/// The default Ethereum block gas limit.
+/// The default Core block gas limit.
 ///
 /// TODO: This should be a chain spec parameter.
 /// See <https://github.com/paradigmxyz/reth/issues/3233>.

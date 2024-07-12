@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -37,7 +37,7 @@ mod poller;
 pub use poller::{PollChannel, PollerBuilder};
 
 #[cfg(feature = "ws")]
-pub use alloy_transport_ws::WsConnect;
+pub use atoms_transport_ws::WsConnect;
 
 #[cfg(all(feature = "ipc", not(target_arch = "wasm32")))]
-pub use alloy_transport_ipc::IpcConnect;
+pub use atoms_transport_ipc::IpcConnect;

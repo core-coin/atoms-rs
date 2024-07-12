@@ -1,5 +1,5 @@
 [package]
-name = "alloy-serde"
+name = "atoms-serde"
 description = "Alloy serde helpers"
 
 version.workspace = true

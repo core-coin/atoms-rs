@@ -1,5 +1,5 @@
 [package]
-name = "alloy-transport-ws"
+name = "atoms-transport-ws"
 description = "Websocket transport implementation"
 
 version.workspace = true
@@ -12,8 +12,8 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-pubsub.workspace = true
-alloy-transport.workspace = true
+atoms-pubsub.workspace = true
+atoms-transport.workspace = true
 
 futures.workspace = true
 serde_json.workspace = true

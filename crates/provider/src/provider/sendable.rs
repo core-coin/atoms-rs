@@ -1,6 +1,6 @@
-use alloy_consensus::{Signed, TxLegacy};
-use alloy_network::Network;
-use alloy_signer::Signature;
+use atoms_consensus::{Signed, TxLegacy};
+use atoms_signer::Signature;
+use atoms_network::Network;
 
 /// A transaction that can be sent. This is either a builder or an envelope.
 ///

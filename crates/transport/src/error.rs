@@ -1,4 +1,4 @@
-use alloy_json_rpc::{Id, RpcError, RpcResult};
+use atoms_json_rpc::{Id, RpcError, RpcResult};
 use serde_json::value::RawValue;
 use std::{error::Error as StdError, fmt::Debug};
 use thiserror::Error;

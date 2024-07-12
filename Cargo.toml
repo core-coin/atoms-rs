@@ -6,10 +6,10 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.76"
-authors = ["Alloy Contributors"]
+authors = ["Core Contributors"]
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/alloy-rs/alloy"
-repository = "https://github.com/alloy-rs/alloy"
+homepage = "https://github.com/core-coin/atoms-rs"
+repository = "https://github.com/core-coin/atoms-rs"
 exclude = ["benches/", "tests/"]
 
 [workspace.metadata.docs.rs]
@@ -17,34 +17,34 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [workspace.dependencies]
-alloy-consensus = { version = "0.1.0", default-features = false, path = "crates/consensus" }
-alloy-contract = { version = "0.1.0", default-features = false, path = "crates/contract" }
-alloy-eips = { version = "0.1.0", default-features = false, path = "crates/eips" }
-alloy-genesis = { version = "0.1.0", default-features = false, path = "crates/genesis" }
-alloy-json-rpc = { version = "0.1.0", default-features = false, path = "crates/json-rpc" }
-alloy-network = { version = "0.1.0", default-features = false, path = "crates/network" }
-alloy-node-bindings = { version = "0.1.0", default-features = false, path = "crates/node-bindings" }
-alloy-provider = { version = "0.1.0", default-features = false, path = "crates/provider" }
-alloy-pubsub = { version = "0.1.0", default-features = false, path = "crates/pubsub" }
-alloy-rpc-client = { version = "0.1.0", default-features = false, path = "crates/rpc-client" }
-alloy-rpc-types-anvil = { version = "0.1.0", default-features = false, path = "crates/rpc-types-anvil" }
-alloy-rpc-types-trace = { version = "0.1.0", default-features = false, path = "crates/rpc-types-trace" }
-alloy-rpc-types = { version = "0.1.0", default-features = false, path = "crates/rpc-types" }
-alloy-serde = { version = "0.1.0", default-features = false, path = "crates/serde" }
-alloy-signer = { version = "0.1.0", default-features = false, path = "crates/signer" }
-alloy-signer-wallet = { version = "0.1.0", default-features = false, path = "crates/signer-wallet" }
-alloy-transport = { version = "0.1.0", default-features = false, path = "crates/transport" }
-alloy-transport-http = { version = "0.1.0", default-features = false, path = "crates/transport-http" }
-alloy-transport-ipc = { version = "0.1.0", default-features = false, path = "crates/transport-ipc" }
-alloy-transport-ws = { version = "0.1.0", default-features = false, path = "crates/transport-ws" }
+atoms-consensus = { version = "0.1.0", default-features = false, path = "crates/consensus" }
+base-contract = { version = "0.1.0", default-features = false, path = "crates/contract" }
+atoms-eips = { version = "0.1.0", default-features = false, path = "crates/eips" }
+atoms-genesis = { version = "0.1.0", default-features = false, path = "crates/genesis" }
+atoms-json-rpc = { version = "0.1.0", default-features = false, path = "crates/json-rpc" }
+atoms-network = { version = "0.1.0", default-features = false, path = "crates/network" }
+atoms-node-bindings = { version = "0.1.0", default-features = false, path = "crates/node-bindings" }
+atoms-provider = { version = "0.1.0", default-features = false, path = "crates/provider" }
+atoms-pubsub = { version = "0.1.0", default-features = false, path = "crates/pubsub" }
+atoms-rpc-client = { version = "0.1.0", default-features = false, path = "crates/rpc-client" }
+atoms-rpc-types-anvil = { version = "0.1.0", default-features = false, path = "crates/rpc-types-anvil" }
+atoms-rpc-types-trace = { version = "0.1.0", default-features = false, path = "crates/rpc-types-trace" }
+atoms-rpc-types = { version = "0.1.0", default-features = false, path = "crates/rpc-types" }
+atoms-serde = { version = "0.1.0", default-features = false, path = "crates/serde" }
+atoms-signer = { version = "0.1.0", default-features = false, path = "crates/signer" }
+atoms-signer-wallet = { version = "0.1.0", default-features = false, path = "crates/signer-wallet" }
+atoms-transport = { version = "0.1.0", default-features = false, path = "crates/transport" }
+atoms-transport-http = { version = "0.1.0", default-features = false, path = "crates/transport-http" }
+atoms-transport-ipc = { version = "0.1.0", default-features = false, path = "crates/transport-ipc" }
+atoms-transport-ws = { version = "0.1.0", default-features = false, path = "crates/transport-ws" }
 
-test-utils = { version = "0.1.0", default-features = false, path = "crates/internal-test-utils", package = "alloy-internal-test-utils" }
+test-utils = { version = "0.1.0", default-features = false, path = "crates/internal-test-utils", package = "base-internal-test-utils" }
 
-base-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, branch = "david/remove-k256" }
-base-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, branch = "david/remove-k256"}
-base-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, branch = "david/remove-k256"}
-base-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false, branch = "david/remove-k256"}
-base-ylm-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false, branch = "david/remove-k256"}
+base-core = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
+base-dyn-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
+base-json-abi = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
+base-primitives = {  git = "https://github.com/core-coin/base-rs.git",default-features = false}
+base-ylm-types = {  git = "https://github.com/core-coin/base-rs.git", default-features = false}
 
 alloy-rlp = { version = "0.3", default-features = false }
 

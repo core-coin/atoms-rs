@@ -1,8 +1,8 @@
-# alloy-consensus
+# atoms-consensus
 
-Ethereum consensus interface.
+Core consensus interface.
 
-This crate contains constants, types, and functions for implementing Ethereum
+This crate contains constants, types, and functions for implementing Core
 EL consensus and communication. This includes headers, blocks, transactions,
 [EIP-2718] envelopes, [EIP-2930], [EIP-4844], and more.
 
@@ -15,7 +15,7 @@ header. This includes:
 - receipts
 - [EIP-2718] envelopes.
 
-[alloy-network]: ../network
+[atoms-network]: ../network
 [EIP-2718]: https://eips.ethereum.org/EIPS/eip-2718
 [EIP-2930]: https://eips.ethereum.org/EIPS/eip-2930
 [EIP-4844]: https://eips.ethereum.org/EIPS/eip-4844

@@ -1,5 +1,5 @@
 [package]
-name = "alloy-transport-ipc"
+name = "atoms-transport-ipc"
 description = "IPC transport implementation"
 
 version.workspace = true
@@ -12,9 +12,9 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-json-rpc.workspace = true
-alloy-transport.workspace = true
-alloy-pubsub.workspace = true
+atoms-json-rpc.workspace = true
+atoms-transport.workspace = true
+atoms-pubsub.workspace = true
 
 futures.workspace = true
 pin-project.workspace = true

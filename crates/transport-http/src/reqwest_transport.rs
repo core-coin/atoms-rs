@@ -1,6 +1,6 @@
 use crate::Http;
-use alloy_json_rpc::{RequestPacket, ResponsePacket};
-use alloy_transport::{TransportError, TransportErrorKind, TransportFut};
+use atoms_json_rpc::{RequestPacket, ResponsePacket};
+use atoms_transport::{TransportError, TransportErrorKind, TransportFut};
 use std::task;
 use tower::Service;
 use tracing::{debug, debug_span, trace, Instrument};

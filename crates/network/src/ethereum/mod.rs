@@ -3,7 +3,7 @@ use crate::{Network, ReceiptResponse};
 mod builder;
 
 mod signer;
-pub use signer::EthereumSigner;
+pub use signer::CoreSigner;
 
 /// Types for a mainnet-like Core network.
 #[derive(Clone, Copy, Debug)]
@@ -12,20 +12,20 @@ pub struct Ethereum {
 }
 
 impl Network for Ethereum {
-    type ReceiptEnvelope = alloy_consensus::AnyReceiptEnvelope;
+    type ReceiptEnvelope = atoms_consensus::AnyReceiptEnvelope;
 
-    type Header = alloy_consensus::Header;
+    type Header = atoms_consensus::Header;
 
-    type TransactionRequest = alloy_rpc_types::transaction::TransactionRequest;
+    type TransactionRequest = atoms_rpc_types::transaction::TransactionRequest;
 
-    type TransactionResponse = alloy_rpc_types::Transaction;
+    type TransactionResponse = atoms_rpc_types::Transaction;
 
-    type ReceiptResponse = alloy_rpc_types::TransactionReceipt;
+    type ReceiptResponse = atoms_rpc_types::TransactionReceipt;
 
-    type HeaderResponse = alloy_rpc_types::Header;
+    type HeaderResponse = atoms_rpc_types::Header;
 }
 
-impl ReceiptResponse for alloy_rpc_types::TransactionReceipt {
+impl ReceiptResponse for atoms_rpc_types::TransactionReceipt {
     fn contract_address(&self) -> Option<base_primitives::IcanAddress> {
         self.contract_address
     }

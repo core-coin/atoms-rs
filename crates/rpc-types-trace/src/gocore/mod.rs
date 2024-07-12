@@ -2,7 +2,7 @@
 
 use crate::gocore::mux::{MuxConfig, MuxFrame};
 use base_primitives::{Bytes, B256, U256};
-use alloy_rpc_types::{state::StateOverride, BlockOverrides};
+use atoms_rpc_types::{state::StateOverride, BlockOverrides};
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Serialize, Serializer};
 use std::{collections::BTreeMap, time::Duration};
 
@@ -49,7 +49,7 @@ pub struct DefaultFrame {
     /// How much energy was used.
     pub energy: u64,
     /// Output of the transaction
-    #[serde(serialize_with = "alloy_serde::serialize_hex_string_no_prefix")]
+    #[serde(serialize_with = "atoms_serde::serialize_hex_string_no_prefix")]
     pub return_value: Bytes,
     /// Recorded traces of the transaction
     pub struct_logs: Vec<StructLog>,

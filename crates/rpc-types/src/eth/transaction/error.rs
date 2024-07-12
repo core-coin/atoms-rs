@@ -1,6 +1,6 @@
 use std::num::TryFromIntError;
 
-/// Error variants when converting from [crate::Transaction] to [alloy_consensus::Signed]
+/// Error variants when converting from [crate::Transaction] to [atoms_consensus::Signed]
 /// transaction.
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_copy_implementations)]
@@ -8,7 +8,7 @@ use std::num::TryFromIntError;
 pub enum ConversionError {
     /// Error during EIP-2718 transaction coding.
     #[error(transparent)]
-    Eip2718Error(#[from] alloy_eips::eip2718::Eip2718Error),
+    Eip2718Error(#[from] atoms_eips::eip2718::Eip2718Error),
     /// [`base_primitives::SignatureError`].
     #[error(transparent)]
     SignatureError(#[from] base_primitives::SignatureError),

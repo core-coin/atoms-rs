@@ -1,12 +1,12 @@
 use std::{future::IntoFuture, marker::PhantomData};
 
-use alloy_dyn_abi::{DynSolValue, FunctionExt};
-use alloy_json_abi::Function;
-use alloy_network::Network;
-use alloy_rpc_types::{state::StateOverride, BlockId};
-use base_ylm_types::SolCall;
-use alloy_transport::Transport;
+use atoms_network::Network;
+use atoms_rpc_types::{state::StateOverride, BlockId};
+use atoms_transport::Transport;
+use base_dyn_abi::{DynYlmValue, FunctionExt};
+use base_json_abi::Function;
 use base_primitives::Bytes;
+use base_ylm_types::YlmCall;
 
 use crate::{Error, Result};
 
@@ -16,25 +16,25 @@ const RAW_CODER: () = ();
 mod private {
     pub trait Sealed {}
     impl Sealed for super::Function {}
-    impl<C: super::SolCall> Sealed for super::PhantomData<C> {}
+    impl<C: super::YlmCall> Sealed for super::PhantomData<C> {}
     impl Sealed for () {}
 }
 
-/// An [`alloy_provider::EthCall`] with an abi decoder.
+/// An [`atoms_provider::EthCall`] with an abi decoder.
 #[must_use = "EthCall must be awaited to execute the call"]
 #[derive(Debug, Clone)]
-pub struct EthCall<'req, 'state, 'coder, D, T, N>
+pub struct XcbCall<'req, 'state, 'coder, D, T, N>
 where
     T: Transport + Clone,
     N: Network,
     D: CallDecoder,
 {
-    inner: alloy_provider::XcbCall<'req, 'state, T, N>,
+    inner: atoms_provider::XcbCall<'req, 'state, T, N>,
 
     decoder: &'coder D,
 }
 
-impl<'req, 'state, 'coder, D, T, N> EthCall<'req, 'state, 'coder, D, T, N>
+impl<'req, 'state, 'coder, D, T, N> XcbCall<'req, 'state, 'coder, D, T, N>
 where
     T: Transport + Clone,
     N: Network,
@@ -42,25 +42,25 @@ where
 {
     /// Create a new [`EthCall`].
     pub const fn new(
-        inner: alloy_provider::XcbCall<'req, 'state, T, N>,
+        inner: atoms_provider::XcbCall<'req, 'state, T, N>,
         decoder: &'coder D,
     ) -> Self {
         Self { inner, decoder }
     }
 }
 
-impl<'req, 'state, T, N> EthCall<'req, 'state, 'static, (), T, N>
+impl<'req, 'state, T, N> XcbCall<'req, 'state, 'static, (), T, N>
 where
     T: Transport + Clone,
     N: Network,
 {
     /// Create a new [`EthCall`].
-    pub const fn new_raw(inner: alloy_provider::XcbCall<'req, 'state, T, N>) -> Self {
+    pub const fn new_raw(inner: atoms_provider::XcbCall<'req, 'state, T, N>) -> Self {
         Self::new(inner, &RAW_CODER)
     }
 }
 
-impl<'req, 'state, 'coder, D, T, N> EthCall<'req, 'state, 'coder, D, T, N>
+impl<'req, 'state, 'coder, D, T, N> XcbCall<'req, 'state, 'coder, D, T, N>
 where
     T: Transport + Clone,
     N: Network,
@@ -71,11 +71,11 @@ where
     pub fn with_decoder<'new_coder, E>(
         self,
         decoder: &'new_coder E,
-    ) -> EthCall<'req, 'state, 'new_coder, E, T, N>
+    ) -> XcbCall<'req, 'state, 'new_coder, E, T, N>
     where
         E: CallDecoder,
     {
-        EthCall { inner: self.inner, decoder }
+        XcbCall { inner: self.inner, decoder }
     }
 
     /// Set the state overrides for this call.
@@ -91,19 +91,19 @@ where
     }
 }
 
-impl<'req, 'state, T, N> From<alloy_provider::XcbCall<'req, 'state, T, N>>
-    for EthCall<'req, 'state, 'static, (), T, N>
+impl<'req, 'state, T, N> From<atoms_provider::XcbCall<'req, 'state, T, N>>
+    for XcbCall<'req, 'state, 'static, (), T, N>
 where
     T: Transport + Clone,
     N: Network,
 {
-    fn from(inner: alloy_provider::XcbCall<'req, 'state, T, N>) -> Self {
+    fn from(inner: atoms_provider::XcbCall<'req, 'state, T, N>) -> Self {
         Self { inner, decoder: &RAW_CODER }
     }
 }
 
 impl<'req, 'state, 'coder, D, T, N> std::future::IntoFuture
-    for EthCall<'req, 'state, 'coder, D, T, N>
+    for XcbCall<'req, 'state, 'coder, D, T, N>
 where
     D: CallDecoder + Unpin,
     T: Transport + Clone,
@@ -128,7 +128,7 @@ where
     N: Network,
     D: CallDecoder,
 {
-    inner: <alloy_provider::XcbCall<'req, 'state, T, N> as IntoFuture>::IntoFuture,
+    inner: <atoms_provider::XcbCall<'req, 'state, T, N> as IntoFuture>::IntoFuture,
     decoder: &'coder D,
 }
 
@@ -179,7 +179,7 @@ pub trait CallDecoder: private::Sealed {
 }
 
 impl CallDecoder for Function {
-    type CallOutput = Vec<DynSolValue>;
+    type CallOutput = Vec<DynYlmValue>;
 
     #[inline]
     fn abi_decode_output(&self, data: Bytes, validate: bool) -> Result<Self::CallOutput> {
@@ -192,7 +192,7 @@ impl CallDecoder for Function {
     }
 }
 
-impl<C: SolCall> CallDecoder for PhantomData<C> {
+impl<C: YlmCall> CallDecoder for PhantomData<C> {
     type CallOutput = C::Return;
 
     #[inline]

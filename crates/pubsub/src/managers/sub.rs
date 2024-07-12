@@ -1,5 +1,5 @@
 use crate::{managers::ActiveSubscription, RawSubscription};
-use alloy_json_rpc::{SerializedRequest, XcbNotification};
+use atoms_json_rpc::{SerializedRequest, XcbNotification};
 use base_primitives::{B256, U256};
 use bimap::BiBTreeMap;
 

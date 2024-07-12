@@ -1,3 +1,3 @@
-# alloy-node-bindings
+# atoms-node-bindings
 
-Ethereum execution-layer client bindings.
+Core execution-layer client bindings.

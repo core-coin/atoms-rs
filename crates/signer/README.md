@@ -1,6 +1,6 @@
-# alloy-signer
+# atoms-signer
 
-Ethereum signer abstraction.
+Core signer abstraction.
 
 You can implement the [`Signer`][Signer] trait to extend functionality to other signers
 such as Hardware Security Modules, KMS etc. See [its documentation][Signer] for more.
@@ -14,17 +14,17 @@ Signer implementation in Alloy:
 - [GCP KMS](../signer-gcp/)
 
 <!-- TODO: docs.rs -->
-[Signer]: https://alloy-rs.github.io/alloy/alloy_signer/trait.Signer.html
+[Signer]: https://base-rs.github.io/alloy/atoms_signer/trait.Signer.html
 
 ## Examples
 
-Sign an Ethereum prefixed message ([EIP-712](https://eips.ethereum.org/EIPS/eip-712)):
+Sign an Core prefixed message ([EIP-712](https://eips.ethereum.org/EIPS/eip-712)):
 
 ```rust
-use alloy_signer::{Signer, SignerSync};
+use atoms_signer::{Signer, SignerSync};
 
 // Instantiate a signer.
-let signer = alloy_signer_wallet::LocalWallet::random(1);
+let signer = atoms_signer_wallet::LocalWallet::random(1);
 
 // Sign a message.
 let message = "Some data";
@@ -39,14 +39,14 @@ assert_eq!(recovered, signer.address());
 Sign a transaction:
 
 ```rust
-use alloy_consensus::TxLegacy;
+use atoms_consensus::TxLegacy;
 use base_primitives::{U256, cAddress, bytes};
-use alloy_signer::{Signer, SignerSync};
-use alloy_network::{TxSignerSync};
+use atoms_signer::{Signer, SignerSync};
+use atoms_network::{TxSignerSync};
 use libgoldilocks::SigningKey;
 
 // Instantiate a signer.
-let signer = alloy_signer_wallet::LocalWallet::from_signing_key(SigningKey::from_str("dcf2cbdd171a21c480aa7f53d77f31bb102282b3ff099c78e3118b37348c72f7dcf2cbdd171a21c480aa7f53d77f31bb102282b3ff099c78e3"), 1);
+let signer = atoms_signer_wallet::LocalWallet::from_signing_key(SigningKey::from_str("dcf2cbdd171a21c480aa7f53d77f31bb102282b3ff099c78e3118b37348c72f7dcf2cbdd171a21c480aa7f53d77f31bb102282b3ff099c78e3"), 1);
 
 // Create a transaction.
 let mut tx = TxLegacy {
