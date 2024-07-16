@@ -1,8 +1,8 @@
-//! This module extends the Ethereum JSON-RPC provider with the Admin namespace's RPC methods.
+//! This module extends the Core JSON-RPC provider with the Admin namespace's RPC methods.
 use crate::Provider;
-use alloy_network::Network;
-use alloy_rpc_types::admin::{NodeInfo, PeerInfo};
-use alloy_transport::{Transport, TransportResult};
+use atoms_rpc_types::admin::{NodeInfo, PeerInfo};
+use atoms_transport::{Transport, TransportResult};
+use atoms_network::Network;
 
 /// Admin namespace rpc interface that gives access to several non-standard RPC methods.
 #[allow(unused, unreachable_pub)]
@@ -72,7 +72,7 @@ mod test {
     use crate::ProviderBuilder;
 
     use super::*;
-    use alloy_node_bindings::Gocore;
+    use atoms_node_bindings::Gocore;
     use tempfile::TempDir;
 
     #[tokio::test]

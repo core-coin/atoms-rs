@@ -1,5 +1,5 @@
 [package]
-name = "alloy-rpc-types"
+name = "atoms-rpc-types"
 description = "Alloy RPC types"
 
 version.workspace = true
@@ -15,13 +15,13 @@ exclude.workspace = true
 # ethereum
 alloy-rlp = { workspace = true, features = ["arrayvec", "derive"] }
 base-primitives = { workspace = true, features = ["rlp", "serde", "std"] }
-alloy-serde.workspace = true
-alloy-genesis.workspace = true
+atoms-serde.workspace = true
+atoms-genesis.workspace = true
 libgoldilocks.workspace = true
 
 
-alloy-consensus = { workspace = true, features = ["std", "serde"] }
-alloy-eips = { workspace = true, features = ["std", "serde"] }
+atoms-consensus = { workspace = true, features = ["std", "serde"] }
+atoms-eips = { workspace = true, features = ["std", "serde"] }
 
 itertools.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -44,10 +44,10 @@ arbitrary = [
     "dep:proptest-derive",
     "dep:proptest",
     "base-primitives/arbitrary",
-    "alloy-eips/arbitrary",
+    "atoms-eips/arbitrary",
 ]
 jsonrpsee-types = ["dep:jsonrpsee-types"]
-ssz = ["base-primitives/ssz", "alloy-eips/ssz"]
+ssz = ["base-primitives/ssz", "atoms-eips/ssz"]
 
 [dev-dependencies]
 base-primitives = { workspace = true, features = [
@@ -56,7 +56,7 @@ base-primitives = { workspace = true, features = [
     "serde",
     "arbitrary",
 ] }
-alloy-consensus = { workspace = true, features = ["std", "arbitrary"] }
+atoms-consensus = { workspace = true, features = ["std", "arbitrary"] }
 
 arbitrary = { workspace = true, features = ["derive"] }
 proptest.workspace = true

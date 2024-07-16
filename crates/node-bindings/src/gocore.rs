@@ -1,7 +1,7 @@
 //! Utilities for launching a go-ethereum dev-mode instance.
 
 use crate::unused_port;
-use alloy_genesis::{CliqueConfig, Genesis};
+use atoms_genesis::{CliqueConfig, Genesis};
 use base_primitives::{hex, IcanAddress, B256};
 use libgoldilocks::SigningKey;
 use std::{
@@ -234,7 +234,7 @@ pub enum GocoreError {
 /// # Example
 ///
 /// ```no_run
-/// use alloy_node_bindings::Gocore;
+/// use atoms_node_bindings::Gocore;
 ///
 /// let port = 8545u16;
 /// let url = format!("http://localhost:{}", port).to_string();
@@ -272,7 +272,7 @@ impl Gocore {
     /// # Example
     ///
     /// ```
-    /// use alloy_node_bindings::Gocore;
+    /// use atoms_node_bindings::Gocore;
     /// # fn a() {
     /// let gocore = Gocore::at("../go-core/build/bin/gocore").spawn();
     ///

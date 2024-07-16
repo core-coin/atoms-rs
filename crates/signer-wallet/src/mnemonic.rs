@@ -6,7 +6,7 @@
 // //! [BIP-39]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
 // use crate::{LocalWallet, Wallet, WalletError};
-// use alloy_signer::utils::secret_key_to_address;
+// use atoms_signer::utils::secret_key_to_address;
 // use coins_bip32::path::DerivationPath;
 // use coins_bip39::{Mnemonic, Wordlist};
 // use k256::ecdsa::SigningKey;
@@ -73,7 +73,7 @@
 //     ///
 //     /// ```
 //     /// # async fn foo() -> Result<(), Box<dyn std::error::Error>> {
-//     /// use alloy_signer_wallet::{MnemonicBuilder, coins_bip39::English};
+//     /// use atoms_signer_wallet::{MnemonicBuilder, coins_bip39::English};
 //     ///
 //     /// let wallet = MnemonicBuilder::<English>::default()
 //     ///     .phrase("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about")
@@ -93,7 +93,7 @@
 //     ///
 //     /// ```no_run
 //     /// # async fn foo() -> Result<(), Box<dyn std::error::Error>> {
-//     /// use alloy_signer_wallet::{coins_bip39::English, MnemonicBuilder};
+//     /// use atoms_signer_wallet::{coins_bip39::English, MnemonicBuilder};
 //     ///
 //     /// let wallet = MnemonicBuilder::<English>::default().word_count(24).build()?;
 //     /// # Ok(())
@@ -105,7 +105,7 @@
 //     }
 
 //     /// Sets the derivation path of the child key to be derived. The derivation path is calculated
-//     /// using the default derivation path prefix used in Ethereum, i.e. "m/44'/60'/0'/0/{index}".
+//     /// using the default derivation path prefix used in Core, i.e. "m/44'/60'/0'/0/{index}".
 //     pub fn index(self, index: u32) -> Result<Self, WalletError> {
 //         self.derivation_path(format!("{DEFAULT_DERIVATION_PATH_PREFIX}{index}"))
 //     }

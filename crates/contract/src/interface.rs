@@ -1,6 +1,6 @@
 use crate::{ContractInstance, Error, Result};
-use alloy_dyn_abi::{DynSolValue, FunctionExt, JsonAbiExt};
-use alloy_json_abi::{Function, JsonAbi};
+use base_dyn_abi::{DynYlmValue, FunctionExt, JsonAbiExt};
+use base_json_abi::{Function, JsonAbi};
 use base_primitives::{IcanAddress, Selector};
 use std::collections::{BTreeMap, HashMap};
 
@@ -26,7 +26,7 @@ impl Interface {
     ///
     /// If the function exists multiple times and you want to use one of the overloaded versions,
     /// consider using [`Self::encode_input_with_selector`].
-    pub fn encode_input(&self, name: &str, args: &[DynSolValue]) -> Result<Vec<u8>> {
+    pub fn encode_input(&self, name: &str, args: &[DynYlmValue]) -> Result<Vec<u8>> {
         self.get_from_name(name)?.abi_encode_input(args).map_err(Into::into)
     }
 
@@ -35,7 +35,7 @@ impl Interface {
     pub fn encode_input_with_selector(
         &self,
         selector: &Selector,
-        args: &[DynSolValue],
+        args: &[DynYlmValue],
     ) -> Result<Vec<u8>> {
         self.get_from_selector(selector)?.abi_encode_input(args).map_err(Into::into)
     }
@@ -51,7 +51,7 @@ impl Interface {
         name: &str,
         data: &[u8],
         validate: bool,
-    ) -> Result<Vec<DynSolValue>> {
+    ) -> Result<Vec<DynYlmValue>> {
         self.get_from_name(name)?.abi_decode_input(data, validate).map_err(Into::into)
     }
 
@@ -61,7 +61,7 @@ impl Interface {
         selector: &Selector,
         data: &[u8],
         validate: bool,
-    ) -> Result<Vec<DynSolValue>> {
+    ) -> Result<Vec<DynYlmValue>> {
         self.get_from_selector(selector)?.abi_decode_input(data, validate).map_err(Into::into)
     }
 
@@ -77,7 +77,7 @@ impl Interface {
         name: &str,
         data: &[u8],
         validate: bool,
-    ) -> Result<Vec<DynSolValue>> {
+    ) -> Result<Vec<DynYlmValue>> {
         self.get_from_name(name)?.abi_decode_output(data, validate).map_err(Into::into)
     }
 
@@ -87,7 +87,7 @@ impl Interface {
         selector: &Selector,
         data: &[u8],
         validate: bool,
-    ) -> Result<Vec<DynSolValue>> {
+    ) -> Result<Vec<DynYlmValue>> {
         self.get_from_selector(selector)?.abi_decode_output(data, validate).map_err(Into::into)
     }
 

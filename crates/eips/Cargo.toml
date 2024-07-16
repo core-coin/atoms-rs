@@ -1,6 +1,6 @@
 [package]
-name = "alloy-eips"
-description = "Ethereum Improvement Proprosal (EIP) implementations"
+name = "atoms-eips"
+description = "Core Improvement Proprosal (EIP) implementations"
 
 version.workspace = true
 edition.workspace = true
@@ -14,7 +14,7 @@ exclude.workspace = true
 [dependencies]
 base-primitives = { workspace = true, features = ["rlp"], default-features = false }
 alloy-rlp = { workspace = true, features = ["derive"], default-features = false }
-alloy-serde.workspace = true
+atoms-serde.workspace = true
 
 sha2 = { workspace = true, default-features = false }
 

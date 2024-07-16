@@ -1,6 +1,6 @@
 [package]
-name = "alloy-node-bindings"
-description = "Ethereum execution-layer client bindings"
+name = "atoms-node-bindings"
+description = "Core execution-layer client bindings"
 
 version.workspace = true
 edition.workspace = true
@@ -13,7 +13,7 @@ exclude.workspace = true
 
 [dependencies]
 base-primitives = { workspace = true, features = ["std", "serde"] }
-alloy-genesis.workspace = true
+atoms-genesis.workspace = true
 libgoldilocks.workspace = true
 serde_json = { workspace = true, features = ["std"] }
 tempfile.workspace = true

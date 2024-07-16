@@ -1,7 +1,7 @@
 //! Alloy basic Transaction Request type.
 
 use crate::Transaction;
-use alloy_consensus::{TxLegacy, TypedTransaction};
+use atoms_consensus::{TxLegacy, TypedTransaction};
 use base_primitives::{Address, Bytes, ChainId, IcanAddress, TxKind, B256, U256};
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
@@ -20,35 +20,35 @@ pub struct TransactionRequest {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub energy_price: Option<u128>,
     /// The max base fee per gas the sender is willing to pay.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub max_fee_per_gas: Option<u128>,
     /// The max priority fee per gas the sender is willing to pay, also called the miner tip.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub max_priority_fee_per_gas: Option<u128>,
     /// The max fee per blob gas for EIP-4844 blob transactions.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub max_fee_per_blob_gas: Option<u128>,
     /// The gas limit for the transaction.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub energy: Option<u128>,
     /// The value transferred in the transaction, in wei.
@@ -61,11 +61,11 @@ pub struct TransactionRequest {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u64_opt_via_ruint"
+        with = "atoms_serde::num::u64_opt_via_ruint"
     )]
     pub nonce: Option<u64>,
     /// The chain ID for the transaction.
-    #[serde(default, with = "alloy_serde::num::u64_via_ruint")]
+    #[serde(default, with = "atoms_serde::num::u64_via_ruint")]
     pub network_id: ChainId,
     /// An EIP-2930 access list, which lowers cost for accessing accounts and storages in the list. See [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) for more information.
     // #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -75,7 +75,7 @@ pub struct TransactionRequest {
         default,
         rename = "type",
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u8_opt_via_ruint"
+        with = "atoms_serde::num::u8_opt_via_ruint"
     )]
     pub transaction_type: Option<u8>,
     // /// Blob versioned hashes for EIP-4844 transactions.
@@ -328,7 +328,7 @@ impl From<Bytes> for TransactionInput {
 
 impl From<Option<Bytes>> for TransactionInput {
     fn from(data: Option<Bytes>) -> Self {
-        Self { input: None, data: data }
+        Self { input: None, data }
     }
 }
 

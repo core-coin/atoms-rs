@@ -1,10 +1,10 @@
 use crate::Sealable;
-use alloy_eips::{
-    eip1559::{calc_next_block_base_fee, BaseFeeParams},
-    eip4844::{calc_blob_gasprice, calc_excess_blob_gas},
-};
 use alloy_rlp::{
     length_of_length, Buf, BufMut, Decodable, Encodable, EMPTY_LIST_CODE, EMPTY_STRING_CODE,
+};
+use atoms_eips::{
+    eip1559::{calc_next_block_base_fee, BaseFeeParams},
+    eip4844::{calc_blob_gasprice, calc_excess_blob_gas},
 };
 use base_primitives::{b256, sha3, Address, BlockNumber, Bloom, Bytes, B256, B64, U256};
 use core::mem;
@@ -20,7 +20,7 @@ pub const EMPTY_OMMER_ROOT_HASH: B256 =
 pub const EMPTY_ROOT_HASH: B256 =
     b256!("56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421");
 
-/// Ethereum Block header
+/// Core Block header
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Header {
     /// The Keccak 256-bit hash of the parent
@@ -87,7 +87,7 @@ pub struct Header {
     /// This enables trust-minimized access to consensus state, supporting staking pools, bridges,
     /// and more.
     ///
-    /// The beacon roots contract handles root storage, enhancing Ethereum's functionalities.
+    /// The beacon roots contract handles root storage, enhancing Core's functionalities.
     pub parent_beacon_block_root: Option<B256>,
     /// The Keccak 256-bit hash of the root node of the trie structure populated with each
     /// [EIP-7685] request in the block body.

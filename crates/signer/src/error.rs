@@ -19,10 +19,10 @@ pub enum Error {
         /// The network ID provided by the transaction.
         tx: u64,
     },
-    /// [`alloy_dyn_abi`] error.
+    /// [`base_dyn_abi`] error.
     #[error(transparent)]
     #[cfg(feature = "eip712")]
-    DynAbiError(#[from] alloy_dyn_abi::Error),
+    DynAbiError(#[from] base_dyn_abi::Error),
     /// [`hex`](mod@hex) error.
     #[error(transparent)]
     HexError(#[from] hex::FromHexError),

@@ -4,11 +4,11 @@ use auto_impl::auto_impl;
 use base_primitives::{eip191_hash_message, ChainId, IcanAddress, Signature, B256};
 
 #[cfg(feature = "eip712")]
-use alloy_dyn_abi::eip712::TypedData;
+use base_dyn_abi::eip712::TypedData;
 #[cfg(feature = "eip712")]
-use base_ylm_types::{Eip712Domain, SolStruct};
+use base_ylm_types::{Eip712Domain, YlmStruct};
 
-/// Asynchronous Ethereum signer.
+/// Asynchronous Core signer.
 ///
 /// All provided implementations rely on [`sign_hash`](Signer::sign_hash). A signer may not always
 /// be able to implement this method, in which case it should return
@@ -39,7 +39,7 @@ pub trait Signer<Sig = Signature> {
     #[cfg(feature = "eip712")]
     #[inline]
     #[auto_impl(keep_default_for(&mut, Box))]
-    async fn sign_typed_data<T: SolStruct + Send + Sync>(
+    async fn sign_typed_data<T: YlmStruct + Send + Sync>(
         &self,
         payload: &T,
         domain: &Eip712Domain,
@@ -58,7 +58,7 @@ pub trait Signer<Sig = Signature> {
         self.sign_hash(&payload.eip712_signing_hash()?).await
     }
 
-    /// Returns the signer's Ethereum IcanAddress.
+    /// Returns the signer's Core IcanAddress.
     fn address(&self) -> IcanAddress;
 
     /// Returns the signer's network ID.
@@ -110,7 +110,7 @@ pub trait SignerSync<Sig = Signature> {
     #[cfg(feature = "eip712")]
     #[inline]
     #[auto_impl(keep_default_for(&, &mut, Box, Rc, Arc))]
-    fn sign_typed_data_sync<T: SolStruct>(&self, payload: &T, domain: &Eip712Domain) -> Result<Sig>
+    fn sign_typed_data_sync<T: YlmStruct>(&self, payload: &T, domain: &Eip712Domain) -> Result<Sig>
     where
         Self: Sized,
     {
@@ -144,7 +144,7 @@ mod tests {
     #[tokio::test]
     async fn unimplemented() {
         #[cfg(feature = "eip712")]
-        base_ylm_types::sol! {
+        base_ylm_types::ylm! {
             #[derive(Default, serde::Serialize)]
             struct Eip712Data {
                 uint64 a;

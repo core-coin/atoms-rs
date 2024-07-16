@@ -18,7 +18,7 @@ pub enum TraceType {
     /// Provides a full trace of the VM’s state throughout the execution of the transaction,
     /// including for any subcalls.
     VmTrace,
-    /// Provides information detailing all altered portions of the Ethereum state made due to the
+    /// Provides information detailing all altered portions of the Core state made due to the
     /// execution of the transaction.
     StateDiff,
 }

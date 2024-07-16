@@ -1,6 +1,6 @@
 [package]
-name = "alloy-consensus"
-description = "Ethereum consensus interface"
+name = "atoms-consensus"
+description = "Core consensus interface"
 
 version.workspace = true
 edition.workspace = true
@@ -14,8 +14,8 @@ exclude.workspace = true
 [dependencies]
 base-primitives = { workspace = true, features = ["rlp"] }
 alloy-rlp.workspace = true
-alloy-eips.workspace = true
-alloy-serde = { workspace = true, optional = true }
+atoms-eips.workspace = true
+atoms-serde = { workspace = true, optional = true }
 base-ylm-types.workspace = true
 
 # kzg
@@ -31,7 +31,7 @@ serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
 base-primitives = { workspace = true, features = ["arbitrary", "rand"] }
-alloy-signer.workspace = true
+atoms-signer.workspace = true
 
 arbitrary = { workspace = true, features = ["derive"] }
 proptest = { workspace = true }
@@ -41,18 +41,18 @@ serde_json.workspace = true
 
 [features]
 default = ["std"]
-std = ["alloy-eips/std", "c-kzg?/std"]
-kzg = ["dep:c-kzg", "alloy-eips/kzg", "std"]
+std = ["atoms-eips/std", "c-kzg?/std"]
+kzg = ["dep:c-kzg", "atoms-eips/kzg", "std"]
 arbitrary = [
     "std",
     "dep:arbitrary",
     "dep:proptest-derive",
     "dep:proptest",
-    "alloy-eips/arbitrary",
+    "atoms-eips/arbitrary",
 ]
 serde = [
     "dep:serde",
     "base-primitives/serde",
-    "dep:alloy-serde",
-    "alloy-eips/serde",
+    "dep:atoms-serde",
+    "atoms-eips/serde",
 ]

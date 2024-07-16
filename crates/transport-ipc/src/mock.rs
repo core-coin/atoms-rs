@@ -1,6 +1,6 @@
 //! Mock IPC server.
 
-use alloy_json_rpc::Response;
+use atoms_json_rpc::Response;
 use interprocess::local_socket::tokio::prelude::*;
 use serde::Serialize;
 use std::{collections::VecDeque, path::PathBuf};
@@ -14,7 +14,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 /// ## Example:
 ///
 /// ```
-/// use alloy_transport_ipc::MockIpcServer;
+/// use atoms_transport_ipc::MockIpcServer;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// // Instantiate a new mock server.
 /// let mut server = MockIpcServer::new();

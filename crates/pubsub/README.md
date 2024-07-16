@@ -1,4 +1,4 @@
-# alloy-pubsub
+# atoms-pubsub
 
 Core Blockchain JSON-RPC [publish-subscribe] tower service and type definitions.
 

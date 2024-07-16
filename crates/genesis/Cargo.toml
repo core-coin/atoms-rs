@@ -1,5 +1,5 @@
 [package]
-name = "alloy-genesis"
+name = "atoms-genesis"
 description = "Core Blockchain genesis file definitions"
 
 version.workspace = true
@@ -13,7 +13,7 @@ exclude.workspace = true
 
 [dependencies]
 base-primitives.workspace = true
-alloy-serde.workspace = true
+atoms-serde.workspace = true
 
 # serde
 serde.workspace = true
@@ -21,4 +21,4 @@ serde_json.workspace = true
 
 [features]
 default = ["std"]
-std = ["base-primitives/std", "alloy-serde/std", "serde/std"]
+std = ["base-primitives/std", "atoms-serde/std", "serde/std"]

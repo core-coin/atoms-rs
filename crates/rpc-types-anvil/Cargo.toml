@@ -1,5 +1,5 @@
 [package]
-name = "alloy-rpc-types-anvil"
+name = "atoms-rpc-types-anvil"
 description = "Anvil RPC types"
 
 version.workspace = true
@@ -13,7 +13,7 @@ exclude.workspace = true
 
 [dependencies]
 base-primitives = { workspace = true, features = ["serde"] }
-alloy-serde.workspace = true
+atoms-serde.workspace = true
 
 serde.workspace = true
 

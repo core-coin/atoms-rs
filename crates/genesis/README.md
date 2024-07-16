@@ -1,6 +1,6 @@
-# alloy-genesis
+# atoms-genesis
 
-Ethereum genesis file definitions.
+Core genesis file definitions.
 
-The genesis file in an Ethereum blockchain is a JSON-formatted file used to
+The genesis file in an Core blockchain is a JSON-formatted file used to
 define the initial state of the blockchain at the time of its creation.

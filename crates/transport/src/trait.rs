@@ -1,5 +1,5 @@
 use crate::{BoxTransport, TransportError, TransportFut};
-use alloy_json_rpc::{RequestPacket, ResponsePacket};
+use atoms_json_rpc::{RequestPacket, ResponsePacket};
 use tower::Service;
 
 /// A `Transport` manages the JSON-RPC request/response lifecycle.
@@ -26,7 +26,7 @@ use tower::Service;
 ///
 /// [`Clone`] is not a bound on `Transport`, however, transports generally may
 /// not be used as expected unless they implement `Clone`. For example, only
-/// cloneable transports may be used by the `RpcClient` in `alloy-rpc-client`
+/// cloneable transports may be used by the `RpcClient` in `atoms-rpc-client`
 /// to send RPC requests, and [`BoxTransport`] may only be used to type-erase
 /// Cloneable transports.
 ///

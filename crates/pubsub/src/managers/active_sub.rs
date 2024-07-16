@@ -1,5 +1,5 @@
 use crate::RawSubscription;
-use alloy_json_rpc::SerializedRequest;
+use atoms_json_rpc::SerializedRequest;
 use base_primitives::B256;
 use serde_json::value::RawValue;
 use std::{fmt, hash::Hash};

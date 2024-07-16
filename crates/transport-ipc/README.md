@@ -1,3 +1,3 @@
-# alloy-transport-ipc
+# atoms-transport-ipc
 
 IPC transport implementation.

@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -34,7 +34,7 @@ pub use transaction::{SignableTransaction, Transaction, TxLegacy, TypedTransacti
 pub use transaction::BlobTransactionValidationError;
 
 #[cfg(feature = "kzg")]
-pub use alloy_eips::eip4844::env_settings::EnvKzgSettings;
+pub use atoms_eips::eip4844::env_settings::EnvKzgSettings;
 
 mod sealed;
 pub use sealed::{Sealable, Sealed};

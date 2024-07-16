@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -19,17 +19,17 @@
 /// Type alias for a [`RootProvider`] using the [`Http`] transport and a
 /// reqwest client.
 ///
-/// [`Http`]: alloy_transport_http::Http
-pub type ReqwestProvider<N = alloy_network::Ethereum> =
-    crate::RootProvider<alloy_transport_http::Http<reqwest::Client>, N>;
+/// [`Http`]: atoms_transport_http::Http
+pub type ReqwestProvider<N = atoms_network::Ethereum> =
+    crate::RootProvider<atoms_transport_http::Http<reqwest::Client>, N>;
 
 #[cfg(feature = "hyper")]
 /// Type alias for a [`RootProvider`] using the [`Http`] transport and a hyper
 /// client.
 ///
-/// [`Http`]: alloy_transport_http::Http
-pub type HyperProvider<N = alloy_network::Ethereum> =
-    crate::RootProvider<alloy_transport_http::Http<alloy_transport_http::HyperClient>, N>;
+/// [`Http`]: atoms_transport_http::Http
+pub type HyperProvider<N = atoms_network::Ethereum> =
+    crate::RootProvider<atoms_transport_http::Http<atoms_transport_http::HyperClient>, N>;
 
 #[macro_use]
 extern crate tracing;
@@ -55,4 +55,4 @@ pub use provider::{
 pub mod utils;
 
 #[doc(no_inline)]
-pub use alloy_network::{self as network, Network};
+pub use atoms_network::{self as network, Network};

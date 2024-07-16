@@ -1,6 +1,6 @@
 use crate::WsBackend;
-use alloy_pubsub::PubSubConnect;
-use alloy_transport::{utils::Spawnable, Authorization, TransportErrorKind, TransportResult};
+use atoms_pubsub::PubSubConnect;
+use atoms_transport::{utils::Spawnable, Authorization, TransportErrorKind, TransportResult};
 use futures::{SinkExt, StreamExt};
 use serde_json::value::RawValue;
 use std::time::Duration;
@@ -52,16 +52,16 @@ impl IntoClientRequest for WsConnect {
 
 impl PubSubConnect for WsConnect {
     fn is_local(&self) -> bool {
-        alloy_transport::utils::guess_local_url(&self.url)
+        atoms_transport::utils::guess_local_url(&self.url)
     }
 
-    async fn connect(&self) -> TransportResult<alloy_pubsub::ConnectionHandle> {
+    async fn connect(&self) -> TransportResult<atoms_pubsub::ConnectionHandle> {
         let request = self.clone().into_client_request();
         let req = request.map_err(TransportErrorKind::custom)?;
         let (socket, _) =
             tokio_tungstenite::connect_async(req).await.map_err(TransportErrorKind::custom)?;
 
-        let (handle, interface) = alloy_pubsub::ConnectionHandle::new();
+        let (handle, interface) = atoms_pubsub::ConnectionHandle::new();
         let backend = WsBackend { socket, interface };
 
         backend.spawn();

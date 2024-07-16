@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -42,14 +42,14 @@ type Result<T> = std::result::Result<T, std::io::Error>;
 struct IpcBackend {
     pub(crate) stream: LocalSocketStream,
 
-    pub(crate) interface: alloy_pubsub::ConnectionInterface,
+    pub(crate) interface: atoms_pubsub::ConnectionInterface,
 }
 
 impl IpcBackend {
     /// Connect to a local socket. Either a unix socket or a windows named pipe.
-    async fn connect(name: Name<'_>) -> Result<alloy_pubsub::ConnectionHandle> {
+    async fn connect(name: Name<'_>) -> Result<atoms_pubsub::ConnectionHandle> {
         let stream = LocalSocketStream::connect(name).await?;
-        let (handle, interface) = alloy_pubsub::ConnectionHandle::new();
+        let (handle, interface) = atoms_pubsub::ConnectionHandle::new();
         let backend = IpcBackend { stream, interface };
         backend.spawn();
         Ok(handle)
@@ -134,7 +134,7 @@ impl<T: AsyncRead> From<T> for ReadJsonStream<T> {
 }
 
 impl<T: AsyncRead> futures::stream::Stream for ReadJsonStream<T> {
-    type Item = alloy_json_rpc::PubSubItem;
+    type Item = atoms_json_rpc::PubSubItem;
 
     fn poll_next(
         self: std::pin::Pin<&mut Self>,

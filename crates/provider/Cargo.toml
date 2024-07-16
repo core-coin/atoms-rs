@@ -1,6 +1,6 @@
 [package]
-name = "alloy-provider"
-description = "Interface with an Ethereum blockchain"
+name = "atoms-provider"
+description = "Interface with an Core blockchain"
 
 version.workspace = true
 edition.workspace = true
@@ -12,22 +12,22 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-eips.workspace = true
-alloy-json-rpc.workspace = true
-alloy-network.workspace = true
-alloy-node-bindings = { workspace = true, optional = true }
-alloy-signer-wallet = { workspace = true, optional = true }
-alloy-rpc-client.workspace = true
-alloy-rpc-types-trace.workspace = true
-alloy-rpc-types.workspace = true
-alloy-transport-http = { workspace = true, optional = true }
-alloy-transport-ipc = { workspace = true, optional = true }
-alloy-transport-ws = { workspace = true, optional = true }
-alloy-pubsub = { workspace = true, optional = true }
-alloy-transport.workspace = true
+atoms-eips.workspace = true
+atoms-json-rpc.workspace = true
+atoms-network.workspace = true
+atoms-node-bindings = { workspace = true, optional = true }
+atoms-signer-wallet = { workspace = true, optional = true }
+atoms-rpc-client.workspace = true
+atoms-rpc-types-trace.workspace = true
+atoms-rpc-types.workspace = true
+atoms-transport-http = { workspace = true, optional = true }
+atoms-transport-ipc = { workspace = true, optional = true }
+atoms-transport-ws = { workspace = true, optional = true }
+atoms-pubsub = { workspace = true, optional = true }
+atoms-transport.workspace = true
 base-primitives.workspace = true
-alloy-consensus = { workspace = true, features = ["std"] }
-alloy-signer.workspace = true
+atoms-consensus = { workspace = true, features = ["std"] }
+atoms-signer.workspace = true
 
 async-stream = "0.3"
 async-trait.workspace = true
@@ -44,13 +44,13 @@ futures-utils-wasm.workspace = true
 libgoldilocks.workspace = true
 
 [dev-dependencies]
-alloy-consensus = { workspace = true, features = ["std"] }
-alloy-node-bindings.workspace = true
-alloy-rpc-client = { workspace = true, features = ["reqwest"] }
+atoms-consensus = { workspace = true, features = ["std"] }
+atoms-node-bindings.workspace = true
+atoms-rpc-client = { workspace = true, features = ["reqwest"] }
 alloy-rlp.workspace = true
-alloy-signer.workspace = true
-alloy-signer-wallet.workspace = true
-alloy-transport-http = { workspace = true, features = ["reqwest"] }
+atoms-signer.workspace = true
+atoms-signer-wallet.workspace = true
+atoms-transport-http = { workspace = true, features = ["reqwest"] }
 
 reqwest.workspace = true
 tokio = { workspace = true, features = ["macros"] }
@@ -59,17 +59,17 @@ tempfile.workspace = true
 
 [features]
 default = ["reqwest", "reqwest-default-tls"]
-pubsub = ["alloy-rpc-client/pubsub", "dep:alloy-pubsub"]
+pubsub = ["atoms-rpc-client/pubsub", "dep:atoms-pubsub"]
 reqwest = [
     "dep:reqwest",
     "dep:url",
-    "dep:alloy-transport-http",
-    "alloy-rpc-client/reqwest",
+    "dep:atoms-transport-http",
+    "atoms-rpc-client/reqwest",
 ]
-hyper = ["dep:alloy-transport-http", "dep:url", "alloy-rpc-client/hyper"]
-ws = ["pubsub", "alloy-rpc-client/ws", "alloy-transport-ws"]
-ipc = ["pubsub", "alloy-rpc-client/ipc", "alloy-transport-ipc"]
-reqwest-default-tls = ["alloy-transport-http?/reqwest-default-tls"]
-reqwest-rustls-tls = ["alloy-transport-http?/reqwest-rustls-tls"]
-reqwest-native-tls = ["alloy-transport-http?/reqwest-native-tls"]
-anvil = ["reqwest", "dep:alloy-node-bindings", "dep:alloy-signer-wallet"]
+hyper = ["dep:atoms-transport-http", "dep:url", "atoms-rpc-client/hyper"]
+ws = ["pubsub", "atoms-rpc-client/ws", "atoms-transport-ws"]
+ipc = ["pubsub", "atoms-rpc-client/ipc", "atoms-transport-ipc"]
+reqwest-default-tls = ["atoms-transport-http?/reqwest-default-tls"]
+reqwest-rustls-tls = ["atoms-transport-http?/reqwest-rustls-tls"]
+reqwest-native-tls = ["atoms-transport-http?/reqwest-native-tls"]
+anvil = ["reqwest", "dep:atoms-node-bindings", "dep:atoms-signer-wallet"]

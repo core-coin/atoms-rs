@@ -1,3 +1,3 @@
-# alloy-serde
+# atoms-serde
 
 Serde related helpers for Alloy.

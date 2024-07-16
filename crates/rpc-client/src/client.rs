@@ -1,7 +1,7 @@
 use crate::{poller::PollerBuilder, BatchRequest, ClientBuilder, RpcCall};
-use alloy_json_rpc::{Id, Request, RpcParam, RpcReturn};
-use alloy_transport::{BoxTransport, Transport};
-use alloy_transport_http::Http;
+use atoms_json_rpc::{Id, Request, RpcParam, RpcReturn};
+use atoms_transport::{BoxTransport, Transport};
+use atoms_transport_http::Http;
 use std::{
     borrow::Cow,
     ops::Deref,
@@ -294,8 +294,8 @@ impl<T: Transport + Clone> RpcClientInner<T> {
 #[cfg(feature = "pubsub")]
 mod pubsub_impl {
     use super::*;
-    use alloy_pubsub::{PubSubConnect, PubSubFrontend, RawSubscription, Subscription};
-    use alloy_transport::TransportResult;
+    use atoms_pubsub::{PubSubConnect, PubSubFrontend, RawSubscription, Subscription};
+    use atoms_transport::TransportResult;
 
     impl RpcClientInner<PubSubFrontend> {
         /// Get a [`RawSubscription`] for the given subscription ID.

@@ -3,7 +3,7 @@
 #![allow(unknown_lints, non_local_definitions)]
 
 use crate::{other::OtherFields, Transaction, Withdrawal};
-pub use alloy_eips::{
+pub use atoms_eips::{
     calc_blob_gasprice, calc_excess_blob_gas, BlockHashOrNumber, BlockId, BlockNumHash,
     BlockNumberOrTag, ForkBlock, RpcBlockHash,
 };
@@ -71,16 +71,16 @@ pub struct Header {
     /// Difficulty
     pub difficulty: U256,
     /// Block number
-    #[serde(default, with = "alloy_serde::num::u64_opt_via_ruint")]
+    #[serde(default, with = "atoms_serde::num::u64_opt_via_ruint")]
     pub number: Option<u64>,
     /// Energy Limit
-    #[serde(default, with = "alloy_serde::num::u128_via_ruint")]
+    #[serde(default, with = "atoms_serde::num::u128_via_ruint")]
     pub energy_limit: u128,
     /// Energy Used
-    #[serde(default, with = "alloy_serde::num::u128_via_ruint")]
+    #[serde(default, with = "atoms_serde::num::u128_via_ruint")]
     pub energy_used: u128,
     /// Timestamp
-    #[serde(default, with = "alloy_serde::num::u64_via_ruint")]
+    #[serde(default, with = "atoms_serde::num::u64_via_ruint")]
     pub timestamp: u64,
     /// Total difficulty
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -107,7 +107,7 @@ pub struct Header {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub base_fee_per_gas: Option<u128>,
     /// Withdrawals root hash added by EIP-4895 and is ignored in legacy headers.
@@ -117,14 +117,14 @@ pub struct Header {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub blob_gas_used: Option<u128>,
     /// Excess blob gas
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
-        with = "alloy_serde::num::u128_opt_via_ruint"
+        with = "atoms_serde::num::u128_opt_via_ruint"
     )]
     pub excess_blob_gas: Option<u128>,
     /// EIP-4788 parent beacon block root
@@ -559,7 +559,7 @@ pub struct BlockOverrides {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub base_fee: Option<U256>,
     /// A dictionary that maps blockNumber to a user-defined hash. It could be queried from the
-    /// solidity opcode BLOCKHASH.
+    /// ylem opcode BLOCKHASH.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub block_hash: Option<BTreeMap<u64, B256>>,
 }

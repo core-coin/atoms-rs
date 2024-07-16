@@ -1,6 +1,6 @@
-use alloy_network::Network;
+use atoms_network::Network;
+use atoms_transport::{Transport, TransportResult};
 use base_primitives::{BlockHash, B256};
-use alloy_transport::{Transport, TransportResult};
 
 use crate::Provider;
 

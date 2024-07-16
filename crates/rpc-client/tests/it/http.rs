@@ -1,6 +1,6 @@
-use alloy_node_bindings::Anvil;
+use atoms_node_bindings::Anvil;
+use atoms_rpc_client::{ClientBuilder, RpcCall};
 use base_primitives::U64;
-use alloy_rpc_client::{ClientBuilder, RpcCall};
 
 #[tokio::test]
 async fn it_makes_a_request() {

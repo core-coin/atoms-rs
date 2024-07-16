@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -18,7 +18,7 @@
 #[macro_use]
 extern crate tracing;
 
-use alloy_pubsub::ConnectionInterface;
+use atoms_pubsub::ConnectionInterface;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod native;
@@ -35,7 +35,7 @@ pub use wasm::WsConnect;
 /// Users should NEVER instantiate a backend directly. Instead, they should use
 /// [`PubSubConnect`] to get a running service with a running backend.
 ///
-/// [`PubSubConnect`]: alloy_pubsub::PubSubConnect
+/// [`PubSubConnect`]: atoms_pubsub::PubSubConnect
 #[derive(Debug)]
 pub struct WsBackend<T> {
     /// The websocket connection.

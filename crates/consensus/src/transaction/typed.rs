@@ -1,7 +1,7 @@
 use crate::{transaction::TxLegacy, Transaction};
 use base_primitives::TxKind;
 
-/// The TypedTransaction enum represents all Ethereum transaction request types.
+/// The TypedTransaction enum represents all Core transaction request types.
 ///
 /// Its variants correspond to specific allowed transactions:
 /// 1. Legacy (pre-EIP2718) [`TxLegacy`]

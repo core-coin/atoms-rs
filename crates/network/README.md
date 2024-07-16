@@ -1,9 +1,9 @@
-# alloy-networks
+# atoms-networks
 
-Ethereum blockchain RPC behavior abstraction.
+Core blockchain RPC behavior abstraction.
 
 This crate contains a simple abstraction of the RPC behavior of an
-Ethereum-like blockchain. It is intended to be used by the Alloy client to
+Core-like blockchain. It is intended to be used by the Alloy client to
 provide a consistent interface to the rest of the library, regardless of
 changes the underlying blockchain makes to the RPC interface.
 
@@ -22,7 +22,7 @@ networking. The core model is as follows:
 ## Usage
 
 This crate is not intended to be used directly. It is used by the
-[alloy-provider] library and reth to modify the input and output types of the
+[atoms-provider] library and reth to modify the input and output types of the
 RPC methods.
 
 This crate will primarily be used by blockchain maintainers to add bespoke RPC
@@ -61,4 +61,4 @@ trait FooProviderExt: Provider<Foo> {
 }
 ```
 
-[alloy-provider]: ../provider
+[atoms-provider]: ../provider

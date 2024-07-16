@@ -1,5 +1,5 @@
 [package]
-name = "alloy-pubsub"
+name = "atoms-pubsub"
 description = "Core Blockchain JSON-RPC publish-subscribe tower service and type definitions"
 
 version.workspace = true
@@ -12,9 +12,9 @@ repository.workspace = true
 exclude.workspace = true
 
 [dependencies]
-alloy-json-rpc.workspace = true
+atoms-json-rpc.workspace = true
 base-primitives.workspace = true
-alloy-transport.workspace = true
+atoms-transport.workspace = true
 
 bimap.workspace = true
 futures.workspace = true

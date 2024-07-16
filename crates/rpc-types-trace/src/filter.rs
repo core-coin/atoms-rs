@@ -1,6 +1,6 @@
 //! `trace_filter` types and support
 use base_primitives::IcanAddress;
-use alloy_serde::num::u64_opt_via_ruint;
+use atoms_serde::num::u64_opt_via_ruint;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 

@@ -1,27 +1,27 @@
 use crate::{Network, NetworkSigner, TxSigner};
-use alloy_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
-use base_primitives::IcanAddress;
-use alloy_signer::Signature;
 use async_trait::async_trait;
+use atoms_consensus::{SignableTransaction, Signed, TxLegacy, TypedTransaction};
+use atoms_signer::Signature;
+use base_primitives::IcanAddress;
 use std::{collections::BTreeMap, sync::Arc};
 
-/// A signer capable of signing any transaction for the Ethereum network.
+/// A signer capable of signing any transaction for the Core network.
 #[derive(Clone, Default)]
-pub struct EthereumSigner {
+pub struct CoreSigner {
     default: IcanAddress,
     secp_signers: BTreeMap<IcanAddress, Arc<dyn TxSigner<Signature> + Send + Sync>>,
 }
 
-impl std::fmt::Debug for EthereumSigner {
+impl std::fmt::Debug for CoreSigner {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("EthereumSigner")
+        f.debug_struct("CoreSigner")
             .field("default_signer", &self.default)
             .field("credentials", &self.secp_signers.len())
             .finish()
     }
 }
 
-impl<S> From<S> for EthereumSigner
+impl<S> From<S> for CoreSigner
 where
     S: TxSigner<Signature> + Send + Sync + 'static,
 {
@@ -30,7 +30,7 @@ where
     }
 }
 
-impl EthereumSigner {
+impl CoreSigner {
     /// Create a new signer with the given signer as the default signer.
     pub fn new<S>(signer: S) -> Self
     where
@@ -45,7 +45,7 @@ impl EthereumSigner {
     /// [`TransactionRequest`] and [`TypedTransaction`] object that specify the
     /// signer's address in the `from` field.
     ///
-    /// [`TransactionRequest`]: alloy_rpc_types::TransactionRequest
+    /// [`TransactionRequest`]: atoms_rpc_types::TransactionRequest
     pub fn register_signer<S>(&mut self, signer: S)
     where
         S: TxSigner<Signature> + Send + Sync + 'static,
@@ -58,7 +58,7 @@ impl EthereumSigner {
     /// [`TypedTransaction`] objects that do not specify a signer address in the
     /// `from` field.
     ///
-    /// [`TransactionRequest`]: alloy_rpc_types::TransactionRequest
+    /// [`TransactionRequest`]: atoms_rpc_types::TransactionRequest
     pub fn register_default_signer<S>(&mut self, signer: S)
     where
         S: TxSigner<Signature> + Send + Sync + 'static,
@@ -84,10 +84,10 @@ impl EthereumSigner {
         &self,
         sender: IcanAddress,
         tx: &mut dyn SignableTransaction<Signature>,
-    ) -> alloy_signer::Result<Signature> {
+    ) -> atoms_signer::Result<Signature> {
         self.signer_by_address(sender)
             .ok_or_else(|| {
-                alloy_signer::Error::other(format!("Missing signing credential for {}", sender))
+                atoms_signer::Error::other(format!("Missing signing credential for {}", sender))
             })?
             .sign_transaction(tx)
             .await
@@ -96,7 +96,7 @@ impl EthereumSigner {
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-impl<N> NetworkSigner<N> for EthereumSigner
+impl<N> NetworkSigner<N> for CoreSigner
 where
     N: Network,
 {
@@ -116,7 +116,7 @@ where
         &self,
         sender: IcanAddress,
         tx: TypedTransaction,
-    ) -> alloy_signer::Result<Signed<TxLegacy, Signature>> {
+    ) -> atoms_signer::Result<Signed<TxLegacy, Signature>> {
         match tx {
             TypedTransaction::Legacy(mut t) => {
                 let sig = self.sign_transaction_inner(sender, &mut t).await?;

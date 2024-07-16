@@ -1,4 +1,4 @@
-# alloy-signer-wallet
+# atoms-signer-wallet
 
 Local wallet implementations:
 - [K256 private key](./src/private_key.rs)
@@ -6,7 +6,7 @@ Local wallet implementations:
 
 ## Features
 
-- `keystore`: enables Ethereum keystore functionality on the `LocalWallet` type.
+- `keystore`: enables Core keystore functionality on the `LocalWallet` type.
 - `mnemonic`: enables BIP-39 mnemonic functionality for building `LocalWallet`s.
 - `yubihsm`: enables `Wallet`s with [YubiHSM2] support.
 

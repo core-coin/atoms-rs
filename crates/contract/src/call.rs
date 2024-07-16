@@ -1,21 +1,21 @@
-use crate::{CallDecoder, Error, EthCall, Result};
-use alloy_dyn_abi::{DynSolValue, JsonAbiExt};
-use alloy_json_abi::Function;
-use alloy_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
-use alloy_provider::{PendingTransactionBuilder, Provider};
-use alloy_rpc_types::{state::StateOverride, AccessList, BlockId};
-use base_ylm_types::SolCall;
-use alloy_transport::Transport;
+use crate::{CallDecoder, Error, Result, XcbCall};
+use atoms_network::{Ethereum, Network, ReceiptResponse, TransactionBuilder};
+use atoms_provider::{PendingTransactionBuilder, Provider};
+use atoms_rpc_types::{state::StateOverride, AccessList, BlockId};
+use atoms_transport::Transport;
+use base_dyn_abi::{DynYlmValue, JsonAbiExt};
+use base_json_abi::Function;
 use base_primitives::{Bytes, ChainId, IcanAddress, TxKind, U256};
+use base_ylm_types::YlmCall;
 use std::{
     future::{Future, IntoFuture},
     marker::PhantomData,
     pin::Pin,
 };
 
-/// [`CallBuilder`] using a [`SolCall`] type as the call decoder.
-// NOTE: please avoid changing this type due to its use in the `sol!` macro.
-pub type SolCallBuilder<T, P, C, N = Ethereum> = CallBuilder<T, P, PhantomData<C>, N>;
+/// [`CallBuilder`] using a [`YlmCall`] type as the call decoder.
+// NOTE: please avoid changing this type due to its use in the `ylm!` macro.
+pub type YlmCallBuilder<T, P, C, N = Ethereum> = CallBuilder<T, P, PhantomData<C>, N>;
 
 /// [`CallBuilder`] using a [`Function`] as the call decoder.
 pub type DynCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, Function, N>;
@@ -31,8 +31,8 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// currently also boxes the future due to type system limitations.
 ///
 /// A call builder can currently be instantiated in the following ways:
-/// - by [`sol!`][sol]-generated contract structs' methods (through the `#[sol(rpc)]` attribute)
-///   ([`SolCallBuilder`]);
+/// - by [`ylm!`][ylm]-generated contract structs' methods (through the `#[ylm(rpc)]` attribute)
+///   ([`YlmCallBuilder`]);
 /// - by [`ContractInstance`](crate::ContractInstance)'s methods ([`DynCallBuilder`]);
 /// - using [`CallBuilder::new_raw`] ([`RawCallBuilder`]).
 ///
@@ -47,16 +47,16 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 ///
 /// # Examples
 ///
-/// Using [`sol!`][sol]:
+/// Using [`ylm!`][ylm]:
 ///
 /// ```no_run
-/// # async fn test<P: alloy_contract::private::Provider>(provider: P) -> Result<(), Box<dyn std::error::Error>> {
-/// use alloy_contract::SolCallBuilder;
+/// # async fn test<P: base_contract::private::Provider>(provider: P) -> Result<(), Box<dyn std::error::Error>> {
+/// use base_contract::YlmCallBuilder;
 /// use base_primitives::{IcanAddress, U256};
-/// use base_ylm_types::sol;
+/// use base_ylm_types::ylm;
 ///
-/// sol! {
-///     #[sol(rpc)] // <-- Important!
+/// ylm! {
+///     #[ylm(rpc)] // <-- Important!
 ///     contract MyContract {
 ///         function doStuff(uint a, bool b) public returns(address c, bytes32 d);
 ///     }
@@ -71,13 +71,13 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// // Through `contract.<function_name>(args...)`
 /// let a = U256::ZERO;
 /// let b = true;
-/// let builder: SolCallBuilder<_, _, MyContract::doStuffCall, _> = contract.doStuff(a, b);
+/// let builder: YlmCallBuilder<_, _, MyContract::doStuffCall, _> = contract.doStuff(a, b);
 /// let MyContract::doStuffReturn { c: _, d: _ } = builder.call().await?;
 ///
 /// // Through `contract.call_builder(&<FunctionCall { args... }>)`:
 /// // (note that this is discouraged because it's inherently less type-safe)
 /// let call = MyContract::doStuffCall { a, b };
-/// let builder: SolCallBuilder<_, _, MyContract::doStuffCall, _> = contract.call_builder(&call);
+/// let builder: YlmCallBuilder<_, _, MyContract::doStuffCall, _> = contract.call_builder(&call);
 /// let MyContract::doStuffReturn { c: _, d: _ } = builder.call().await?;
 /// # Ok(())
 /// # }
@@ -86,10 +86,10 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// Using [`ContractInstance`](crate::ContractInstance):
 ///
 /// ```no_run
-/// # async fn test<P: alloy_contract::private::Provider>(provider: P, dynamic_abi: alloy_json_abi::JsonAbi) -> Result<(), Box<dyn std::error::Error>> {
+/// # async fn test<P: base_contract::private::Provider>(provider: P, dynamic_abi: base_json_abi::JsonAbi) -> Result<(), Box<dyn std::error::Error>> {
 /// use base_primitives::{IcanAddress, Bytes, U256};
-/// use alloy_dyn_abi::DynSolValue;
-/// use alloy_contract::{CallBuilder, ContractInstance, DynCallBuilder, Interface, RawCallBuilder};
+/// use base_dyn_abi::DynYlmValue;
+/// use base_contract::{CallBuilder, ContractInstance, DynCallBuilder, Interface, RawCallBuilder};
 ///
 /// # stringify!(
 /// let dynamic_abi: JsonAbi = ...;
@@ -104,7 +104,7 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 ///
 /// // Build and call the function:
 /// let call_builder: DynCallBuilder<_, _, _> = contract.function("doStuff", &[U256::ZERO.into(), true.into()])?;
-/// let result: Vec<DynSolValue> = call_builder.call().await?;
+/// let result: Vec<DynYlmValue> = call_builder.call().await?;
 ///
 /// // You can also decode the output manually. Get the raw bytes:
 /// let raw_result: Bytes = call_builder.call_raw().await?;
@@ -112,12 +112,12 @@ pub type RawCallBuilder<T, P, N = Ethereum> = CallBuilder<T, P, (), N>;
 /// let raw_builder: RawCallBuilder<_, _, _> = call_builder.clone().clear_decoder();
 /// let raw_result: Bytes = raw_builder.call().await?;
 /// // Decode the raw bytes:
-/// let decoded_result: Vec<DynSolValue> = call_builder.decode_output(raw_result, false)?;
+/// let decoded_result: Vec<DynYlmValue> = call_builder.decode_output(raw_result, false)?;
 /// # Ok(())
 /// # }
 /// ```
 ///
-/// [sol]: base_ylm_types::sol
+/// [ylm]: base_ylm_types::ylm
 #[derive(Clone)]
 #[must_use = "call builders do nothing unless you `.call`, `.send`, or `.await` them"]
 pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
@@ -125,7 +125,7 @@ pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
     block: BlockId,
     state: Option<StateOverride>,
     /// The provider.
-    // NOTE: This is public due to usage in `sol!`, please avoid changing it.
+    // NOTE: This is public due to usage in `ylm!`, please avoid changing it.
     pub provider: P,
     decoder: D,
     transport: PhantomData<T>,
@@ -133,7 +133,7 @@ pub struct CallBuilder<T, P, D, N: Network = Ethereum> {
 
 // See [`ContractInstance`].
 impl<T: Transport + Clone, P: Provider<T, N>, N: Network> DynCallBuilder<T, P, N> {
-    pub(crate) fn new_dyn(provider: P, function: &Function, args: &[DynSolValue]) -> Result<Self> {
+    pub(crate) fn new_dyn(provider: P, function: &Function, args: &[DynYlmValue]) -> Result<Self> {
         Ok(Self::new_inner_call(
             provider,
             function.abi_encode_input(args)?.into(),
@@ -156,17 +156,17 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> DynCallBuilder<T, P, N
 }
 
 #[doc(hidden)]
-impl<'a, T: Transport + Clone, P: Provider<T, N>, C: SolCall, N: Network>
-    SolCallBuilder<T, &'a P, C, N>
+impl<'a, T: Transport + Clone, P: Provider<T, N>, C: YlmCall, N: Network>
+    YlmCallBuilder<T, &'a P, C, N>
 {
-    // `sol!` macro constructor, see `#[sol(rpc)]`. Not public API.
-    // NOTE: please avoid changing this function due to its use in the `sol!` macro.
+    // `ylm!` macro constructor, see `#[ylm(rpc)]`. Not public API.
+    // NOTE: please avoid changing this function due to its use in the `ylm!` macro.
     pub fn new_sol(provider: &'a P, address: &IcanAddress, call: &C) -> Self {
         Self::new_inner_call(provider, call.abi_encode().into(), PhantomData::<C>).to(*address)
     }
 }
 
-impl<T: Transport + Clone, P: Provider<T, N>, C: SolCall, N: Network> SolCallBuilder<T, P, C, N> {
+impl<T: Transport + Clone, P: Provider<T, N>, C: YlmCall, N: Network> YlmCallBuilder<T, P, C, N> {
     /// Clears the decoder, returning a raw call builder.
     #[inline]
     pub fn clear_decoder(self) -> RawCallBuilder<T, P, N> {
@@ -182,24 +182,24 @@ impl<T: Transport + Clone, P: Provider<T, N>, C: SolCall, N: Network> SolCallBui
 }
 
 impl<T: Transport + Clone, P: Provider<T, N>, N: Network> RawCallBuilder<T, P, N> {
-    /// Sets the decoder to the provided [`SolCall`].
+    /// Sets the decoder to the provided [`YlmCall`].
     ///
-    /// Converts the raw call builder into a sol call builder.
+    /// Converts the raw call builder into a ylm call builder.
     ///
-    /// Note that generally you would want to instantiate a sol call builder directly using the
-    /// `sol!` macro, but this method is provided for flexibility, for example to convert a raw
-    /// deploy call builder into a sol call builder.
+    /// Note that generally you would want to instantiate a ylm call builder directly using the
+    /// `ylm!` macro, but this method is provided for flexibility, for example to convert a raw
+    /// deploy call builder into a ylm call builder.
     ///
     /// # Examples
     ///
     /// Decode a return value from a constructor:
     ///
     /// ```no_run
-    /// # use base_ylm_types::sol;
-    /// sol! {
+    /// # use base_ylm_types::ylm;
+    /// ylm! {
     ///     // NOTE: This contract is not meant to be deployed on-chain, but rather
     ///     // used in a static call with its creation code as the call data.
-    ///     #[sol(rpc, bytecode = "34601457602a60e052600161010052604060e0f35b5f80fdfe")]
+    ///     #[ylm(rpc, bytecode = "34601457602a60e052600161010052604060e0f35b5f80fdfe")]
     ///     contract MyContract {
     ///         // The type returned by the constructor.
     ///         #[derive(Debug, PartialEq)]
@@ -225,17 +225,17 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> RawCallBuilder<T, P, N
     /// # stringify!(
     /// let provider = ...;
     /// # );
-    /// # let provider = alloy_provider::ProviderBuilder::new().on_anvil();
+    /// # let provider = atoms_provider::ProviderBuilder::new().on_anvil();
     /// let call_builder = MyContract::deploy_builder(&provider)
-    ///     .with_sol_decoder::<MyContract::constructorReturnCall>();
+    ///     .with_ylm_decoder::<MyContract::constructorReturnCall>();
     /// let result = call_builder.call().await?;
     /// assert_eq!(result.s, MyContract::MyStruct { a: 42, b: true });
     /// # Ok(())
     /// # }
     /// ```
     #[inline]
-    pub fn with_sol_decoder<C: SolCall>(self) -> SolCallBuilder<T, P, C, N> {
-        SolCallBuilder {
+    pub fn with_ylm_decoder<C: YlmCall>(self) -> YlmCallBuilder<T, P, C, N> {
+        YlmCallBuilder {
             request: self.request,
             block: self.block,
             state: self.state,
@@ -260,7 +260,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, N: Network> RawCallBuilder<T, P, N
     ///
     /// Will not decode the output of the call, meaning that [`call`](Self::call) will behave the
     /// same as [`call_raw`](Self::call_raw).
-    // NOTE: please avoid changing this function due to its use in the `sol!` macro.
+    // NOTE: please avoid changing this function due to its use in the `ylm!` macro.
     pub fn new_raw_deploy(provider: P, input: Bytes) -> Self {
         Self::new_inner_deploy(provider, input, ())
     }
@@ -416,7 +416,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
     /// If this is not desired, use [`call_raw`](Self::call_raw) to get the raw output data.
     #[doc(alias = "eth_call")]
     #[doc(alias = "call_with_overrides")]
-    pub fn call(&self) -> EthCall<'_, '_, '_, D, T, N> {
+    pub fn call(&self) -> XcbCall<'_, '_, '_, D, T, N> {
         self.call_raw().with_decoder(&self.decoder)
     }
 
@@ -426,7 +426,7 @@ impl<T: Transport + Clone, P: Provider<T, N>, D: CallDecoder, N: Network> CallBu
     /// Does not decode the output of the call, returning the raw output data instead.
     ///
     /// See [`call`](Self::call) for more information.
-    pub fn call_raw(&self) -> EthCall<'_, '_, '_, (), T, N> {
+    pub fn call_raw(&self) -> XcbCall<'_, '_, '_, (), T, N> {
         let call = self.provider.call(&self.request).block(self.block);
         let call = match &self.state {
             Some(state) => call.overrides(state),
@@ -538,23 +538,23 @@ impl<T, P, D: CallDecoder, N: Network> std::fmt::Debug for CallBuilder<T, P, D, 
 #[allow(unused_imports)]
 mod tests {
     use super::*;
-    use alloy_network::Ethereum;
-    use alloy_node_bindings::{Anvil, AnvilInstance};
-    use alloy_provider::{
+    use atoms_network::Ethereum;
+    use atoms_node_bindings::{Anvil, AnvilInstance};
+    use atoms_provider::{
         layers::AnvilProvider, Provider, ProviderBuilder, ReqwestProvider, RootProvider,
         WalletProvider,
     };
-    use alloy_rpc_client::RpcClient;
-    use alloy_rpc_types::AccessListItem;
-    use base_ylm_types::sol;
-    use alloy_transport_http::Http;
+    use atoms_rpc_client::RpcClient;
+    use atoms_rpc_types::AccessListItem;
+    use atoms_transport_http::Http;
     use base_primitives::{address, b256, bytes, cAddress, hex, utils::parse_units, Address, B256};
+    use base_ylm_types::ylm;
     use reqwest::{Client, Url};
 
     #[test]
     fn empty_constructor() {
-        sol! {
-            #[sol(rpc, bytecode = "6942")]
+        ylm! {
+            #[ylm(rpc, bytecode = "6942")]
             contract EmptyConstructor {
                 constructor();
             }
@@ -565,10 +565,10 @@ mod tests {
         assert_eq!(*call_builder.calldata(), bytes!("6942"));
     }
 
-    sol! {
+    ylm! {
         // Solc: 0.8.24+commit.e11b9ed9.Linux.g++
-        // Command: ylem a.sol --bin --optimize --optimize-runs 1
-        #[sol(rpc, bytecode = "608060405234801561001057600080fd5b506040516101ac3803806101ac83398101604081905261002f91610045565b6000805460ff191691151591909117905561006c565b600060208284031215610056578081fd5b81518015158114610065578182fd5b9392505050565b6101318061007b6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80637fe45f4e146037578063b117ffa6146058575b600080fd5b60005460439060ff1681565b60405190151581526020015b60405180910390f35b6067606336600460a5565b6085565b604080516001600160b01b039093168352602083019190915201604f565b600080838360935760006096565b60015b90925060ff1690509250929050565b6000806040838503121560b6578182fd5b823591506020830135801515811460cb578182fd5b80915050925092905056fea26469706673582212200ea2bbf5c9db4fbfc298faab31c5289f6641dc875867ed916014b4510ec4853264736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
+        // Command: ylem a.ylm --bin --optimize --optimize-runs 1
+        #[ylm(rpc, bytecode = "608060405234801561001057600080fd5b506040516101ac3803806101ac83398101604081905261002f91610045565b6000805460ff191691151591909117905561006c565b600060208284031215610056578081fd5b81518015158114610065578182fd5b9392505050565b6101318061007b6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80637fe45f4e146037578063b117ffa6146058575b600080fd5b60005460439060ff1681565b60405190151581526020015b60405180910390f35b6067606336600460a5565b6085565b604080516001600160b01b039093168352602083019190915201604f565b600080838360935760006096565b60015b90925060ff1690509250929050565b6000806040838503121560b6578182fd5b823591506020830135801515811460cb578182fd5b80915050925092905056fea26469706673582212200ea2bbf5c9db4fbfc298faab31c5289f6641dc875867ed916014b4510ec4853264736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
         contract MyContract {
             bool public myState;
 
@@ -582,10 +582,10 @@ mod tests {
         }
     }
 
-    sol! {
+    ylm! {
         // Solc: 0.8.24+commit.e11b9ed9.Linux.g++
-        // Command: ylem counter.sol --bin --optimize --optimize-runs 1
-        #[sol(rpc, bytecode = "608060405234801561001057600080fd5b50610140806100206000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80636d701db8146037578063bc1ecb8e146065575b600080fd5b6000546049906001600160801b031681565b6040516001600160801b03909116815260200160405180910390f35b606b606d565b005b6000805460019190819060899084906001600160801b031660af565b92506101000a8154816001600160801b0302191690836001600160801b03160217905550565b60006001600160801b0382811684821680830382111560dc57634b1f2ce360e01b84526011600452602484fd5b0194935050505056fea2646970667358221220008f79d64885516e4359c52ada4057f5591d397b06e28eedc1c1a6ad416e91d164736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
+        // Command: ylem counter.ylm --bin --optimize --optimize-runs 1
+        #[ylm(rpc, bytecode = "608060405234801561001057600080fd5b50610140806100206000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80636d701db8146037578063bc1ecb8e146065575b600080fd5b6000546049906001600160801b031681565b6040516001600160801b03909116815260200160405180910390f35b606b606d565b005b6000805460019190819060899084906001600160801b031660af565b92506101000a8154816001600160801b0302191690836001600160801b03160217905550565b60006001600160801b0382811684821680830382111560dc57634b1f2ce360e01b84526011600452602484fd5b0194935050505056fea2646970667358221220008f79d64885516e4359c52ada4057f5591d397b06e28eedc1c1a6ad416e91d164736f6c637827302e382e342d646576656c6f702e323032322e382e32322b636f6d6d69742e61303164646338320058")]
         contract Counter {
             uint128 public counter;
 

@@ -1,9 +1,9 @@
 use crate::{client::RpcClientInner, ClientRef};
-use alloy_json_rpc::{
+use atoms_json_rpc::{
     transform_response, try_deserialize_ok, Id, Request, RequestPacket, ResponsePacket, RpcParam,
     RpcReturn, SerializedRequest,
 };
-use alloy_transport::{Transport, TransportError, TransportErrorKind, TransportResult};
+use atoms_transport::{Transport, TransportError, TransportErrorKind, TransportResult};
 use futures::channel::oneshot;
 use serde_json::value::RawValue;
 use std::{

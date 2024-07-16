@@ -1,21 +1,21 @@
-//! Utility functions for working with Ethereum signatures.
+//! Utility functions for working with Core signatures.
 
 use base_primitives::IcanAddress;
 use libgoldilocks::{SigningKey, VerifyingKey};
 
-/// Converts an ECDSA private key to its corresponding Ethereum Address.
+/// Converts an ECDSA private key to its corresponding Core Address.
 #[inline]
 pub fn secret_key_to_address(secret_key: &SigningKey, network_id: u64) -> IcanAddress {
     IcanAddress::from_private_key(secret_key, network_id)
 }
 
-/// Converts an ECDSA public key to its corresponding Ethereum address.
+/// Converts an ECDSA public key to its corresponding Core address.
 #[inline]
 pub fn public_key_to_address(pubkey: &VerifyingKey, network_id: u64) -> IcanAddress {
     IcanAddress::from_public_key(pubkey, network_id)
 }
 
-/// Convert a raw, uncompressed public key to its corresponding Ethereum address.
+/// Convert a raw, uncompressed public key to its corresponding Core address.
 ///
 /// ### Warning
 ///

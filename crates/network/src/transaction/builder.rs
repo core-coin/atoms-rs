@@ -1,10 +1,10 @@
 use super::signer::NetworkSigner;
 use crate::Network;
-use alloy_consensus::{Signed, TxLegacy, TypedTransaction};
-use alloy_rpc_types::AccessList;
-use alloy_signer::Signature;
+use atoms_consensus::{Signed, TxLegacy, TypedTransaction};
+use atoms_rpc_types::AccessList;
+use atoms_signer::Signature;
 use base_primitives::{Bytes, ChainId, IcanAddress, TxKind, B1368, U256};
-use base_ylm_types::SolCall;
+use base_ylm_types::YlmCall;
 use futures_utils_wasm::impl_future;
 
 /// Result type for transaction builders
@@ -26,7 +26,7 @@ pub enum TransactionBuilderError {
 
     /// Signer error.
     #[error(transparent)]
-    Signer(#[from] alloy_signer::Error),
+    Signer(#[from] atoms_signer::Error),
 
     /// A custom error.
     #[error("{0}")]
@@ -161,7 +161,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
 
     /// Set the data field to a contract call. This will clear the `to` field
     /// if it is set to [`TxKind::Create`].
-    fn set_call<T: SolCall>(&mut self, t: &T) {
+    fn set_call<T: YlmCall>(&mut self, t: &T) {
         self.set_input(t.abi_encode());
         if matches!(self.kind(), Some(TxKind::Create)) {
             self.clear_kind();
@@ -169,7 +169,7 @@ pub trait TransactionBuilder<N: Network>: Default + Sized + Send + Sync + 'stati
     }
 
     /// Make a contract call with data.
-    fn with_call<T: SolCall>(mut self, t: &T) -> Self {
+    fn with_call<T: YlmCall>(mut self, t: &T) -> Self {
         self.set_call(t);
         self
     }

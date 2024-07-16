@@ -3,15 +3,15 @@ use crate::{
     provider::SendableTx,
     Provider, ProviderLayer,
 };
-use alloy_network::Network;
-use alloy_transport::{Transport, TransportResult};
+use atoms_network::Network;
+use atoms_transport::{Transport, TransportResult};
 use futures::try_join;
 
 /// A layer that can fill in a [`TransactionRequest`] with additional
 /// information by joining two [`TxFiller`]s. This  struct is itself a
 /// [`TxFiller`], and can be nested to compose any number of fill layers.
 ///
-/// [`TransactionRequest`]: alloy_rpc_types::TransactionRequest
+/// [`TransactionRequest`]: atoms_rpc_types::TransactionRequest
 #[derive(Clone, Copy, Debug)]
 pub struct JoinFill<L, R> {
     left: L,
@@ -126,7 +126,7 @@ where
     L: TxFiller<N>,
     R: TxFiller<N>,
     P: Provider<T, N>,
-    T: alloy_transport::Transport + Clone,
+    T: atoms_transport::Transport + Clone,
     N: Network,
 {
     type Provider = FillProvider<JoinFill<L, R>, P, T, N>;

@@ -1,5 +1,5 @@
 use crate::RpcClient;
-use alloy_transport::{
+use atoms_transport::{
     BoxTransport, BoxTransportConnect, Transport, TransportConnect, TransportResult,
 };
 use tower::{
@@ -51,10 +51,10 @@ impl<L> ClientBuilder<L> {
     #[cfg(feature = "reqwest")]
     pub fn http(self, url: url::Url) -> RpcClient<L::Service>
     where
-        L: Layer<alloy_transport_http::Http<reqwest::Client>>,
+        L: Layer<atoms_transport_http::Http<reqwest::Client>>,
         L::Service: Transport,
     {
-        let transport = alloy_transport_http::Http::new(url);
+        let transport = atoms_transport_http::Http::new(url);
         let is_local = transport.guess_local();
 
         self.transport(transport, is_local)
@@ -64,12 +64,12 @@ impl<L> ClientBuilder<L> {
     #[cfg(all(not(target_arch = "wasm32"), feature = "hyper"))]
     pub fn hyper_http(self, url: url::Url) -> RpcClient<L::Service>
     where
-        L: Layer<alloy_transport_http::Http<alloy_transport_http::HyperClient>>,
+        L: Layer<atoms_transport_http::Http<atoms_transport_http::HyperClient>>,
         L::Service: Transport,
     {
         let executor = hyper_util::rt::TokioExecutor::new();
         let client = hyper_util::client::legacy::Client::builder(executor).build_http();
-        let transport = alloy_transport_http::Http::with_client(client, url);
+        let transport = atoms_transport_http::Http::with_client(client, url);
         let is_local = transport.guess_local();
 
         self.transport(transport, is_local)
@@ -80,8 +80,8 @@ impl<L> ClientBuilder<L> {
     #[cfg(feature = "pubsub")]
     pub async fn pubsub<C>(self, pubsub_connect: C) -> TransportResult<RpcClient<L::Service>>
     where
-        C: alloy_pubsub::PubSubConnect,
-        L: Layer<alloy_pubsub::PubSubFrontend>,
+        C: atoms_pubsub::PubSubConnect,
+        L: Layer<atoms_pubsub::PubSubFrontend>,
         L::Service: Transport,
     {
         let is_local = pubsub_connect.is_local();
@@ -94,10 +94,10 @@ impl<L> ClientBuilder<L> {
     #[cfg(feature = "ws")]
     pub async fn ws(
         self,
-        ws_connect: alloy_transport_ws::WsConnect,
+        ws_connect: atoms_transport_ws::WsConnect,
     ) -> TransportResult<RpcClient<L::Service>>
     where
-        L: Layer<alloy_pubsub::PubSubFrontend>,
+        L: Layer<atoms_pubsub::PubSubFrontend>,
         L::Service: Transport,
     {
         self.pubsub(ws_connect).await
@@ -108,11 +108,11 @@ impl<L> ClientBuilder<L> {
     #[cfg(feature = "ipc")]
     pub async fn ipc<T>(
         self,
-        ipc_connect: alloy_transport_ipc::IpcConnect<T>,
+        ipc_connect: atoms_transport_ipc::IpcConnect<T>,
     ) -> TransportResult<RpcClient<L::Service>>
     where
-        alloy_transport_ipc::IpcConnect<T>: alloy_pubsub::PubSubConnect,
-        L: Layer<alloy_pubsub::PubSubFrontend>,
+        atoms_transport_ipc::IpcConnect<T>: atoms_pubsub::PubSubConnect,
+        L: Layer<atoms_pubsub::PubSubFrontend>,
         L::Service: Transport,
     {
         self.pubsub(ipc_connect).await

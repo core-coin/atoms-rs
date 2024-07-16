@@ -1,6 +1,6 @@
-use alloy_json_rpc::{Response, ResponsePayload, SerializedRequest};
+use atoms_json_rpc::{Response, ResponsePayload, SerializedRequest};
 use base_primitives::U256;
-use alloy_transport::{TransportError, TransportResult};
+use atoms_transport::{TransportError, TransportResult};
 use std::fmt;
 use tokio::sync::oneshot;
 

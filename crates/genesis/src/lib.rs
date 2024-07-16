@@ -2,8 +2,8 @@
 
 #![doc = include_str!(".././README.md")]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/alloy.jpg",
-    html_favicon_url = "https://raw.githubusercontent.com/alloy-rs/core/main/assets/favicon.ico"
+    html_logo_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/alloy.jpg",
+    html_favicon_url = "https://raw.githubusercontent.com/base-rs/core/main/assets/favicon.ico"
 )]
 #![warn(
     missing_copy_implementations,
@@ -23,7 +23,7 @@ extern crate alloc;
 use alloc::{collections::BTreeMap, string::String};
 
 use base_primitives::{Bytes, IcanAddress, B256, U256};
-use alloy_serde::{
+use atoms_serde::{
     num::{u128_opt_via_ruint, u128_via_ruint, u64_opt_via_ruint, u64_via_ruint},
     storage::deserialize_storage_map,
     ttd::deserialize_json_ttd_opt,

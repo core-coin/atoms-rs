@@ -4,10 +4,10 @@ use crate::{
     utils::Eip1559Estimation,
     Provider,
 };
-use alloy_json_rpc::RpcError;
-use alloy_network::{Network, TransactionBuilder};
-use alloy_rpc_types::BlockNumberOrTag;
-use alloy_transport::{Transport, TransportResult};
+use atoms_json_rpc::RpcError;
+use atoms_network::{Network, TransactionBuilder};
+use atoms_rpc_types::BlockNumberOrTag;
+use atoms_transport::{Transport, TransportResult};
 use futures::FutureExt;
 
 /// An enum over the different types of energy fillable.
@@ -48,9 +48,9 @@ pub enum EnergyFillable {
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
-/// # use alloy_rpc_types::TransactionRequest;
-/// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
+/// # use atoms_network::{NetworkSigner, EthereumSigner, Ethereum};
+/// # use atoms_rpc_types::TransactionRequest;
+/// # use atoms_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
 /// let provider = ProviderBuilder::new()
 ///     .with_energy_estimation()
@@ -257,7 +257,7 @@ mod tests {
     use super::*;
     use crate::{ProviderBuilder, WalletProvider};
     use base_primitives::{cAddress, U256};
-    use alloy_rpc_types::TransactionRequest;
+    use atoms_rpc_types::TransactionRequest;
 
     #[tokio::test]
     async fn no_energy_price_or_limit() {

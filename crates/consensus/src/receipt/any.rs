@@ -1,6 +1,6 @@
 use crate::{ReceiptWithBloom, TxReceipt};
-use alloy_eips::eip2718::{Decodable2718, Encodable2718};
 use alloy_rlp::{Decodable, Encodable};
+use atoms_eips::eip2718::{Decodable2718, Encodable2718};
 use base_primitives::{bytes::BufMut, Bloom, Log};
 
 /// Receipt envelope, as defined in [EIP-2718].
@@ -20,7 +20,7 @@ pub struct AnyReceiptEnvelope<T = Log> {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub inner: ReceiptWithBloom<T>,
     /// The transaction type.
-    #[cfg_attr(feature = "serde", serde(with = "alloy_serde::num::u8_via_ruint"))]
+    #[cfg_attr(feature = "serde", serde(with = "atoms_serde::num::u8_via_ruint"))]
     pub r#type: u8,
 }
 

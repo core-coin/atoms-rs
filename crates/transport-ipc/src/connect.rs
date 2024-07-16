@@ -20,7 +20,7 @@ impl<T> IpcConnect<T> {
     /// `IpcConnect<T>`.
     pub const fn new(inner: T) -> Self
     where
-        Self: alloy_pubsub::PubSubConnect,
+        Self: atoms_pubsub::PubSubConnect,
     {
         Self { inner }
     }
@@ -40,20 +40,20 @@ macro_rules! impl_connect {
             }
         }
 
-        impl alloy_pubsub::PubSubConnect for IpcConnect<$target> {
+        impl atoms_pubsub::PubSubConnect for IpcConnect<$target> {
             fn is_local(&self) -> bool {
                 true
             }
 
             async fn connect(
                 &self,
-            ) -> Result<alloy_pubsub::ConnectionHandle, alloy_transport::TransportError> {
+            ) -> Result<atoms_pubsub::ConnectionHandle, atoms_transport::TransportError> {
                 let $inner = &self.inner;
                 let inner = $map;
-                let name = to_name(inner).map_err(alloy_transport::TransportErrorKind::custom)?;
+                let name = to_name(inner).map_err(atoms_transport::TransportErrorKind::custom)?;
                 crate::IpcBackend::connect(name)
                     .await
-                    .map_err(alloy_transport::TransportErrorKind::custom)
+                    .map_err(atoms_transport::TransportErrorKind::custom)
             }
         }
     };

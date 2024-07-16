@@ -1,11 +1,11 @@
 use std::{borrow::Cow, future::Future, task::Poll};
 
-use alloy_eips::BlockId;
-use alloy_network::Network;
+use atoms_eips::BlockId;
+use atoms_network::Network;
+use atoms_rpc_client::{RpcCall, WeakClient};
+use atoms_rpc_types::state::StateOverride;
+use atoms_transport::{Transport, TransportErrorKind, TransportResult};
 use base_primitives::Bytes;
-use alloy_rpc_client::{RpcCall, WeakClient};
-use alloy_rpc_types::state::StateOverride;
-use alloy_transport::{Transport, TransportErrorKind, TransportResult};
 use futures::FutureExt;
 
 /// States for the [`EthCallFut`] future.

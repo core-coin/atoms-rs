@@ -1,7 +1,7 @@
 use std::sync::{Arc, OnceLock};
 
-use alloy_network::{Network, TransactionBuilder};
-use alloy_transport::TransportResult;
+use atoms_network::{Network, TransactionBuilder};
+use atoms_transport::TransportResult;
 
 use crate::{
     fillers::{FillerControlFlow, TxFiller},
@@ -21,9 +21,9 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// # use alloy_network::{NetworkSigner, EthereumSigner, Ethereum};
-/// # use alloy_rpc_types::TransactionRequest;
-/// # use alloy_provider::{ProviderBuilder, RootProvider, Provider};
+/// # use atoms_network::{NetworkSigner, EthereumSigner, Ethereum};
+/// # use atoms_rpc_types::TransactionRequest;
+/// # use atoms_provider::{ProviderBuilder, RootProvider, Provider};
 /// # async fn test<S: NetworkSigner<Ethereum> + Clone>(url: url::Url, signer: S) -> Result<(), Box<dyn std::error::Error>> {
 /// let provider = ProviderBuilder::new()
 ///     .with_network_id(1)
@@ -70,7 +70,7 @@ impl<N: Network> TxFiller<N> for NetworkIdFiller {
     ) -> TransportResult<Self::Fillable>
     where
         P: crate::Provider<T, N>,
-        T: alloy_transport::Transport + Clone,
+        T: atoms_transport::Transport + Clone,
     {
         match self.0.get().copied() {
             Some(network_id) => Ok(network_id),
