@@ -24,7 +24,7 @@ async-trait.workspace = true
 
 # keystore
 elliptic-curve = { workspace = true, optional = true }
-xcb-keystore = { git = "https://github.com/core-coin/xcb-keystore-rs.git", default-features = false, optional = true }
+xcb-keystore = { git = "https://github.com/core-coin/xcb-keystore-rs.git", version = "1.0.0", default-features = false, optional = true }
 
 # mnemonic
 coins-bip32 = { version = "0.8.7", default-features = false, optional = true }
